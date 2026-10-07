@@ -22,14 +22,13 @@ export const meta = {
   apiVersion: 1,
   key: "leonardo-video",
   name: "Leonardo Video",
-  version: "0.1.2",
+  version: "0.1.3",
   author: { name: "Independent Leonardo Video Adapter" },
   description: {
     en: "Veo 3.1 text-to-video through Leonardo; asynchronous video API and MP4 download.",
     zh: "通过 Leonardo 调用 Veo 3.1 文生视频，支持异步任务与 MP4 下载。"
   },
   auth: "api_key",
-  upstreams: ["vendor"],
   fetchMode: "per_task",
   models: MODELS.slice(),
   protocols: ["openai_video"],

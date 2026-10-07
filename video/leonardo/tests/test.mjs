@@ -68,7 +68,7 @@ add('required exports and phase-1 metadata', () => {
   assert.equal(plugin.meta.key, 'leonardo-video');
   assert.equal(plugin.meta.fetchMode, 'per_task');
   assert.deepEqual(plugin.meta.protocols, ['openai_video']);
-  assert.deepEqual(plugin.meta.upstreams, ['vendor']);
+  assert.equal(plugin.meta.upstreams, undefined, 'vendor is implicit; omit optional declaration for older hosts');
   assert.equal(plugin.meta.channelTypes, undefined);
   assert.equal(plugin.meta.routes, undefined);
   assert.equal(plugin.meta.models.length, 2);
@@ -226,6 +226,12 @@ add('trailing API-root slash normalized', () => {
 });
 add('type-60 upstream disallowed', () => {
   expectError('buildSubmitRequest', [{ ...driver(raw), upstream: { kind: 'new_api' } }], 'unsupported_upstream');
+  const legacy = driver(raw);
+  delete legacy.upstream;
+  assert.deepEqual(call('buildSubmitRequest', legacy), call('buildSubmitRequest', driver(raw)), 'missing upstream context defaults to vendor');
+  const legacyQuery = query();
+  delete legacyQuery.upstream;
+  assert.deepEqual(call('buildQueryRequest', legacyQuery), call('buildQueryRequest', query()));
 });
 for (const envelope of ['root', 'generate', 'generation', 'generationJob', 'sdGenerationJob', 'motionVideoGenerationJob', 'data']) {
   add('generationId envelope: ' + envelope, () => {

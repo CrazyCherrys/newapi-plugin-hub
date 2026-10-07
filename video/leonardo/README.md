@@ -2,7 +2,9 @@
 
 [仓库首页](../../README.md) · [视频插件](../README.md) · [开发与验证](docs/DEVELOPMENT.md)
 
-版本：`0.1.2`；审阅日期：2026-10-06。
+版本：`0.1.3`；审阅日期：2026-10-06。
+
+`0.1.3` 移除可选的 `meta.upstreams` 声明，处理实际实例报告的 `plugin meta has unknown field "upstreams"`。厂商上游为默认模式，仍只支持直连 Leonardo，不支持 New API 网关互联。实际实例安装与运行验收仍待完成。
 
 `0.1.2` 移除可选的 `meta.baseUrl` 声明，解决运行实例报告 `plugin meta has unknown field "baseUrl"` 的安装阻断。渠道中必须手动填写 `https://cloud.leonardo.ai`。官方 `rc.41` 源码包含该字段，但报告错误的实际 Docker 构建尚未确认；此修改不代表已验证该实例的其余运行契约。
 
@@ -113,7 +115,7 @@ leonardo-video
 
 **Base URL 不带 `/v1`、`/api/rest/v1` 或 `/api/rest/v2`。** 插件自行拼接路径。第一阶段只接受 HTTPS origin；不支持在 Base URL 上附加路径、查询参数或账户密码。
 
-直连 Leonardo 用类型 61，而不是“New API 上游”的类型 60。本插件声明 `upstreams:["vendor"]`，不会声称支持网关互联。[S6]
+直连 Leonardo 用类型 61，而不是“New API 上游”的类型 60。本插件省略可选的 `upstreams` 声明，使用默认厂商上游模式；驱动仍拒绝显式的非厂商上游，不支持网关互联。[S6]
 
 先使用一个 Leonardo Key 对应一个渠道，避免测试阶段混淆账号归属。客户端只使用 New API 用户 Key，绝不能拿 Leonardo Key 提供给下游用户。上游 Key 不写在插件代码里。[S6][S10]
 
