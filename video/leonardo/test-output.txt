@@ -1,0 +1,116 @@
+PASS required exports and phase-1 metadata
+PASS usage examples match declared fact types
+PASS plugin executes in isolated JS context with no Node globals
+PASS decode normalizes defaults without changing input
+PASS seconds accepted: 4
+PASS seconds accepted: 6
+PASS seconds accepted: 8
+PASS seconds accepted: "4"
+PASS seconds accepted: "6"
+PASS seconds accepted: "8"
+PASS seconds rejected: 0
+PASS seconds rejected: 5
+PASS seconds rejected: 7
+PASS seconds rejected: 9
+PASS seconds rejected: -1
+PASS seconds rejected: 4.5
+PASS seconds rejected: ""
+PASS seconds rejected: "4.0"
+PASS seconds rejected: "4e0"
+PASS seconds rejected: " 4"
+PASS seconds rejected: true
+PASS seconds rejected: null
+PASS size mapped: 1280x720
+PASS size mapped: 720x1280
+PASS size mapped: 1920x1080
+PASS size mapped: 1080x1920
+PASS unsupported size rejected: 1024x1024
+PASS unsupported size rejected: 3840x2160
+PASS unsupported size rejected: auto
+PASS unsupported size rejected: 1280X720
+PASS unsupported size rejected: __proto__
+PASS unsupported size rejected: null
+PASS 1080p short clip blocked by explicit phase-1 restriction
+PASS unknown top-level field rejected: input_reference
+PASS unknown top-level field rejected: first_frame
+PASS unknown top-level field rejected: n
+PASS unknown top-level field rejected: quantity
+PASS unknown top-level field rejected: public
+PASS unknown top-level field rejected: stream
+PASS unknown top-level field rejected: callback_url
+PASS unknown top-level field rejected: metadata
+PASS unknown top-level field rejected: resolution
+PASS unknown top-level field rejected: aspect_ratio
+PASS unknown top-level field rejected: extra_body
+PASS unknown top-level field rejected: seconds_typo
+PASS prototype key rejected as unknown JSON field
+PASS strict provider options and boolean
+PASS silent audio, zero seed and negative prompt survive mapping
+PASS seed upper bound and overflows
+PASS prompt validation
+PASS multipart text fields decode
+PASS duplicate multipart fields rejected
+PASS multipart files rejected before upstream submission
+PASS malformed multipart options rejected
+PASS non-POST and streaming rejected
+PASS vendor model mapping does not rewrite public identity
+PASS pinned model mismatch rejected
+PASS unsupported upstream model rejected
+PASS auth comes only from channel context
+PASS auth fallback and missing key
+PASS unsafe/misconfigured API root rejected: http://cloud.leonardo.ai
+PASS unsafe/misconfigured API root rejected: https://cloud.leonardo.ai/v1
+PASS unsafe/misconfigured API root rejected: https://u:p@cloud.leonardo.ai
+PASS unsafe/misconfigured API root rejected: https://cloud.leonardo.ai?q=1
+PASS trailing API-root slash normalized
+PASS type-60 upstream disallowed
+PASS generationId envelope: root
+PASS generationId envelope: generate
+PASS generationId envelope: generation
+PASS generationId envelope: generationJob
+PASS generationId envelope: sdGenerationJob
+PASS generationId envelope: motionVideoGenerationJob
+PASS generationId envelope: data
+PASS submit response accepts JSON string
+PASS missing, generic or conflicting upstream IDs are not guessed
+PASS submit errors are not interpreted as accepted tasks
+PASS query uses private upstream ID and v1
+PASS query ID path injection rejected
+PASS PENDING queued, COMPLETE success, FAILED failure
+PASS unknown/empty/mismatched responses do not become permanent in-progress tasks
+PASS missing MP4 observations persist across simulated restart and stop at three
+PASS late MP4 arrival succeeds before retry limit
+PASS safety-flagged output is not returned
+PASS unsafe video VIDEO_URL rejected: http://cdn.leonardo.ai/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://127.0.0.1/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://localhost/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://a.internal/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://u:p@cdn.leonardo.ai/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://cdn.leonardo.ai\@127.0.0.1/a
+PASS unsafe video VIDEO_URL rejected: file:///tmp/a.mp4
+PASS unsafe video VIDEO_URL rejected: https://cdn.leonardo.ai/a.mp4#x
+PASS artifact uses MP4, never image preview VIDEO_URL
+PASS credentialless video content GET
+PASS credentialless video content HEAD
+PASS invalid artifact, method and premature content rejected
+PASS facts measure requested seconds, not credits or token quota
+PASS completion facts preserve frozen request and omit unknowns
+PASS create renderer echoes metadata but never private IDs/keys/costs
+PASS poll renderer does not invent unavailable duration
+PASS renderer does not echo sensitive upstream failure text
+PASS independent tasks do not share state
+PASS golden: build Leonardo v2 text-to-video request
+PASS golden: parse generationId and persist request state
+PASS golden: query Leonardo v1 with private ID
+PASS golden: pending maps to queued
+PASS golden: complete maps to MP4 success
+PASS golden: failed maps to failure
+PASS golden: unknown structure maps to unknown
+PASS golden: usage facts
+PASS golden: no accidental legacy multiplier
+PASS golden: completion uses persisted facts
+PASS golden: MP4 artifact
+PASS golden: credentialless GET
+PASS golden: credentialless HEAD
+
+114/114 passed; 0 failed

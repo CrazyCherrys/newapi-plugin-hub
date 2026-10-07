@@ -1,0 +1,16 @@
+{
+  "generated_at": "2026-10-07T02:39:46.623Z",
+  "node": "v24.19.0",
+  "passed": 114,
+  "failed": 0,
+  "total": 114,
+  "failures": [],
+  "validation": {
+    "node_hook_tests": true,
+    "isolated_v8_without_node_globals": true,
+    "actual_new_api_cli": false,
+    "actual_new_api_host_lifecycle": false,
+    "actual_leonardo_api": false,
+    "note": "Synthetic fixtures only; no network, no API credits consumed. V8 tests do not certify Goja/runtime compatibility."
+  }
+}

@@ -1,0 +1,613 @@
+{
+  "cases": [
+    {
+      "name": "build Leonardo v2 text-to-video request",
+      "hook": "buildSubmitRequest",
+      "args": [
+        {
+          "requestBody": {
+            "model": "veo-3.1-fast-generate-001",
+            "prompt": "A paper boat on a quiet pond",
+            "seconds": 8,
+            "size": "1280x720",
+            "provider_options": {
+              "leonardo": {
+                "generate_audio": true
+              }
+            }
+          },
+          "requestHeaders": {},
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "publicTaskId": "task_example"
+        }
+      ],
+      "expected": {
+        "url": "https://cloud.leonardo.ai/api/rest/v2/generations",
+        "method": "POST",
+        "headers": {
+          "Authorization": "Bearer test-only-not-a-real-key",
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        "body": {
+          "model": "veo-3.1-fast-generate-001",
+          "public": false,
+          "parameters": {
+            "prompt": "A paper boat on a quiet pond",
+            "duration": 8,
+            "width": 1280,
+            "height": 720,
+            "quantity": 1,
+            "motion_has_audio": true
+          }
+        }
+      }
+    },
+    {
+      "name": "parse generationId and persist request state",
+      "hook": "parseSubmitResponse",
+      "args": [
+        {
+          "requestBody": {
+            "model": "veo-3.1-fast-generate-001",
+            "prompt": "A paper boat on a quiet pond",
+            "seconds": 8,
+            "size": "1280x720",
+            "provider_options": {
+              "leonardo": {
+                "generate_audio": true
+              }
+            }
+          },
+          "requestHeaders": {},
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "publicTaskId": "task_example"
+        },
+        {
+          "statusCode": 200,
+          "headers": {},
+          "body": {
+            "generate": {
+              "generationId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+        "taskData": {
+          "_leonardo_phase1": {
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            }
+          }
+        },
+        "state": {
+          "version": 1,
+          "request": {
+            "model": "veo-3.1-fast-generate-001",
+            "prompt": "A paper boat on a quiet pond",
+            "seconds": 8,
+            "size": "1280x720",
+            "provider_options": {
+              "leonardo": {
+                "generate_audio": true
+              }
+            }
+          },
+          "missingVideoPolls": 0
+        }
+      }
+    },
+    {
+      "name": "query Leonardo v1 with private ID",
+      "hook": "buildQueryRequest",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://cloud.leonardo.ai/api/rest/v1/generations/a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+        "method": "GET",
+        "headers": {
+          "Authorization": "Bearer test-only-not-a-real-key",
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        }
+      }
+    },
+    {
+      "name": "pending maps to queued",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        },
+        {
+          "generations_by_pk": {
+            "status": "PENDING",
+            "generated_images": []
+          }
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "QUEUED",
+        "progress": "0%"
+      }
+    },
+    {
+      "name": "complete maps to MP4 success",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        },
+        {
+          "generations_by_pk": {
+            "id": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+            "status": "COMPLETE",
+            "prompt": "A paper boat on a quiet pond",
+            "imageWidth": 1280,
+            "imageHeight": 720,
+            "generated_images": [
+              {
+                "id": "image-id",
+                "nsfw": false,
+                "url": "https://cdn.leonardo.ai/cover.jpg",
+                "motionMP4URL": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+              }
+            ]
+          }
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "SUCCESS",
+        "progress": "100%",
+        "url": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+      }
+    },
+    {
+      "name": "failed maps to failure",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        },
+        {
+          "generations_by_pk": {
+            "status": "FAILED"
+          }
+        },
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "FAILURE",
+        "reason": "Leonardo video generation failed; inspect the upstream task in the administrator logs"
+      }
+    },
+    {
+      "name": "unknown structure maps to unknown",
+      "hook": "parseTaskResult",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        },
+        {},
+        {
+          "status": 200,
+          "headers": {}
+        }
+      ],
+      "expected": {
+        "status": "UNKNOWN",
+        "reason": "Missing generations_by_pk.status in Leonardo query response"
+      }
+    },
+    {
+      "name": "usage facts",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "requestBody": {
+            "model": "veo-3.1-fast-generate-001",
+            "prompt": "A paper boat on a quiet pond",
+            "seconds": 8,
+            "size": "1280x720",
+            "provider_options": {
+              "leonardo": {
+                "generate_audio": true
+              }
+            }
+          },
+          "requestHeaders": {},
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "publicTaskId": "task_example",
+          "usagePurpose": "facts"
+        }
+      ],
+      "expected": {
+        "seconds": 8,
+        "resolution": "720p",
+        "generate_audio": true
+      }
+    },
+    {
+      "name": "no accidental legacy multiplier",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "requestBody": {
+            "model": "veo-3.1-fast-generate-001",
+            "prompt": "A paper boat on a quiet pond",
+            "seconds": 8,
+            "size": "1280x720",
+            "provider_options": {
+              "leonardo": {
+                "generate_audio": true
+              }
+            }
+          },
+          "requestHeaders": {},
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "publicTaskId": "task_example",
+          "usagePurpose": "billing_ratios"
+        }
+      ],
+      "expected": {}
+    },
+    {
+      "name": "completion uses persisted facts",
+      "hook": "extractUsageOnComplete",
+      "args": [
+        {
+          "action": "text_to_video",
+          "model": "veo-3.1-fast-generate-001",
+          "upstreamModel": "veo-3.1-fast-generate-001",
+          "baseUrl": "https://cloud.leonardo.ai",
+          "apiKey": "test-only-not-a-real-key",
+          "authHeader": "Bearer test-only-not-a-real-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "publicTaskId": "task_example",
+          "taskId": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+          "data": {},
+          "state": {
+            "version": 1,
+            "request": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond",
+              "seconds": 8,
+              "size": "1280x720",
+              "provider_options": {
+                "leonardo": {
+                  "generate_audio": true
+                }
+              }
+            },
+            "missingVideoPolls": 0
+          }
+        },
+        {
+          "status": "SUCCESS"
+        },
+        {
+          "generations_by_pk": {
+            "id": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+            "status": "COMPLETE",
+            "prompt": "A paper boat on a quiet pond",
+            "imageWidth": 1280,
+            "imageHeight": 720,
+            "generated_images": [
+              {
+                "id": "image-id",
+                "nsfw": false,
+                "url": "https://cdn.leonardo.ai/cover.jpg",
+                "motionMP4URL": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+              }
+            ]
+          }
+        }
+      ],
+      "expected": {
+        "seconds": 8,
+        "resolution": "720p",
+        "generate_audio": true
+      }
+    },
+    {
+      "name": "MP4 artifact",
+      "hook": "listArtifacts",
+      "args": [
+        {
+          "taskId": "task_example",
+          "status": "SUCCESS",
+          "action": "text_to_video",
+          "data": {
+            "generations_by_pk": {
+              "id": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+              "status": "COMPLETE",
+              "prompt": "A paper boat on a quiet pond",
+              "imageWidth": 1280,
+              "imageHeight": 720,
+              "generated_images": [
+                {
+                  "id": "image-id",
+                  "nsfw": false,
+                  "url": "https://cdn.leonardo.ai/cover.jpg",
+                  "motionMP4URL": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+                }
+              ]
+            }
+          },
+          "producerVersion": "0.1.0"
+        }
+      ],
+      "expected": [
+        {
+          "key": "video",
+          "type": "video",
+          "mimeType": "video/mp4"
+        }
+      ]
+    },
+    {
+      "name": "credentialless GET",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "status": "SUCCESS",
+          "data": {
+            "generations_by_pk": {
+              "id": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+              "status": "COMPLETE",
+              "prompt": "A paper boat on a quiet pond",
+              "imageWidth": 1280,
+              "imageHeight": 720,
+              "generated_images": [
+                {
+                  "id": "image-id",
+                  "nsfw": false,
+                  "url": "https://cdn.leonardo.ai/cover.jpg",
+                  "motionMP4URL": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+                }
+              ]
+            }
+          },
+          "clientRequest": {
+            "method": "GET",
+            "headers": {}
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic",
+        "method": "GET",
+        "credentialless": true
+      }
+    },
+    {
+      "name": "credentialless HEAD",
+      "hook": "buildContentRequest",
+      "args": [
+        {
+          "artifactKey": "video",
+          "status": "SUCCESS",
+          "data": {
+            "generations_by_pk": {
+              "id": "a4ea7f06-57c8-41f6-9469-c2ab71a3ef84",
+              "status": "COMPLETE",
+              "prompt": "A paper boat on a quiet pond",
+              "imageWidth": 1280,
+              "imageHeight": 720,
+              "generated_images": [
+                {
+                  "id": "image-id",
+                  "nsfw": false,
+                  "url": "https://cdn.leonardo.ai/cover.jpg",
+                  "motionMP4URL": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic"
+                }
+              ]
+            }
+          },
+          "clientRequest": {
+            "method": "HEAD",
+            "headers": {}
+          }
+        }
+      ],
+      "expected": {
+        "url": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic",
+        "method": "HEAD",
+        "credentialless": true
+      }
+    }
+  ]
+}

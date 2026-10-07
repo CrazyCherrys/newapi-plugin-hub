@@ -1,0 +1,24 @@
+# Local agent and cloud configuration
+.agents/
+.codex/
+.aws/
+
+# Credentials and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencies and caches
+node_modules/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+# Private paid smoke-test output
+smoke-*/
+*.mp4
+
+# Local repository archives
+*.bundle
