@@ -1,4 +1,6 @@
-# Leonardo Video — New API 第一阶段完整插件
+# Leonardo Video 适配插件
+
+[仓库首页](../../README.md) · [视频插件](../README.md) · [开发与验证](docs/DEVELOPMENT.md)
 
 版本：`0.1.0`；审阅日期：2026-10-06。
 
@@ -41,21 +43,27 @@ veo-3.1-fast-generate-001
 
 这次不支持：图片/视频/音频素材输入、`input_reference`、首尾帧、视频编辑/延长/remix、SSE、批量多视频、原生 Leonardo 路由、视频列表/删除，以及任意上游参数透传。JSON 和无文件的 multipart/form 均可提交文生视频。未知字段明确拒绝，而不是忽略。
 
-## 2. 文件说明
+## 2. 获取插件与目录说明
 
-| 文件 | 用途 |
+下载本目录的 [plugin.js](plugin.js)，或克隆仓库获取测试和联调工具：
+
+```bash
+git clone https://github.com/CrazyCherrys/newapi-plugin-hub.git
+cd newapi-plugin-hub/video/leonardo
+```
+
+本文后续本地命令均在 video/leonardo/ 目录执行。调用示例使用 Bash 语法。安装到 New API 时只上传 plugin.js。
+
+| 路径 | 用途 |
 |---|---|
-| `plugin.js` | 完整插件，唯一需要上传 New API 的文件 |
-| `golden.json` | 13 个 flat-hook fixture，用于官方 `new-api plugin test` |
-| `test.mjs` | 本地 Node 测试，涵盖 114 项用例；含上述 fixture |
-| `package.json` | 仅让本地测试识别 ES Module；没有 npm 依赖 |
-| `test-results.json` | 本地测试结果，明确区分未执行的实机测试 |
-| `test-output.txt` | 本地测试逐项输出 |
-| `smoke_test.py` | 使用你的 New API Key，显式付费创建一次并查询、下载；Python 标准库 |
-| `SOURCES.md` | 审阅依据和源码定位 |
-| `SHA256SUMS.txt` | 交付文件校验值 |
-
-本地测试不等于真实 New API runtime 测试；V8 无 Node 全局对象测试也不等于 Goja 兼容认证。
+| [plugin.js](plugin.js) | 上传到 New API 的插件入口 |
+| [README.md](README.md) | 安装、渠道配置、调用示例与限制 |
+| [tests/](tests/) | 本地测试、宿主 fixture 和验证结果 |
+| [scripts/smoke_test.py](scripts/smoke_test.py) | 创建、查询、下载一次真实视频的联调脚本 |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 开发验证与内部实现 |
+| [docs/SOURCES.md](docs/SOURCES.md) | 宿主及上游契约的审阅依据 |
+| [package.json](package.json) | 本地测试命令，无 npm 依赖 |
+| [SHA256SUMS.txt](SHA256SUMS.txt) | 交付文件校验值 |
 
 ## 3. 安装与配置
 
@@ -64,16 +72,15 @@ veo-3.1-fast-generate-001
 本地测试无需安装 npm 包：
 
 ```bash
-cd leonardo-video-plugin
 node --check plugin.js
-node test.mjs
+node tests/test.mjs
 ```
 
 在实际 New API 二进制可执行的位置运行官方检查（Docker 中需要先把文件复制进实际容器；容器名、二进制路径以你的部署为准）：[S3]
 
 ```bash
 new-api plugin lint plugin.js
-new-api plugin test plugin.js --fixture golden.json
+new-api plugin test plugin.js --fixture tests/golden.json
 ```
 
 只有宿主检查成功后再创建测试渠道。fixture 只是模拟钩子参数，不会创建真实视频，不会消耗 Leonardo 额度。
@@ -225,7 +232,7 @@ curl --fail --silent --show-error \
 export NEW_API_BASE='https://your-newapi.example'
 export NEW_API_KEY='你的NewAPI用户Key'
 
-python3 smoke_test.py --submit --seconds 4 --size 1280x720 --out smoke-first
+python3 scripts/smoke_test.py --submit --seconds 4 --size 1280x720 --out smoke-first
 ```
 
 脚本只执行一次 POST，然后查询同一任务，成功后检查 MP4 文件头并保存文件。它不会自动重试提交，也不会携带密钥跟随重定向。
@@ -233,64 +240,20 @@ python3 smoke_test.py --submit --seconds 4 --size 1280x720 --out smoke-first
 中断/超时后恢复已有任务，不要再次 `--submit`：
 
 ```bash
-python3 smoke_test.py --task-id '之前返回的id' --out smoke-resume
+python3 scripts/smoke_test.py --task-id '之前返回的id' --out smoke-resume
 ```
 
 输出目录包含请求、创建响应、最近查询结果和视频，可能含用户提示词，应作为私有数据保存。脚本会设置目录/文件权限；不要将实测目录上传公共仓库。
 
-## 5. 内部实现与审阅结论
+## 5. 重要限制：上线前必须知道
 
-### 提交
-
-```text
-OpenAI 风格参数
-  → decodeRequest 规范化、白名单校验
-  → buildSubmitRequest 构造请求描述符
-  → New API 执行 POST /api/rest/v2/generations
-  → parseSubmitResponse 保存 generationId 和私有请求状态
-  → New API 返回自己的公开任务 ID
-```
-
-插件不是 Node 服务，不能直接执行 fetch。同步 JS 钩子只返回描述符，宿主负责 HTTP、数据库、轮询和结算。[S1][S2][S3]
-
-### 查询
-
-```text
-GET /api/rest/v1/generations/{Leonardo-generationId}
-```
-
-不是从创建地址自行推导的 v2 查询路径。[S8]
-
-状态映射：
-
-| Leonardo | 插件 |
-|---|---|
-| `PENDING` | `QUEUED`，进度 0% |
-| `COMPLETE` 且存在可用视频 | `SUCCESS`，进度 100% |
-| `FAILED` | `FAILURE` |
-| 未知状态/缺字段/任务 ID 不匹配 | `UNKNOWN` |
-
-没有伪造中间百分比。`COMPLETE` 后缺少 MP4 最多观察三次；仍缺少则失败，不把封面当视频，也不永远轮询。这个三次限制是本插件的策略。[S9]
-
-### 下载
-
-唯一采用的视频地址：
-
-```text
-generations_by_pk.generated_images[].motionMP4URL
-```
-
-不使用同条结果里的图片 `url`。对标记 `nsfw=true` 的输出不提供视频。下载描述符采用 `credentialless:true`，不添加任何 header/body，更不会把 Leonardo/New API 的 Bearer Key 发给 CDN。宿主仍必须执行 DNS/IP 和重定向的 SSRF 检查；插件的 URL 语法过滤不能替代宿主检查。[S7][S11]
-
-## 6. 重要限制：上线前必须知道
-
-### 6.1 是任务流程兼容，不是完整 OpenAI Video schema 的无差别替身
+### 5.1 是任务流程兼容，不是完整 OpenAI Video schema 的无差别替身
 
 创建响应在元数据仍存在时可返回 `seconds`/`size`/`prompt`。轮询后宿主用 Leonardo 的原始查询 JSON 替换 Task.Data，而公开 `TaskView` 不提供私有 `state`；已审阅的 Leonardo 查询 SDK 也没有可靠的时长字段。因此：
 
 **查询响应可能缺少 `seconds`；插件没有用默认 8 秒填假数据。** 请求时长仍在私有 state 中用于计费。严格要求查询响应每次都带 `seconds` 的客户端，需要自行保留创建请求元数据，或单独扩展宿主受控的公开元数据通道。不要把本版宣传为所有 OpenAI SDK/schema 都 100% 兼容。[S1][S7][S11]
 
-### 6.2 创建响应 envelope 必须实测
+### 5.2 创建响应 envelope 必须实测
 
 Leonardo 的动态 v2 reference 页面确认了“返回 generation ID”，但本次抓取没有展开完整 200 JSON schema。代码显式支持以下 `generationId` 位置：
 
@@ -306,21 +269,21 @@ $.data.generationId
 
 它不递归搜索任意 `id`，不使用图片 ID 冒充生成 ID；多个不同候选会报错。**这些是防御性兼容分支，不代表它们全都经过 Leonardo v2 实际响应验证。** 测试中的 envelope 是合成 fixture，第一条真实付费请求必须核对返回结构。缺少可识别 ID 时先查上游任务记录，不要反复 POST。[S8][S12]
 
-### 6.3 插件不能保证 exactly-once 提交
+### 5.3 插件不能保证 exactly-once 提交
 
 网络超时可能发生在上游已经接收任务之后。第一阶段没有上游幂等键契约，JS 钩子也不能替宿主强制修改所有重试策略。**测试阶段关闭客户端/网关对创建请求的盲目自动重试；查询 GET 可限速重试。** 插件不会自己循环重新提交，但不能承诺外层 New API、代理或 SDK 不会重试。[S7]
 
-### 6.4 `/content` 不等于永久存储
+### 5.4 `/content` 不等于永久存储
 
 视频由上游 CDN 提供，插件不自动复制进你的对象存储。宿主已经完成的任务通常不再持续轮询；若保存的 CDN URL 失效，下载可能失败。持久存储、地址刷新和断链修复属于后续阶段，不在这版承诺中。
 
-### 6.5 其他实际验收项
+### 5.5 其他实际验收项
 
 本地测试无法验证：实际生产模型权限/API credits、上游速率/并发限制、New API 实例的渠道路由、预扣与退款、重启恢复、跨用户任务隔离、真实 CDN 的 HEAD/Range 行为。放量前要在你的实例逐项验证，而不是因为 Node 测试通过就默认成立。
 
 插件抛出的 `unsupported_size:` 等是错误消息前缀；最终 HTTP 状态和错误对象代码由 New API 宿主包装，不能假定客户端一定收到同名 `error.code`。
 
-## 7. 最小上线验收
+## 6. 最小上线验收
 
 1. 实际宿主 `lint` 和 `plugin test` 通过；插件启用、类型 61 渠道绑定、分组和两个模型价格配置正确。
 2. 一个 720p/4 秒 Fast 测试完成创建、查询、下载、真实视频播放；保存 public ID 和对应上游 ID 便于核对。
@@ -328,4 +291,4 @@ $.data.generationId
 4. 核对用量 `seconds`、分辨率、音频档位与账务；验证失败路径，不将“网关退款”误作“上游退款”。
 5. 用另一测试用户查询该任务应被拒绝；验证宿主重启、HEAD/Range 和提交重试配置。
 
-引用编号及完整审阅链接见 `SOURCES.md`。
+引用编号及完整审阅链接见[审阅依据](docs/SOURCES.md)。开发、测试及内部实现见[开发文档](docs/DEVELOPMENT.md)。

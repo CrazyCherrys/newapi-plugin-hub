@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import * as plugin from './plugin.js';
+import * as plugin from '../plugin.js';
 
 const tests = [];
 const add = (name, fn) => tests.push({ name, fn });
@@ -83,7 +83,7 @@ add('usage examples match declared fact types', () => {
   }
 });
 add('plugin executes in isolated JS context with no Node globals', () => {
-  const source = fs.readFileSync(new URL('./plugin.js', import.meta.url), 'utf8');
+  const source = fs.readFileSync(new URL('../plugin.js', import.meta.url), 'utf8');
   const transformed = source.replace(/^export /gm, '') + '\n({meta,protocols,buildSubmitRequest});';
   const sandboxed = vm.runInNewContext(transformed, Object.create(null), { timeout: 1000 });
   const descriptor = sandboxed.buildSubmitRequest(freeze(driver(raw)));

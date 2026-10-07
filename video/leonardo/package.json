@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "scripts": { "test": "node test.mjs" },
-  "engines": { "node": ">=18" }
+  "scripts": {
+    "test": "node tests/test.mjs"
+  },
+  "engines": {
+    "node": ">=18"
+  }
 }
