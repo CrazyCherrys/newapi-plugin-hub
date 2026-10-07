@@ -1,0 +1,6 @@
+{
+  "name": "New API Plugin Hub",
+  "plugins": [
+    { "key": "leonardo-video", "source": "video/leonardo" }
+  ]
+}

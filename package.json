@@ -1,0 +1,12 @@
+{
+  "name": "newapi-plugin-hub",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "release": "node --experimental-vm-modules tools/marketplace.mjs release",
+    "index": "node --experimental-vm-modules tools/marketplace.mjs generate",
+    "check": "node --experimental-vm-modules tools/marketplace.mjs check",
+    "test": "node --experimental-vm-modules --test tools/marketplace.test.mjs && npm --prefix video/leonardo test"
+  }
+}

@@ -1,5 +1,7 @@
 # Leonardo Video 适配插件
 
+<img src="../../plugins/tasks/leonardo-video/icon.png" width="80" height="80" alt="Leonardo logo">
+
 [仓库首页](../../README.md) · [视频插件](../README.md) · [开发与验证](docs/DEVELOPMENT.md)
 
 版本：`0.1.4`；审阅日期：2026-10-07。
@@ -52,6 +54,10 @@ veo-3.1-fast-generate-001
 这次不支持：图片/视频/音频素材输入、`input_reference`、首尾帧、视频编辑/延长/remix、SSE、批量多视频、原生 Leonardo 路由、视频列表/删除，以及任意上游参数透传。JSON 和无文件的 multipart/form 均可提交文生视频。未知字段明确拒绝，而不是忽略。
 
 ## 2. 获取插件与目录说明
+
+推荐在 New API 的市场源中添加仓库的 [index.json](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json)，随后安装 `Leonardo Video 0.1.4`。完整步骤见[仓库首页](../../README.md#添加市场源)。
+
+固定发布文件为 [0.1.4/plugin.js](../../plugins/tasks/leonardo-video/0.1.4/plugin.js)，与本版本开发源码一致；市场图标独立提供，不修改插件 meta。发布说明见[中文日志](../../plugins/tasks/leonardo-video/0.1.4/CHANGELOG.zh-CN.md)。手动上传仍可使用下方方法。
 
 下载本目录的 [plugin.js](plugin.js)，或克隆仓库获取测试和联调工具：
 

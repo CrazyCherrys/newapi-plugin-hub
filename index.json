@@ -1,0 +1,90 @@
+{
+  "indexVersion": 1,
+  "name": "New API Plugin Hub",
+  "plugins": [
+    {
+      "key": "leonardo-video",
+      "name": "Leonardo Video",
+      "description": {
+        "en": "Veo 3.1 text-to-video through Leonardo; asynchronous video API and MP4 download.",
+        "zh": "通过 Leonardo 调用 Veo 3.1 文生视频，支持异步任务与 MP4 下载。"
+      },
+      "iconFile": {
+        "path": "plugins/tasks/leonardo-video/icon.png",
+        "sha256": "b1f570d5ca90eb35991121c831913eb81f9c960764fa113f71dbd0591f64063e"
+      },
+      "protocols": [
+        {
+          "name": "openai_video"
+        }
+      ],
+      "models": [
+        "veo-3.1-generate-001",
+        "veo-3.1-fast-generate-001"
+      ],
+      "usageSchema": {
+        "seconds": {
+          "type": "number",
+          "unit": "second",
+          "description": {
+            "en": "Requested video duration",
+            "zh": "请求的视频时长"
+          }
+        },
+        "resolution": {
+          "enum": [
+            "720p",
+            "1080p"
+          ],
+          "description": {
+            "en": "Requested resolution tier",
+            "zh": "请求分辨率档位"
+          }
+        },
+        "generate_audio": {
+          "type": "boolean",
+          "description": {
+            "en": "Requested native audio",
+            "zh": "是否请求原生音频"
+          }
+        }
+      },
+      "usageExamples": [
+        {
+          "label": "720p / 4s / audio",
+          "facts": {
+            "seconds": 4,
+            "resolution": "720p",
+            "generate_audio": true
+          }
+        },
+        {
+          "label": "720p / 8s / silent",
+          "facts": {
+            "seconds": 8,
+            "resolution": "720p",
+            "generate_audio": false
+          }
+        },
+        {
+          "label": "1080p / 8s / audio",
+          "facts": {
+            "seconds": 8,
+            "resolution": "1080p",
+            "generate_audio": true
+          }
+        }
+      ],
+      "latest": "0.1.4",
+      "versions": [
+        {
+          "version": "0.1.4",
+          "path": "plugins/tasks/leonardo-video/0.1.4/plugin.js",
+          "sha256": "d3267511ab72ac06f5c6f608723e4ccebc5597cd92bdf306bc63f33e955c20d8",
+          "minApiVersion": 1,
+          "kind": "task"
+        }
+      ]
+    }
+  ]
+}

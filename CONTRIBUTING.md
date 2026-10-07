@@ -30,3 +30,17 @@
 6. 提交前检查差异，确保没有真实密钥、环境文件、付费生成的视频或私有响应。
 
 本地合成测试、实际 New API 宿主测试、真实上游 API 联调应分别说明结果，未执行的验证保留为未验证。
+
+## 市场发布
+
+1. 在 `marketplace.json` 登记插件 key 和源码目录，源码目录必须提供 `plugin.js`、带版本的 `package.json`、`CHANGELOG.md` 和 `CHANGELOG.zh-CN.md`。当前工具支持正式 `x.y.z` 版本。
+2. 修改时同步提升 `meta.version` 与 `package.json` 的版本。日志使用英文规范标题与 YAML 元数据，中文只翻译正文；说明计费和渠道配置迁移。
+3. 在 `plugins/tasks/<key>/icon.png` 或 `icon.svg` 放置服务商图标，在 `assets/README.md` 记录来源。图标不超过 1 MiB，不把远程图片地址或图片数据写进插件 meta。
+4. 在根目录执行 `npm test`、`npm run release`、`npm run check`。更新本插件的校验清单及文档；新增插件时把对应测试加入根 `package.json` 的测试命令。
+5. 在目标 New API 中执行官方 lint、fixture 和真实联调；无法执行时在使用指南和发布报告中标明未验证。
+6. 一起提交源码、固定版本目录、索引、图标和日志。发布目录一经推送不可修改，包括补写日志；修复必须发布新版本。图标位于版本目录外，允许更新，但需重新生成索引。
+7. 推送后检查 GitHub Actions，并检查公开索引及其插件、图标链接的内容哈希和跨域访问。不要手工修改 `index.json`。
+
+工具依赖 Node.js 22+ 的 VM 模块（命令已带启用参数），只运行本仓库可信源码；VM 不构成安全隔离。没有 npm 的环境可使用 `node --experimental-vm-modules tools/marketplace.mjs release` / `check`，测试分别运行 `node --experimental-vm-modules --test tools/marketplace.test.mjs` 与各插件的测试入口。
+
+历史保护也可本地执行 `npm run check -- <完整基准提交SHA>`。CI 以推送前提交或 PR 的基准提交进行对比。维护流程依据 https://docs.newapi.pro/zh/docs/plugins/publishing 。
