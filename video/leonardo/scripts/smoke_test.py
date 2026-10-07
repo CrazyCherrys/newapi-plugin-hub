@@ -59,15 +59,36 @@ def main() -> int:
     choice = parser.add_mutually_exclusive_group(required=True)
     choice.add_argument('--submit', action='store_true', help='Create exactly one billable video task')
     choice.add_argument('--task-id', help='Resume polling/download; does not create a task')
-    parser.add_argument('--model', default='veo-3.1-fast-generate-001', choices=['veo-3.1-fast-generate-001', 'veo-3.1-generate-001'])
+    parser.add_argument('--model', default='veo-3.1-fast-generate-001', choices=['veo-3.1-fast-generate-001', 'veo-3.1-generate-001', 'hailuo-03'])
     parser.add_argument('--prompt', default='A paper boat drifting on a quiet pond, gentle daylight, cinematic camera movement.')
-    parser.add_argument('--seconds', type=int, choices=[4, 6, 8], default=4)
-    parser.add_argument('--size', choices=['1280x720', '720x1280', '1920x1080', '1080x1920'], default='1280x720')
+    parser.add_argument('--seconds', type=int, help='Default: Veo 4, H3 5')
+    parser.add_argument('--size', help='Default: Veo 1280x720, H3 856x480; plugin validates model-specific pairs')
+    parser.add_argument('--reference-url', help='Public/signed HTTPS image URL used as start frame')
+    parser.add_argument('--end-frame-url', help='HTTPS end-frame URL, requires --reference-url')
+    parser.add_argument('--reference-image-url', action='append', default=[], help='Repeat for reference images; excludes start/end frames')
     parser.add_argument('--silent', action='store_true', help='Request generate_audio=false')
     parser.add_argument('--interval', type=float, default=10, help='Minimum 5 seconds; client polling interval')
     parser.add_argument('--deadline', type=int, default=1800, help='Stop polling after this many seconds; does not cancel the upstream task')
     parser.add_argument('--out', default='smoke-result', help='Local output folder; use a new one for each submission')
     args = parser.parse_args()
+    is_h3 = args.model == 'hailuo-03'
+    if args.seconds is None:
+        args.seconds = 5 if is_h3 else 4
+    if args.size is None:
+        args.size = '856x480' if is_h3 else '1280x720'
+    if args.seconds not in (range(5, 16) if is_h3 else (4, 6, 8)):
+        parser.error('Unsupported duration for the selected model')
+    if is_h3 and args.silent:
+        parser.error('H3 native audio cannot be disabled')
+    if args.end_frame_url and not args.reference_url:
+        parser.error('--end-frame-url requires --reference-url')
+    if args.reference_image_url and (args.reference_url or args.end_frame_url):
+        parser.error('Reference images cannot be combined with start/end frames')
+    for value in [args.reference_url, args.end_frame_url, *args.reference_image_url]:
+        if value:
+            image_url = urlsplit(value)
+            if image_url.scheme != 'https' or not image_url.hostname or image_url.username or image_url.password or image_url.fragment:
+                parser.error('Image references must be HTTPS URLs without credentials or fragments')
     base = os.environ.get('NEW_API_BASE', '').rstrip('/')
     key = os.environ.get('NEW_API_KEY', '')
     parsed = urlsplit(base)
@@ -78,7 +99,7 @@ def main() -> int:
     if args.interval < 5 or args.deadline < args.interval:
         parser.error('Require interval >= 5 and deadline >= interval')
     if args.submit and args.size in ('1920x1080', '1080x1920') and args.seconds != 8:
-        parser.error('This phase-1 plugin permits 1080p only with --seconds 8')
+        parser.error('This plugin permits Veo 1080p only with --seconds 8')
 
     output = Path(args.out).expanduser()
     output.mkdir(parents=True, exist_ok=True)
@@ -91,6 +112,12 @@ def main() -> int:
             'model': args.model, 'prompt': args.prompt, 'seconds': str(args.seconds), 'size': args.size,
             'provider_options': {'leonardo': {'generate_audio': not args.silent}},
         }
+        if args.reference_url:
+            payload['input_reference'] = args.reference_url
+        if args.end_frame_url:
+            payload['provider_options']['leonardo']['end_frame'] = args.end_frame_url
+        if args.reference_image_url:
+            payload['provider_options']['leonardo']['reference_images'] = args.reference_image_url
         save_json(output / 'request.json', payload)
         print('Submitting ONE billable request. POST will not be retried.', flush=True)
         try:

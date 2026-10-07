@@ -1,6 +1,6 @@
 # 审阅依据
 
-审阅日期：2026-10-06。New API 以固定 `v1.0.0-rc.41` 源码和当前官方文档交叉核对；Leonardo 为当日可获取的官方文档/SDK。这里列出的是依据，不代表已完成实际账号 API 联调。
+审阅日期：2026-10-07。New API 以固定 `v1.0.0-rc.41` 源码和当前官方文档交叉核对；Leonardo 为当日可获取的官方文档、v2 OpenAPI 和 SDK。这里列出的是依据，不代表已完成实际账号 API 联调。
 
 | 编号 | 官方来源 | 本项目使用的内容 |
 |---|---|---|
@@ -22,14 +22,21 @@
 
 ## 本插件自行选择的策略，不伪装成官方限制
 
+- S16：[Leonardo Create Async Generation 的 OpenAPI](https://docs.leonardo.ai/reference/creategeneration.md)。2026-10-07 读取 `Veo3_1Generate001GenerationRequest`、`Veo3_1FastGenerate001GenerationRequest`、`Hailuo03GenerationRequest`：`guidances` 中图片支持 `{type:"URL",url}`，因此直接传 OSS URL，无需在 New API 同步钩子中编排多次上传。H3 的当前 schema 明确列出 480p/768p/2k/4k 尺寸及 TURBO；Fast 没有 image_reference。200 响应 schema 明确包含顶层 generationId。
+- S17：[MiniMax Hailuo 03 指南](https://docs.leonardo.ai/docs/minimax-hailuo-03)。模型 slug 为 hailuo-03，5–15 秒，始终音频。指南仅列出 2K、2000 字符和 5 张参考图；当前 OpenAPI 已扩大范围。本版采用 schema 明确的 480p/768p/2k 显式尺寸，提示词和参考图数量取两者共同范围（2000 / 5），固定 TURBO，暂不支持 4K、自动尺寸及音频/视频素材。
+- S18：[New API 当前 API 参考](https://docs.newapi.pro/zh/docs/plugins/api-reference)。同步钩子只返回 HTTP 描述符；本实现将 URL 作为请求体值发给渠道主机，不让网关请求 OSS，也不转发渠道凭据到 OSS。URL 图生视频仍使用 openai_video，无新增 meta 能力声明。
+
 - 2026-10-07 后续安装反馈：同一实例拒绝 `meta.upstreams`。`0.1.3` 移除该可选声明，按官方契约使用默认 vendor 模式；已有驱动对显式非 vendor 上游的拒绝逻辑保留。官方文档说明该字段为 API v1 增量扩展，旧宿主会拒绝未知字段。[S14]
 
 - 2026-10-07 安装反馈：用户的 Docker 实例（自述版本 41）拒绝 `meta.baseUrl`，而所引用官方 `rc.41` 的 schema 和 `pkg/jsplugin/registry.go` 均接受该字段。`0.1.2` 移除该可选声明并要求手填渠道地址；实际镜像/构建及其余契约仍待验证，不据此声称所有 41 构建兼容。
 
-- 只支持 Veo 3.1 普通与 Fast；暂不开放 Lite/4K。
+- 0.2.0 支持 Veo 3.1 普通与 Fast，以及 MiniMax H3；暂不开放 Lite/4K。
 - 1080p 只开放 8 秒。
 - `public=false`、`quantity=1` 固定。
 - `provider_options.leonardo` 扩展结构。
+- `input_reference` 是首帧快捷字段，支持 HTTPS 字符串或 image_url 对象；不承诺这是 OpenAI 官方二进制 input_reference 的等价实现。
+- 多参考图与首尾帧互斥，尾帧必须有首帧；普通 Veo 多参考图限制 8 秒。上述保守组合限制属于插件策略。
+- 签名 URL 仅用于提交，上游读取时必须有效；插件返回的 taskData/state 不保存图像引用，但宿主原始请求日志仍可能保存。
 - COMPLETE 缺少可用 MP4 观察三次后失败。
 - 对外按请求秒数计费，而非 MP4 实测时长或上游 credit 数。
 - URL 语法过滤仅作前置防护，真实 DNS/重定向 SSRF 防护由宿主负责。

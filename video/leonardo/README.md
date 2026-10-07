@@ -4,7 +4,9 @@
 
 [仓库首页](../../README.md) · [视频插件](../README.md) · [开发与验证](docs/DEVELOPMENT.md)
 
-版本：`0.1.4`；审阅日期：2026-10-07。
+版本：`0.2.0`；审阅日期：2026-10-07。
+
+`0.2.0` 新增通过 OSS/HTTPS URL 的首帧、首尾帧和多参考图视频生成，以及 MiniMax H3（`hailuo-03`）文生视频、图生视频。图像由 Leonardo 读取，无需额外部署图片上传服务。参考图字段为本插件扩展，格式见下方示例。[S16][S17]
 
 `0.1.4` 修复厂商 `api_key` 模式的鉴权：New API 会将原始密钥同时传入 `apiKey` 和 `authHeader`，插件现在优先使用渠道 `apiKey` 构造 Bearer 请求头，兼容回退字段中的原始密钥或已有前缀。测试改用真实宿主的输入形式，并补充协议解码和响应渲染 fixture。[S15]
 
@@ -14,9 +16,9 @@
 
 `0.1.1` 将显示名称统一为 `Leonardo Video`；插件 key 仍为 `leonardo-video`，支持范围与调用方式不变。
 
-**目标：通过一个 New API Task Plugin，将 Leonardo 的 Veo 3.1 文生视频接入 `/v1/videos` 的异步任务流程。** 安装文件是本目录的 `plugin.js`，不是示例骨架；不需要 Node.js 服务，不需要额外上传适配服务，不修改 Go 主程序。
+**目标：通过一个 New API Task Plugin，将 Leonardo 的 Veo 3.1 / Fast 和 MiniMax H3 文生视频、图生视频接入 `/v1/videos` 异步任务流程。** 安装文件是本目录的 `plugin.js`；不需要 Node.js 服务或修改 Go 主程序。
 
-**验证状态：已完成 130 项本地合成测试，全部通过；尚未在实际 New API 二进制的插件引擎中执行，也没有使用真实 Leonardo Key 付费联调。实际实例的安装与运行兼容性仍待验收。** 必须先在目标实例运行官方 lint/test，并完成一次真实的创建—轮询—下载测试。
+**验证状态：本地合成测试覆盖文生视频、OSS 图片映射、参数拒绝、计费状态及下载；实际结果见 tests/test-results.json。尚未在实际 New API 二进制的插件引擎中执行，也没有使用真实 Leonardo Key 付费联调。** 必须先在目标实例运行官方 lint/test，并分别完成文生视频、图生视频的创建—轮询—下载测试。
 
 ## 1. 支持范围
 
@@ -36,9 +38,10 @@ HEAD /v1/videos/{id}/content
 ```text
 veo-3.1-generate-001
 veo-3.1-fast-generate-001
+hailuo-03
 ```
 
-本插件刻意采用以下第一阶段白名单：
+Veo 3.1 / Fast 的尺寸与时长：
 
 | 档位 | size | seconds |
 |---|---|---|
@@ -47,17 +50,35 @@ veo-3.1-fast-generate-001
 | 1080p 横屏 | `1920x1080` | `8` |
 | 1080p 竖屏 | `1080x1920` | `8` |
 
-默认 `seconds=8`、`size=1280x720`、`generate_audio=true`。
+Veo 默认 `seconds=8`、`size=1280x720`、`generate_audio=true`。
 
 **1080p 只允许 8 秒是本插件的保守限制，不是对 Leonardo 所有模式限制的断言。** Leonardo 文档还列出 4K，但本版本不开放 4K，也不开放 Lite。[S4]
 
-这次不支持：图片/视频/音频素材输入、`input_reference`、首尾帧、视频编辑/延长/remix、SSE、批量多视频、原生 Leonardo 路由、视频列表/删除，以及任意上游参数透传。JSON 和无文件的 multipart/form 均可提交文生视频。未知字段明确拒绝，而不是忽略。
+| 模式 | Veo 3.1 | Veo Fast | H3 |
+|---|---|---|---|
+| 文生视频 | 支持 | 支持 | 支持 |
+| 首帧图片 | 支持 | 支持 | 支持 |
+| 首尾帧 | 支持 | 支持 | 支持 |
+| 多参考图 | 最多 3 张，仅 8 秒 | 不支持 | 最多 5 张 |
+| 原生音频 | 可开关 | 可开关 | 始终开启 |
+
+多参考图与首尾帧在本插件中互斥；尾帧必须配合首帧。多参考图用于指导内容，不承诺将每张图按顺序拼成视频。没有专门的“环视”参数，可在提示词中描述镜头围绕主体移动。
+
+H3 固定使用 `TURBO`，时长为 5–15 的整数秒，默认 `seconds=5`、`size=856x480`；不接受 `seed`、`negative_prompt` 或关闭音频。以下显式尺寸来自 Leonardo 当前 v2 OpenAPI，暂不开放自动尺寸和 4K；提示词保守限制为 2000 字符，多参考图限制 5 张，取指南与 schema 的共同范围。[S16][S17]
+
+| H3 分辨率 | 宽屏 21:9 | 横屏约 16:9 | 4:3 | 正方形 | 3:4 | 竖屏约 9:16 |
+|---|---|---|---|---|---|---|
+| 480p | 1120x480 | 856x480 | 640x480 | 480x480 | 480x640 | 480x856 |
+| 768p | 1792x768 | 1376x768 | 1024x768 | 768x768 | 768x1024 | 768x1376 |
+| 2k | 3360x1440 | 2560x1440 | 1920x1440 | 1440x1440 | 1440x1920 | 1440x2560 |
+
+图片支持 HTTPS URL 或已有 Leonardo 图片 ID。仍不支持二进制文件上传、Base64 输入、视频/音频素材、视频编辑/延长/remix、SSE、批量多视频及任意参数透传。JSON 和 multipart/form 文本字段均可提交。
 
 ## 2. 获取插件与目录说明
 
-推荐在 New API 的市场源中添加仓库的 [index.json](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json)，随后安装 `Leonardo Video 0.1.4`。完整步骤见[仓库首页](../../README.md#添加市场源)。
+推荐在 New API 的市场源中添加仓库的 [index.json](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json)，随后安装 `Leonardo Video 0.2.0`。完整步骤见[仓库首页](../../README.md#添加市场源)。
 
-固定发布文件为 [0.1.4/plugin.js](../../plugins/tasks/leonardo-video/0.1.4/plugin.js)，与本版本开发源码一致；市场图标独立提供，不修改插件 meta。发布说明见[中文日志](../../plugins/tasks/leonardo-video/0.1.4/CHANGELOG.zh-CN.md)。手动上传仍可使用下方方法。
+固定发布文件为 [0.2.0/plugin.js](../../plugins/tasks/leonardo-video/0.2.0/plugin.js)，与本版本开发源码一致；市场图标独立提供，不修改插件 meta。发布说明见[中文日志](../../plugins/tasks/leonardo-video/0.2.0/CHANGELOG.zh-CN.md)。手动上传 JS 不会自动携带图片，需在支持的管理界面单独选择 [icon.png](../../plugins/tasks/leonardo-video/icon.png)。
 
 下载本目录的 [plugin.js](plugin.js)，或克隆仓库获取测试和联调工具：
 
@@ -66,7 +87,7 @@ git clone https://github.com/CrazyCherrys/newapi-plugin-hub.git
 cd newapi-plugin-hub/video/leonardo
 ```
 
-本文后续本地命令均在 video/leonardo/ 目录执行。调用示例使用 Bash 语法。安装到 New API 时只上传 plugin.js。
+本文后续本地命令均在 video/leonardo/ 目录执行。调用示例使用 Bash 语法。运行代码只需要 plugin.js，图标在支持的上传界面独立选择。
 
 | 路径 | 用途 |
 |---|---|
@@ -117,11 +138,11 @@ leonardo-video
 | 绑定插件 | `leonardo-video` |
 | Base URL | `https://cloud.leonardo.ai` |
 | API Key | Leonardo 的 Production API Key；不带 `Bearer ` 前缀 |
-| 模型 | 上述两个精确模型名称 |
+| 模型 | 按需添加上述三个精确模型名称 |
 | 分组 | 先使用仅测试用户可访问的分组 |
-| 定价 | 为两个模型分别配置，见下一节 |
+| 定价 | 为启用的模型分别配置，见下一节 |
 
-**Base URL 不带 `/v1`、`/api/rest/v1` 或 `/api/rest/v2`。** 插件自行拼接路径。第一阶段只接受 HTTPS origin；不支持在 Base URL 上附加路径、查询参数或账户密码。
+**Base URL 不带 `/v1`、`/api/rest/v1` 或 `/api/rest/v2`。** 插件自行拼接路径，只接受 HTTPS origin；不支持在 Base URL 上附加路径、查询参数或账户密码。
 
 直连 Leonardo 用类型 61，而不是“New API 上游”的类型 60。本插件省略可选的 `upstreams` 声明，使用默认厂商上游模式；驱动仍拒绝显式的非厂商上游，不支持网关互联。[S6]
 
@@ -149,7 +170,7 @@ leonardo-video
 tier("standard", u("seconds") * 0.10)
 ```
 
-以你自己的售价替换数值，两个模型分别设置；存在不同分辨率/音频档位售价时，还需要在宿主定价中分档，不应直接沿用统一示例价格。优先在正式放开所有参数之前验证每个档位的结算。
+以你自己的售价替换数值，各模型分别设置；存在不同分辨率/音频档位售价时，还需要在宿主定价中分档，不应直接沿用统一示例价格。H3 按固定 TURBO 档位设置 480p、768p、2k 价格，不能沿用 Veo 的价格。原有 Veo 表达式含义不变，不会自动迁移已有配置。优先在正式放开所有参数之前验证每个档位的结算。
 
 `extractUsage` 在宿主的 `usagePurpose="billing_ratios"` 调用下返回 `{}`，避免旧式按次定价又额外乘一次秒数。因此：
 
@@ -201,9 +222,64 @@ curl --fail-with-body --silent --show-error \
 
 `provider_options` 是这个插件定义的扩展，并非 OpenAI 原生字段。JSON 中 `generate_audio` 必须是布尔值，`"false"` 不是 `false`。`seed=0` 会被保留。
 
-只支持 `generate_audio`、`seed`、`negative_prompt` 三个扩展。`public=false` 与 `quantity=1` 在上游请求中固定，不允许下游覆盖。
+Veo 支持 `generate_audio`、`seed`、`negative_prompt`；图像扩展包括 `start_frame`、`end_frame`、`reference_images`。H3 始终生成音频，不接受 seed 或负面提示词。`public=false` 与 `quantity=1` 固定。
 
 如使用接受 `extra_body` 的 SDK，它通常是 SDK 的“将额外字段合并进请求体”参数：应检查最终 HTTP 请求是否真的包含顶层 `provider_options`。本插件不接受名为 `extra_body` 的嵌套 HTTP JSON 字段。
+
+### 4.2.1 OSS 首帧图生视频
+
+向相同的 `POST /v1/videos` 提交以下 JSON。示例会创建付费任务：
+
+```json
+{
+  "model": "veo-3.1-fast-generate-001",
+  "prompt": "The camera slowly orbits around the product, keeping its shape and color consistent.",
+  "seconds": "4",
+  "size": "1280x720",
+  "input_reference": "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/product.png",
+  "provider_options": {"leonardo": {"generate_audio": false}}
+}
+```
+
+`input_reference` 是首帧的快捷字段，也接受 `{"image_url":"https://..."}`。图片必须是外网可读取的 HTTPS 图片直链，不能是 OSS 控制台页面。私有桶可使用签名 URL，插件原样保留查询参数；有效期需覆盖上游排队和读取时间，建议测试时至少 1 小时，不需要公开整个桶。不要传 OSS AccessKey，也不支持附加图片请求头。Leonardo 读取图片，浏览器跨域配置不决定这次读取是否成功。
+
+提交钩子不会将参考图签名 URL 写入返回的任务数据/state 或公开响应；宿主请求日志以及下方测试脚本的 request.json 仍可能记录它，应按临时访问凭据管理。
+
+### 4.2.2 首尾帧、多参考图与 H3
+
+首尾帧使用：
+
+```json
+"provider_options": {
+  "leonardo": {
+    "start_frame": "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/start.png",
+    "end_frame": "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/end.png"
+  }
+}
+```
+
+多参考图使用 `reference_images` 数组，选择普通 Veo 3.1 或 H3，不同时传首尾帧：
+
+```json
+{
+  "model": "hailuo-03",
+  "prompt": "Animate the product naturally with a slow camera orbit.",
+  "seconds": "5",
+  "size": "856x480",
+  "provider_options": {
+    "leonardo": {
+      "reference_images": [
+        "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/front.png",
+        "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/side.png"
+      ]
+    }
+  }
+}
+```
+
+H3 文生视频删除上述 `provider_options`；H3 首帧图生视频改用 `input_reference` 即可。H3 默认选择 480p/5 秒/TURBO 以减少测试量，但不承诺其价格低于其他模型，提交前查看 Leonardo API 价格计算器。请先在 New API 渠道中添加 `hailuo-03` 并配置价格。
+
+所有图片位置也接受 `{"type":"UPLOADED","id":"Leonardo图片UUID"}` 或 `GENERATED` 类型；ID 必须属于可被当前 Leonardo 渠道访问的图片。同一个图片对象不能同时填写 URL 与 ID；不同图片可以分别使用 URL 或 ID。不自动上传 OSS 图片到 Leonardo 图片库。
 
 ### 4.3 multipart 文本字段
 
@@ -218,7 +294,7 @@ curl --fail-with-body --silent --show-error \
   -F 'provider_options={"leonardo":{"generate_audio":false}}'
 ```
 
-这仍是一个新的付费提交示例，不要为了“走完文档”把所有示例都执行一遍。本阶段上传任意文件都会在上游请求前被拒绝。
+这是新的付费提交示例，不要为了“走完文档”把所有示例都执行一遍。图生视频可增加 `-F 'input_reference=https://你的OSS图片地址'`，这里是文本字段，不是 `@文件` 上传。上传二进制文件会被拒绝。
 
 ### 4.4 查询与下载
 
@@ -251,6 +327,8 @@ python3 scripts/smoke_test.py --submit --seconds 4 --size 1280x720 --out smoke-f
 
 脚本只执行一次 POST，然后查询同一任务，成功后检查 MP4 文件头并保存文件。它不会自动重试提交，也不会携带密钥跟随重定向。
 
+图生视频测试添加 `--reference-url 'https://你的OSS图片地址'`；首尾帧再添加 `--end-frame-url`。H3 使用 `--model hailuo-03`，省略时长/尺寸时默认 5 秒/480p。多参考图可重复使用 `--reference-image-url`。这些命令各自创建一次任务，不要重复执行。测试输出中的 request.json 可能含签名 URL。
+
 中断/超时后恢复已有任务，不要再次 `--submit`：
 
 ```bash
@@ -269,7 +347,7 @@ python3 scripts/smoke_test.py --task-id '之前返回的id' --out smoke-resume
 
 ### 5.2 创建响应 envelope 必须实测
 
-Leonardo 的动态 v2 reference 页面确认了“返回 generation ID”，但本次抓取没有展开完整 200 JSON schema。代码显式支持以下 `generationId` 位置：
+Leonardo 当前 v2 OpenAPI 明确返回顶层 `generationId`；本版已按此契约测试，但仍需用实际账户核对响应。代码也保留以下兼容位置：
 
 ```text
 $.generationId
@@ -285,7 +363,7 @@ $.data.generationId
 
 ### 5.3 插件不能保证 exactly-once 提交
 
-网络超时可能发生在上游已经接收任务之后。第一阶段没有上游幂等键契约，JS 钩子也不能替宿主强制修改所有重试策略。**测试阶段关闭客户端/网关对创建请求的盲目自动重试；查询 GET 可限速重试。** 插件不会自己循环重新提交，但不能承诺外层 New API、代理或 SDK 不会重试。[S7]
+网络超时可能发生在上游已经接收任务之后。当前没有已验证的上游幂等键契约，JS 钩子也不能替宿主强制修改所有重试策略。**测试阶段关闭客户端/网关对创建请求的盲目自动重试；查询 GET 可限速重试。** 插件不会自己循环重新提交，但不能承诺外层 New API、代理或 SDK 不会重试。[S7]
 
 ### 5.4 `/content` 不等于永久存储
 
@@ -299,8 +377,8 @@ $.data.generationId
 
 ## 6. 最小上线验收
 
-1. 实际宿主 `lint` 和 `plugin test` 通过；插件启用、类型 61 渠道绑定、分组和两个模型价格配置正确。
-2. 一个 720p/4 秒 Fast 测试完成创建、查询、下载、真实视频播放；保存 public ID 和对应上游 ID 便于核对。
+1. 实际宿主 `lint` 和 `plugin test` 通过；插件启用、类型 61 渠道绑定、分组和所用模型价格配置正确。
+2. 分别完成一次文生视频和 OSS 首帧图生视频的创建、查询、下载、播放；按需再验证首尾帧、H3 和多参考图。保存 public ID 和对应上游 ID 便于核对。
 3. 故意提交非法时长/图片输入，确认在上游付费调用前被拒绝。
 4. 核对用量 `seconds`、分辨率、音频档位与账务；验证失败路径，不将“网关退款”误作“上游退款”。
 5. 用另一测试用户查询该任务应被拒绝；验证宿主重启、HEAD/Range 和提交重试配置。

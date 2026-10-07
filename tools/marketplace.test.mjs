@@ -34,7 +34,7 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     await fs.appendFile(path.join(temp, entry.versions[0].path), '\n// tampered\n');
     await assert.rejects(release(temp), /immutable/);
     await assert.rejects(buildIndex(temp), /Source differs/);
-    await fs.unlink(path.join(temp, 'plugins/tasks/leonardo-video/0.1.4/CHANGELOG.zh-CN.md'));
+    await fs.unlink(path.join(temp, path.dirname(entry.versions[0].path), 'CHANGELOG.zh-CN.md'));
     await assert.rejects(buildIndex(temp));
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 });

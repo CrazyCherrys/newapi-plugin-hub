@@ -6,8 +6,8 @@
       "key": "leonardo-video",
       "name": "Leonardo Video",
       "description": {
-        "en": "Veo 3.1 text-to-video through Leonardo; asynchronous video API and MP4 download.",
-        "zh": "通过 Leonardo 调用 Veo 3.1 文生视频，支持异步任务与 MP4 下载。"
+        "en": "Veo 3.1 and MiniMax H3 text/image-to-video with HTTPS image URLs, asynchronous polling and MP4 download.",
+        "zh": "Veo 3.1 与 MiniMax H3 文生视频、图生视频，支持 HTTPS 参考图、异步查询与 MP4 下载。"
       },
       "iconFile": {
         "path": "plugins/tasks/leonardo-video/icon.png",
@@ -20,7 +20,8 @@
       ],
       "models": [
         "veo-3.1-generate-001",
-        "veo-3.1-fast-generate-001"
+        "veo-3.1-fast-generate-001",
+        "hailuo-03"
       ],
       "usageSchema": {
         "seconds": {
@@ -34,7 +35,10 @@
         "resolution": {
           "enum": [
             "720p",
-            "1080p"
+            "1080p",
+            "480p",
+            "768p",
+            "2k"
           ],
           "description": {
             "en": "Requested resolution tier",
@@ -73,10 +77,25 @@
             "resolution": "1080p",
             "generate_audio": true
           }
+        },
+        {
+          "label": "H3 TURBO / 480p / 5s / audio",
+          "facts": {
+            "seconds": 5,
+            "resolution": "480p",
+            "generate_audio": true
+          }
         }
       ],
-      "latest": "0.1.4",
+      "latest": "0.2.0",
       "versions": [
+        {
+          "version": "0.2.0",
+          "path": "plugins/tasks/leonardo-video/0.2.0/plugin.js",
+          "sha256": "3946a8c5d75f3dad7b725f19f5117dabb3cf1f7fc9058dde49706314e4dfba28",
+          "minApiVersion": 1,
+          "kind": "task"
+        },
         {
           "version": "0.1.4",
           "path": "plugins/tasks/leonardo-video/0.1.4/plugin.js",

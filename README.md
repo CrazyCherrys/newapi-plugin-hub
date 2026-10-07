@@ -12,19 +12,19 @@
 https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 ```
 
-保存并刷新市场，选择 **Leonardo Video 0.1.4** 安装，然后按[使用指南](video/leonardo/README.md)启用插件并配置渠道、Base URL、密钥、模型和计费。
+保存并刷新市场，选择 **Leonardo Video 0.2.0** 安装，然后按[使用指南](video/leonardo/README.md)启用插件并配置渠道、Base URL、密钥、模型和计费。
 
 索引、插件和图标由浏览器读取，Docker 容器不需要挂载本仓库或安装 Node.js。用户浏览器必须能访问 `raw.githubusercontent.com`。使用镜像时需保留整个发布目录的相对路径，并允许浏览器跨域读取，不能只镜像索引。
 
 刷新市场不会自动升级已安装插件。索引中的 `minApiVersion: 1` 是插件协议版本，不保证所有 New API 构建都兼容。
 
-**验证状态：** Leonardo 已通过 130 项本地合成测试；目标契约为 New API `v1.0.0-rc.41`，实际 Docker 实例安装、宿主引擎测试和真实 Leonardo 生成仍待验收。
+**验证状态：** 本地合成测试覆盖文生视频、OSS URL 图生视频、H3 参数与计费；目标契约为 New API `v1.0.0-rc.41`。实际 Docker 实例安装、宿主引擎测试和真实 Leonardo 生成仍待验收，测试结果见插件 tests/。
 
 ## 插件目录
 
 | 图标 | 分类 | 插件 | 能力 | 使用指南 |
 |---|---|---|---|---|
-| <img src="plugins/tasks/leonardo-video/icon.png" width="40" height="40" alt="Leonardo"> | [视频](video/README.md) | Leonardo Video · 0.1.4 | Veo 3.1 / Veo 3.1 Fast 文生视频、异步查询、MP4 下载 | [安装与使用](video/leonardo/README.md) · [更新日志](plugins/tasks/leonardo-video/0.1.4/CHANGELOG.zh-CN.md) |
+| <img src="plugins/tasks/leonardo-video/icon.png" width="40" height="40" alt="Leonardo"> | [视频](video/README.md) | Leonardo Video · 0.2.0 | Veo 3.1 / Fast、MiniMax H3 文生视频、图生视频、异步查询、MP4 下载 | [安装与使用](video/leonardo/README.md) · [更新日志](plugins/tasks/leonardo-video/0.2.0/CHANGELOG.zh-CN.md) |
 
 image/ 为图片插件预留目录，当前没有可用实现。各插件支持的宿主版本、模型、配置及验证状态以各自 README 为准。
 
@@ -34,7 +34,7 @@ image/ 为图片插件预留目录，当前没有可用实现。各插件支持�
 2. 按该插件的要求确认 New API 版本，获取插件入口文件。
 3. 完成插件导入、渠道配置与验证，再按文档调用接口。
 
-手动安装可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/leonardo-video/0.1.4/plugin.js) 后在网页上传。图片是市场显示资源，不用额外上传到网关。详细配置及完整调用示例见 [Leonardo 使用指南](video/leonardo/README.md)。
+手动安装可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/leonardo-video/0.2.0/plugin.js) 后在网页上传。市场安装会读取独立 logo；手动上传 JS 时需在支持的管理界面另选 [icon.png](plugins/tasks/leonardo-video/icon.png) 才会带入图片。详细配置及完整调用示例见 [Leonardo 使用指南](video/leonardo/README.md)。
 
 ## 仓库结构
 
@@ -45,7 +45,8 @@ newapi-plugin-hub/
 ├── assets/                   # 仓库 logo 和品牌图标来源
 ├── plugins/tasks/leonardo-video/
 │   ├── icon.png              # 市场 logo
-│   └── 0.1.4/                # 不可覆盖的 plugin.js 和中英文日志
+│   ├── 0.1.4/                # 保留的历史版本
+│   └── 0.2.0/                # 新版 plugin.js 和中英文日志
 ├── tools/                    # 发布、索引生成与校验
 ├── .github/workflows/        # 自动检查
 ├── README.md                 # 仓库介绍、插件索引和目录约定

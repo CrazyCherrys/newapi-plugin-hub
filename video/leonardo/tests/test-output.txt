@@ -1,4 +1,4 @@
-PASS required exports and phase-1 metadata
+PASS required exports and compatible metadata
 PASS usage examples match declared fact types
 PASS plugin executes in isolated JS context with no Node globals
 PASS decode normalizes defaults without changing input
@@ -31,7 +31,6 @@ PASS unsupported size rejected: 1280X720
 PASS unsupported size rejected: __proto__
 PASS unsupported size rejected: null
 PASS 1080p short clip blocked by explicit phase-1 restriction
-PASS unknown top-level field rejected: input_reference
 PASS unknown top-level field rejected: first_frame
 PASS unknown top-level field rejected: n
 PASS unknown top-level field rejected: quantity
@@ -110,6 +109,34 @@ PASS create renderer echoes metadata but never private IDs/keys/costs
 PASS poll renderer does not invent unavailable duration
 PASS renderer does not echo sensitive upstream failure text
 PASS independent tasks do not share state
+PASS OSS input_reference normalizes: "https://example-bucket.oss-cn-hangzhou.aliyuncs.com/start.png?Expires=2000000000&Signature=synthetic%2Bsig"
+PASS OSS input_reference normalizes: {"image_url":"https://example-bucket.oss-cn-hangzhou.aliyuncs.com/start.png?Expires=2000000000&Signature=synthetic%2Bsig"}
+PASS OSS input_reference normalizes: {"url":"https://example-bucket.oss-cn-hangzhou.aliyuncs.com/start.png?Expires=2000000000&Signature=synthetic%2Bsig"}
+PASS OSS input_reference normalizes: {"type":"URL","url":"https://example-bucket.oss-cn-hangzhou.aliyuncs.com/start.png?Expires=2000000000&Signature=synthetic%2Bsig"}
+PASS multipart accepts an OSS URL as a text input_reference
+PASS start and end frames preserve order and Leonardo image IDs
+PASS unsafe image URL rejected: "http://assets.example.com/a.png"
+PASS unsafe image URL rejected: "https://localhost/a.png"
+PASS unsafe image URL rejected: "https://127.0.0.1/a.png"
+PASS unsafe image URL rejected: "https://[::1]/a.png"
+PASS unsafe image URL rejected: "https://user:pass@assets.example.com/a.png"
+PASS unsafe image URL rejected: "https://assets.example.com/a.png#hash"
+PASS unsafe image URL rejected: "file:///tmp/a.png"
+PASS unsafe image URL rejected: "data:image/png;base64,abc"
+PASS unsafe image URL rejected: "https://assets.example.com/a\n.png"
+PASS unsafe image URL rejected: "https://assets.example.com\\@127.0.0.1/a.png"
+PASS ambiguous or malformed image inputs fail before upstream
+PASS regular Veo reference images are separate from first-frame guidance
+PASS H3 text/video defaults use 5 seconds, 480p and fixed TURBO audio
+PASS H3 image video and billing tier: 856x480
+PASS H3 image video and billing tier: 480x856
+PASS H3 image video and billing tier: 1376x768
+PASS H3 image video and billing tier: 768x1376
+PASS H3 image video and billing tier: 2560x1440
+PASS H3 image video and billing tier: 1440x2560
+PASS H3 image video and billing tier: 1440x1440
+PASS H3 reference limit and unsupported options are enforced
+PASS mapped H3 context keeps public identity and validates upstream-specific defaults
 PASS golden: build Leonardo v2 text-to-video request
 PASS golden: parse generationId and persist request state
 PASS golden: query Leonardo v1 with private ID
@@ -128,5 +155,7 @@ PASS golden: decode multipart text fields
 PASS golden: reject uploaded video reference
 PASS golden: render create using public TaskView without properties
 PASS golden: render completed snapshot without private state
+PASS golden: decode OSS image-to-video request
+PASS golden: build H3 image-to-video request
 
-130/130 passed; 0 failed
+159/159 passed; 0 failed

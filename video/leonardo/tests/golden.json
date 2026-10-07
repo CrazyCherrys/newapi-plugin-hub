@@ -831,6 +831,45 @@
         "size": "1280x720",
         "prompt": "A paper boat on a quiet pond"
       }
+    },
+    {
+      "name": "decode OSS image-to-video request",
+      "hook": "protocols",
+      "path": ["openai_video", "decodeRequest"],
+      "args": [{
+        "method": "POST", "path": "/v1/videos", "params": {}, "query": {},
+        "protocol": "openai_video", "operation": "create", "model": "veo-3.1-fast-generate-001", "stream": false,
+        "body": {"kind": "json", "value": {
+          "model": "veo-3.1-fast-generate-001", "prompt": "Animate this product.", "seconds": 4,
+          "input_reference": "https://assets.example.com/start.png?Signature=synthetic"
+        }}
+      }],
+      "expected": {
+        "kind": "submit", "model": "veo-3.1-fast-generate-001", "action": "image_to_video",
+        "requestBody": {
+          "model": "veo-3.1-fast-generate-001", "prompt": "Animate this product.", "seconds": 4, "size": "1280x720",
+          "provider_options": {"leonardo": {"generate_audio": true, "start_frame": {"type": "URL", "url": "https://assets.example.com/start.png?Signature=synthetic"}}}
+        }
+      }
+    },
+    {
+      "name": "build H3 image-to-video request",
+      "hook": "buildSubmitRequest",
+      "args": [{
+        "model": "hailuo-03", "upstreamModel": "hailuo-03", "baseUrl": "https://cloud.leonardo.ai",
+        "apiKey": "synthetic-fixture-key", "authHeader": "synthetic-fixture-key", "files": [],
+        "requestHeaders": {}, "action": "image_to_video", "publicTaskId": "task_example",
+        "requestBody": {"model": "hailuo-03", "prompt": "Animate this product.", "input_reference": "https://assets.example.com/start.png"}
+      }],
+      "expected": {
+        "url": "https://cloud.leonardo.ai/api/rest/v2/generations", "method": "POST",
+        "headers": {"Authorization": "Bearer synthetic-fixture-key", "Content-Type": "application/json", "Accept": "application/json"},
+        "body": {
+          "model": "hailuo-03", "public": false,
+          "parameters": {"prompt": "Animate this product.", "duration": 5, "width": 856, "height": 480, "quantity": 1, "motion_has_audio": true, "quality": "TURBO",
+            "guidances": {"start_frame": [{"image": {"type": "URL", "url": "https://assets.example.com/start.png"}}]}}
+        }
+      }
     }
   ]
 }

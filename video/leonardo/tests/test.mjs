@@ -61,7 +61,7 @@ const hooks = [
   'extractUsage', 'extractUsageOnComplete', 'listArtifacts', 'buildContentRequest'
 ];
 
-add('required exports and phase-1 metadata', () => {
+add('required exports and compatible metadata', () => {
   hooks.forEach(h => assert.equal(typeof plugin[h], 'function'));
   assert.equal(plugin.meta.apiVersion, 1);
   assert.equal(plugin.meta.baseUrl, undefined, 'channel Base URL must be configured manually for hosts rejecting meta.baseUrl');
@@ -71,7 +71,7 @@ add('required exports and phase-1 metadata', () => {
   assert.equal(plugin.meta.upstreams, undefined, 'vendor is implicit; omit optional declaration for older hosts');
   assert.equal(plugin.meta.channelTypes, undefined);
   assert.equal(plugin.meta.routes, undefined);
-  assert.equal(plugin.meta.models.length, 2);
+  assert.deepEqual(plugin.meta.models, ['veo-3.1-generate-001', 'veo-3.1-fast-generate-001', 'hailuo-03']);
 });
 add('usage examples match declared fact types', () => {
   for (const example of plugin.meta.usageExamples) {
@@ -123,7 +123,6 @@ add('1080p short clip blocked by explicit phase-1 restriction', () => {
   expectError('buildSubmitRequest', [driver({ ...raw, size: '1920x1080', seconds: 4 })], 'unsupported_combination');
 });
 for (const [key, value] of Object.entries({
-  input_reference: { image_url: 'https://example.com/a.jpg' },
   first_frame: {}, n: 2, quantity: 2, public: true, stream: true,
   callback_url: 'https://example.com/callback', metadata: {},
   resolution: '1080p', aspect_ratio: '16:9', extra_body: {},
@@ -393,6 +392,106 @@ add('independent tasks do not share state', () => {
   const b = call('parseTaskResult', query(), completed(null), httpOK);
   assert.equal(a.state.missingVideoPolls, 1);
   assert.equal(b.state.missingVideoPolls, 1);
+});
+
+const OSS_URL = 'https://example-bucket.oss-cn-hangzhou.aliyuncs.com/start.png?Expires=2000000000&Signature=synthetic%2Bsig';
+const END_URL = 'https://assets.example.com/end.jpg';
+const h3Driver = body => ({ ...driver(body), upstreamModel: 'hailuo-03' });
+for (const value of [OSS_URL, { image_url: OSS_URL }, { url: OSS_URL }, { type: 'URL', url: OSS_URL }]) {
+  add('OSS input_reference normalizes: ' + JSON.stringify(value), () => {
+    const intent = call('protocols.openai_video.decodeRequest', decode({ ...raw, input_reference: value }));
+    assert.equal(intent.action, 'image_to_video');
+    const ctx = driver(intent.requestBody);
+    const result = call('buildSubmitRequest', ctx);
+    assert.deepEqual(result.body.parameters.guidances, { start_frame: [{ image: { type: 'URL', url: OSS_URL } }] });
+    assert.equal(result.url, 'https://cloud.leonardo.ai/api/rest/v2/generations');
+    const parsed = call('parseSubmitResponse', ctx, { statusCode: 200, body: { generationId: ID } });
+    assert.ok(!JSON.stringify(parsed).includes('Signature='));
+    assert.ok(!JSON.stringify(parsed).includes('oss-cn'));
+    assert.deepEqual(call('extractUsageOnComplete', query(parsed.state), { status: 'SUCCESS' }, completed(VIDEO_URL)), { seconds: 8, resolution: '720p', generate_audio: true });
+  });
+}
+add('multipart accepts an OSS URL as a text input_reference', () => {
+  const ctx = decode(raw);
+  ctx.body = { kind: 'multipart', fields: { model: [MODEL], prompt: [raw.prompt], input_reference: [OSS_URL] }, files: [] };
+  const intent = call('protocols.openai_video.decodeRequest', ctx);
+  assert.equal(intent.action, 'image_to_video');
+  assert.equal(intent.requestBody.provider_options.leonardo.start_frame.url, OSS_URL);
+});
+add('start and end frames preserve order and Leonardo image IDs', () => {
+  const body = { ...raw, provider_options: { leonardo: { start_frame: OSS_URL, end_frame: { type: 'UPLOADED', id: ID } } } };
+  const d = call('buildSubmitRequest', driver(body));
+  assert.deepEqual(d.body.parameters.guidances, {
+    start_frame: [{ image: { type: 'URL', url: OSS_URL } }], end_frame: [{ image: { type: 'UPLOADED', id: ID } }]
+  });
+});
+for (const url of ['http://assets.example.com/a.png', 'https://localhost/a.png', 'https://127.0.0.1/a.png', 'https://[::1]/a.png', 'https://user:pass@assets.example.com/a.png', 'https://assets.example.com/a.png#hash', 'file:///tmp/a.png', 'data:image/png;base64,abc', 'https://assets.example.com/a\n.png', 'https://assets.example.com\\@127.0.0.1/a.png']) {
+  add('unsafe image URL rejected: ' + JSON.stringify(url), () => {
+    expectError('buildSubmitRequest', [driver({ ...raw, input_reference: url })], 'invalid_image_url');
+  });
+}
+add('ambiguous or malformed image inputs fail before upstream', () => {
+  expectError('buildSubmitRequest', [driver({ ...raw, input_reference: OSS_URL, provider_options: { leonardo: { start_frame: END_URL } } })], 'conflicting_images');
+  expectError('buildSubmitRequest', [driver({ ...raw, provider_options: { leonardo: { end_frame: END_URL } } })], 'unsupported_combination');
+  expectError('buildSubmitRequest', [driver({ ...raw, input_reference: { type: 'UPLOADED', id: 'invalid' } })], 'invalid_image');
+  expectError('buildSubmitRequest', [driver({ ...raw, input_reference: { type: 'URL', url: OSS_URL, headers: { Authorization: 'secret' } } })], 'unsupported_parameter');
+});
+add('regular Veo reference images are separate from first-frame guidance', () => {
+  const body = { ...raw, model: 'veo-3.1-generate-001', seconds: 8, provider_options: { leonardo: { reference_images: [OSS_URL, END_URL] } } };
+  const ctx = { ...driver(body), upstreamModel: body.model };
+  const intent = call('protocols.openai_video.decodeRequest', decode(body));
+  assert.equal(intent.action, 'image_to_video');
+  assert.deepEqual(call('buildSubmitRequest', ctx).body.parameters.guidances, { image_reference: [{ image: { type: 'URL', url: OSS_URL } }, { image: { type: 'URL', url: END_URL } }] });
+  expectError('buildSubmitRequest', [{ ...ctx, upstreamModel: MODEL }], 'unsupported_combination');
+  expectError('buildSubmitRequest', [{ ...ctx, requestBody: { ...body, seconds: 4 } }], 'unsupported_combination');
+  expectError('buildSubmitRequest', [{ ...ctx, requestBody: { ...body, input_reference: END_URL } }], 'conflicting_images');
+  for (const references of [[], [OSS_URL, END_URL, OSS_URL, END_URL], 'not-an-array']) {
+    expectError('buildSubmitRequest', [{ ...ctx, requestBody: { ...body, provider_options: { leonardo: { reference_images: references } } } }], 'invalid_images');
+  }
+});
+add('H3 text/video defaults use 5 seconds, 480p and fixed TURBO audio', () => {
+  const body = { model: 'hailuo-03', prompt: 'A ball rolling slowly.' };
+  const intent = call('protocols.openai_video.decodeRequest', decode(body));
+  assert.equal(intent.action, 'text_to_video');
+  const ctx = h3Driver(intent.requestBody);
+  const d = call('buildSubmitRequest', ctx);
+  assert.deepEqual(d.body, { model: 'hailuo-03', public: false, parameters: { prompt: body.prompt, duration: 5, width: 856, height: 480, quantity: 1, motion_has_audio: true, quality: 'TURBO' } });
+  const facts = { seconds: 5, resolution: '480p', generate_audio: true };
+  assert.deepEqual(call('extractUsage', ctx), facts);
+  const parsed = call('parseSubmitResponse', ctx, { statusCode: 200, body: { generationId: ID } });
+  assert.deepEqual(call('extractUsageOnComplete', query(parsed.state), { status: 'SUCCESS' }, completed(VIDEO_URL)), facts);
+});
+for (const [size, resolution] of [['856x480', '480p'], ['480x856', '480p'], ['1376x768', '768p'], ['768x1376', '768p'], ['2560x1440', '2k'], ['1440x2560', '2k'], ['1440x1440', '2k']]) {
+  add('H3 image video and billing tier: ' + size, () => {
+    const ctx = h3Driver({ model: 'hailuo-03', prompt: raw.prompt, size, seconds: 15, input_reference: OSS_URL });
+    const p = call('buildSubmitRequest', ctx).body.parameters;
+    assert.equal(p.width, Number(size.split('x')[0]));
+    assert.equal(p.height, Number(size.split('x')[1]));
+    assert.equal(p.duration, 15);
+    assert.equal(p.guidances.start_frame[0].image.url, OSS_URL);
+    assert.equal(call('extractUsage', ctx).resolution, resolution);
+  });
+}
+add('H3 reference limit and unsupported options are enforced', () => {
+  const body = { model: 'hailuo-03', prompt: raw.prompt };
+  for (const extra of [{ seconds: 4 }, { seconds: 16 }, { seconds: 5.5 }]) expectError('buildSubmitRequest', [h3Driver({ ...body, ...extra })], 'invalid_parameter');
+  for (const size of ['0x0', '1280x720', '3840x2160']) expectError('buildSubmitRequest', [h3Driver({ ...body, size })], 'unsupported_size');
+  for (const options of [{ generate_audio: false }, { seed: 0 }, { negative_prompt: 'blur' }, { quality: 'STANDARD' }]) expectError('buildSubmitRequest', [h3Driver({ ...body, provider_options: { leonardo: options } })], 'unsupported_parameter');
+  const references = [OSS_URL, END_URL, OSS_URL, END_URL, OSS_URL];
+  const ctx = h3Driver({ ...body, provider_options: { leonardo: { reference_images: references } } });
+  assert.equal(call('buildSubmitRequest', ctx).body.parameters.guidances.image_reference.length, 5);
+  ctx.requestBody.provider_options.leonardo.reference_images.push(END_URL);
+  expectError('buildSubmitRequest', [ctx], 'invalid_images');
+  expectError('buildSubmitRequest', [h3Driver({ ...body, prompt: 'x'.repeat(2001) })], 'invalid_parameter');
+});
+add('mapped H3 context keeps public identity and validates upstream-specific defaults', () => {
+  const body = { model: 'my-h3', prompt: raw.prompt, input_reference: OSS_URL };
+  const intent = call('protocols.openai_video.decodeRequest', { ...decode(body), upstreamModel: 'hailuo-03' });
+  assert.equal(intent.model, 'my-h3');
+  const ctx = h3Driver(intent.requestBody);
+  assert.equal(call('buildSubmitRequest', ctx).body.model, 'hailuo-03');
+  const parsed = call('parseSubmitResponse', ctx, { statusCode: 200, body: { generationId: ID } });
+  assert.equal(call('extractUsageOnComplete', query(parsed.state), { status: 'SUCCESS' }, completed(VIDEO_URL)).resolution, '480p');
 });
 
 // CLI-compatible fixtures exercise driver hooks and nested protocol members.

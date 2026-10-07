@@ -13,7 +13,7 @@ node tests/test.mjs
 # 或 npm test
 ```
 
-当前有 130 项合成测试，包含 tests/golden.json 的 18 个 fixture。测试不会访问网络或消耗上游额度；每次运行更新 tests/test-results.json。tests/test-output.txt 保存本次验证的逐项输出。
+当前有 159 项合成测试，包含 tests/golden.json 的 20 个 fixture。测试不会访问网络或消耗上游额度；每次运行更新 tests/test-results.json。tests/test-output.txt 保存本次验证的逐项输出。
 
 厂商 `api_key` 模式的 fixture 使用原始 `apiKey` / `authHeader`，不能预先给宿主输入添加 Bearer 前缀。鉴权测试覆盖提交与查询、回退字段、已有前缀、渠道密钥优先级和非法凭据。协议 fixture 通过 `hook: "protocols"` 与 `path: ["openai_video", "decodeRequest" | "render"]` 调用嵌套钩子；公开 TaskView 不包含私有 state，标准身份字段由宿主覆盖。
 
@@ -30,7 +30,7 @@ Docker 部署需将插件与 fixture 复制到容器，按容器内实际路径�
 
 ## 文件维护
 
-- plugin.js 是唯一上传到 New API 的文件；tests/、scripts/、docs/ 只服务于验证和维护。
+- plugin.js 是运行入口；市场安装还读取独立 icon.png，手动安装需另外选择图标。tests/、scripts/、docs/ 只服务于验证和维护。
 - 修改路径时同步更新 package.json、测试导入和使用指南中的命令。
 - 更新 tests/test-output.txt 时保留实际执行输出，不手工修改测试结论。
 - 修改交付文件后更新 SHA256SUMS.txt；条目均相对于 video/leonardo/，覆盖本目录所有已跟踪文件（校验清单自身除外）。校验以 Git 中的 LF 文本内容为准。
@@ -50,6 +50,12 @@ OpenAI 风格参数
 ```
 
 插件不是 Node 服务，不能直接执行 fetch。同步 JS 钩子只返回描述符，宿主负责 HTTP、数据库、轮询和结算。[S1][S2][S3]
+
+0.2.0 的图片 URL 直接映射成 `parameters.guidances.*[].image = {type:"URL",url}`；支持 OSS 签名地址并保留原始查询串。网关只调用 Leonardo，图片下载由 Leonardo 执行；不添加 allowedHosts，也不需要多步上传钩子。图片 URL 语法检查只是输入约束，不执行 DNS 探测。
+
+`input_reference` 与 `start_frame` 同时出现时报错；`reference_images` 不与帧输入混用。H3 使用明确的尺寸白名单和固定 TURBO，不传未验证的 seed/negative_prompt。用量事实仍为 seconds、resolution、generate_audio；H3 增加分辨率枚举，需独立配置模型价格。
+
+提交成功后删除图片引用再保存请求状态，防止 OSS 签名出现在插件产生的 taskData/state。state 中使用实际上游模型 ID 进行后续参数校验，公开模型仍由宿主维护，旧版 Veo 任务状态保持可读。
 
 ### 查询
 
