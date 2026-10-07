@@ -2,7 +2,11 @@
 
 [仓库首页](../../README.md) · [视频插件](../README.md) · [开发与验证](docs/DEVELOPMENT.md)
 
-版本：`0.1.0`；审阅日期：2026-10-06。
+版本：`0.1.2`；审阅日期：2026-10-06。
+
+`0.1.2` 移除可选的 `meta.baseUrl` 声明，解决运行实例报告 `plugin meta has unknown field "baseUrl"` 的安装阻断。渠道中必须手动填写 `https://cloud.leonardo.ai`。官方 `rc.41` 源码包含该字段，但报告错误的实际 Docker 构建尚未确认；此修改不代表已验证该实例的其余运行契约。
+
+`0.1.1` 将显示名称统一为 `Leonardo Video`；插件 key 仍为 `leonardo-video`，支持范围与调用方式不变。
 
 **目标：通过一个 New API Task Plugin，将 Leonardo 的 Veo 3.1 文生视频接入 `/v1/videos` 的异步任务流程。** 安装文件是本目录的 `plugin.js`，不是示例骨架；不需要 Node.js 服务，不需要额外上传适配服务，不修改 Go 主程序。
 

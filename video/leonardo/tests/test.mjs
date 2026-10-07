@@ -64,6 +64,7 @@ const hooks = [
 add('required exports and phase-1 metadata', () => {
   hooks.forEach(h => assert.equal(typeof plugin[h], 'function'));
   assert.equal(plugin.meta.apiVersion, 1);
+  assert.equal(plugin.meta.baseUrl, undefined, 'channel Base URL must be configured manually for hosts rejecting meta.baseUrl');
   assert.equal(plugin.meta.key, 'leonardo-video');
   assert.equal(plugin.meta.fetchMode, 'per_task');
   assert.deepEqual(plugin.meta.protocols, ['openai_video']);
