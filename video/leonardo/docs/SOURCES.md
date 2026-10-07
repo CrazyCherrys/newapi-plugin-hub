@@ -18,6 +18,7 @@
 | S12 | [Leonardo Create Async Generation](https://docs.leonardo.ai/reference/creategeneration) | POST v2/generations 与异步 generation ID；动态响应 schema 未完整展开 |
 | S13 | [New API rc.41 官方 Sora 插件](https://raw.githubusercontent.com/QuantumNous/new-api/v1.0.0-rc.41/plugins/tasks/sora/plugin.js) | 同类协议实现模式交叉参考；本交付代码独立编写 |
 | S14 | [New API Task Plugin API v1 参考](https://docs.newapi.ai/zh/docs/plugins/api-reference) | UNKNOWN、宿主路由、产物和允许主机等规则 |
+| S15 | [New API rc.41 鉴权实现（固定提交）](https://github.com/QuantumNous/new-api/blob/2035a82aeb5414253a728bd937d4b8f97aa99b9b/relay/channel/task/jsplugin/auth.go) | `resolveAuth` 在厂商 api_key 模式返回原始密钥作为 authHeader；驱动负责构造上游需要的 Bearer 格式。2026-10-07 已复现并在 0.1.4 修复错误的前缀假设 |
 
 ## 本插件自行选择的策略，不伪装成官方限制
 

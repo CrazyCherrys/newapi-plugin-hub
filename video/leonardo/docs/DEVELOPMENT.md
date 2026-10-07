@@ -13,7 +13,9 @@ node tests/test.mjs
 # 或 npm test
 ```
 
-当前有 114 项合成测试，包含 tests/golden.json 的 13 个 fixture。测试不会访问网络或消耗上游额度；每次运行更新 tests/test-results.json。tests/test-output.txt 保存本次验证的逐项输出。
+当前有 130 项合成测试，包含 tests/golden.json 的 18 个 fixture。测试不会访问网络或消耗上游额度；每次运行更新 tests/test-results.json。tests/test-output.txt 保存本次验证的逐项输出。
+
+厂商 `api_key` 模式的 fixture 使用原始 `apiKey` / `authHeader`，不能预先给宿主输入添加 Bearer 前缀。鉴权测试覆盖提交与查询、回退字段、已有前缀、渠道密钥优先级和非法凭据。协议 fixture 通过 `hook: "protocols"` 与 `path: ["openai_video", "decodeRequest" | "render"]` 调用嵌套钩子；公开 TaskView 不包含私有 state，标准身份字段由宿主覆盖。
 
 ## 实际宿主检查
 
@@ -24,7 +26,7 @@ new-api plugin lint plugin.js
 new-api plugin test plugin.js --fixture tests/golden.json
 ```
 
-Docker 部署需将插件与 fixture 复制到容器，按容器内实际路径执行。本地 V8 测试不代表 Goja 兼容认证，也不替代宿主生命周期和真实 Leonardo API 验收。付费联调步骤见[使用指南](../README.md#45-一次完整的显式付费测试)。
+Docker 部署需将插件与 fixture 复制到容器，按容器内实际路径执行。本地 V8 测试不代表宿主引擎兼容认证，也不替代宿主生命周期和真实 Leonardo API 验收。审阅的官方 rc.41 提交 `2035a82aeb5414253a728bd937d4b8f97aa99b9b` 使用 moejs；此前文档将其称为 Goja 不准确。官方发布程序下载超时，实际 CLI 验证尚未完成。付费联调步骤见[使用指南](../README.md#45-一次完整的显式付费测试)。
 
 ## 文件维护
 

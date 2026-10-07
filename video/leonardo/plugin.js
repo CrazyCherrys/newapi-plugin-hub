@@ -22,7 +22,7 @@ export const meta = {
   apiVersion: 1,
   key: "leonardo-video",
   name: "Leonardo Video",
-  version: "0.1.3",
+  version: "0.1.4",
   author: { name: "Independent Leonardo Video Adapter" },
   description: {
     en: "Veo 3.1 text-to-video through Leonardo; asynchronous video API and MP4 download.",
@@ -159,12 +159,15 @@ function baseURL(ctx) {
   return base;
 }
 function authHeaders(ctx) {
-  let authorization = ctx.authHeader;
-  if (!authorization && typeof ctx.apiKey === "string" && ctx.apiKey.trim()) authorization = "Bearer " + ctx.apiKey.trim();
-  if (typeof authorization !== "string" || !/^Bearer [^\s]+$/i.test(authorization)) {
+  // Vendor api_key auth supplies the raw key in both fields in New API.
+  // Prefer the channel key; tolerate raw or already-prefixed authHeader on fallback.
+  const credential = typeof ctx.apiKey === "string" && ctx.apiKey.trim() ? ctx.apiKey : ctx.authHeader;
+  if (typeof credential !== "string" || /[\u0000-\u001f\u007f]/.test(credential)) {
     fail("missing_credentials", "Configure a Leonardo API key in the channel");
   }
-  return { Authorization: authorization, "Content-Type": "application/json", Accept: "application/json" };
+  const token = credential.trim().replace(/^Bearer(?:\s+|$)/i, "");
+  if (!token || /\s/.test(token)) fail("missing_credentials", "Configure a Leonardo API key in the channel");
+  return { Authorization: "Bearer " + token, "Content-Type": "application/json", Accept: "application/json" };
 }
 function normalizedContext(ctx) {
   if (ctx.files && ctx.files.length) fail("unsupported_input", "Phase 1 accepts text-to-video only");

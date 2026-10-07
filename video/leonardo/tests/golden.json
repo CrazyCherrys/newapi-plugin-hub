@@ -22,7 +22,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -74,7 +74,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -135,7 +135,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -179,7 +179,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -228,7 +228,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -289,7 +289,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -337,7 +337,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -393,7 +393,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -430,7 +430,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -451,7 +451,7 @@
           "upstreamModel": "veo-3.1-fast-generate-001",
           "baseUrl": "https://cloud.leonardo.ai",
           "apiKey": "test-only-not-a-real-key",
-          "authHeader": "Bearer test-only-not-a-real-key",
+          "authHeader": "test-only-not-a-real-key",
           "upstream": {
             "kind": "vendor"
           },
@@ -607,6 +607,229 @@
         "url": "https://cdn.leonardo.ai/mock/video.mp4?signature=synthetic",
         "method": "HEAD",
         "credentialless": true
+      }
+    },
+    {
+      "name": "decode JSON defaults",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "method": "POST",
+          "path": "/v1/videos",
+          "params": {},
+          "query": {},
+          "protocol": "openai_video",
+          "operation": "create",
+          "model": "veo-3.1-fast-generate-001",
+          "stream": false,
+          "body": {
+            "kind": "json",
+            "value": {
+              "model": "veo-3.1-fast-generate-001",
+              "prompt": "A paper boat on a quiet pond"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "veo-3.1-fast-generate-001",
+        "action": "text_to_video",
+        "requestBody": {
+          "model": "veo-3.1-fast-generate-001",
+          "prompt": "A paper boat on a quiet pond",
+          "seconds": 8,
+          "size": "1280x720",
+          "provider_options": {
+            "leonardo": {
+              "generate_audio": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "decode multipart text fields",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "method": "POST",
+          "path": "/v1/videos",
+          "params": {},
+          "query": {},
+          "protocol": "openai_video",
+          "operation": "create",
+          "model": "veo-3.1-fast-generate-001",
+          "stream": false,
+          "body": {
+            "kind": "multipart",
+            "files": [],
+            "fields": {
+              "model": [
+                "veo-3.1-fast-generate-001"
+              ],
+              "prompt": [
+                "A paper boat on a quiet pond"
+              ],
+              "seconds": [
+                "8"
+              ],
+              "size": [
+                "1280x720"
+              ]
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "veo-3.1-fast-generate-001",
+        "action": "text_to_video",
+        "requestBody": {
+          "model": "veo-3.1-fast-generate-001",
+          "prompt": "A paper boat on a quiet pond",
+          "seconds": 8,
+          "size": "1280x720",
+          "provider_options": {
+            "leonardo": {
+              "generate_audio": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "reject uploaded video reference",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "method": "POST",
+          "path": "/v1/videos",
+          "params": {},
+          "query": {},
+          "protocol": "openai_video",
+          "operation": "create",
+          "model": "veo-3.1-fast-generate-001",
+          "stream": false,
+          "body": {
+            "kind": "multipart",
+            "fields": {
+              "model": [
+                "veo-3.1-fast-generate-001"
+              ],
+              "prompt": [
+                "A paper boat on a quiet pond"
+              ]
+            },
+            "files": [
+              {
+                "ref": "request_file:input_reference",
+                "field": "input_reference",
+                "filename": "input.png",
+                "mimeType": "image/png",
+                "size": 1
+              }
+            ]
+          }
+        }
+      ],
+      "expectedError": "unsupported_input"
+    },
+    {
+      "name": "render create using public TaskView without properties",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "render"
+      ],
+      "args": [
+        {
+          "protocol": "openai_video",
+          "operation": "retrieve"
+        },
+        {
+          "task_id": "task_public",
+          "status": "QUEUED",
+          "created_at": 1700000000,
+          "data": {
+            "_leonardo_phase1": {
+              "request": {
+                "model": "veo-3.1-fast-generate-001",
+                "prompt": "A paper boat on a quiet pond",
+                "seconds": 8,
+                "size": "1280x720",
+                "provider_options": {
+                  "leonardo": {
+                    "generate_audio": true
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
+      "expected": {
+        "id": "task_public",
+        "object": "video",
+        "model": "",
+        "status": "queued",
+        "progress": 0,
+        "created_at": 1700000000,
+        "error": null,
+        "seconds": "8",
+        "size": "1280x720",
+        "prompt": "A paper boat on a quiet pond"
+      }
+    },
+    {
+      "name": "render completed snapshot without private state",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "render"
+      ],
+      "args": [
+        {
+          "protocol": "openai_video",
+          "operation": "retrieve"
+        },
+        {
+          "task_id": "task_public",
+          "status": "SUCCESS",
+          "created_at": 1700000000,
+          "data": {
+            "generations_by_pk": {
+              "status": "COMPLETE",
+              "prompt": "A paper boat on a quiet pond",
+              "imageWidth": 1280,
+              "imageHeight": 720,
+              "generated_images": []
+            }
+          }
+        }
+      ],
+      "expected": {
+        "id": "task_public",
+        "object": "video",
+        "model": "",
+        "status": "completed",
+        "progress": 100,
+        "created_at": 1700000000,
+        "error": null,
+        "size": "1280x720",
+        "prompt": "A paper boat on a quiet pond"
       }
     }
   ]

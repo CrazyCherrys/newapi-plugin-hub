@@ -58,6 +58,17 @@ PASS pinned model mismatch rejected
 PASS unsupported upstream model rejected
 PASS auth comes only from channel context
 PASS auth fallback and missing key
+PASS channel credentials normalized for submit and query: {"apiKey":"channel-key","authHeader":"channel-key"}
+PASS channel credentials normalized for submit and query: {"apiKey":"channel-key","authHeader":"Bearer different-header-key"}
+PASS channel credentials normalized for submit and query: {"apiKey":"channel-key","authHeader":""}
+PASS channel credentials normalized for submit and query: {"apiKey":"","authHeader":"channel-key"}
+PASS channel credentials normalized for submit and query: {"apiKey":"","authHeader":"Bearer channel-key"}
+PASS channel credentials normalized for submit and query: {"apiKey":"Bearer channel-key","authHeader":"Bearer channel-key"}
+PASS invalid channel credential rejected: ""
+PASS invalid channel credential rejected: "Bearer "
+PASS invalid channel credential rejected: "Bearer Bearer channel-key"
+PASS invalid channel credential rejected: "key with spaces"
+PASS invalid channel credential rejected: "key\r\nX-Injected: yes"
 PASS unsafe/misconfigured API root rejected: http://cloud.leonardo.ai
 PASS unsafe/misconfigured API root rejected: https://cloud.leonardo.ai/v1
 PASS unsafe/misconfigured API root rejected: https://u:p@cloud.leonardo.ai
@@ -112,5 +123,10 @@ PASS golden: completion uses persisted facts
 PASS golden: MP4 artifact
 PASS golden: credentialless GET
 PASS golden: credentialless HEAD
+PASS golden: decode JSON defaults
+PASS golden: decode multipart text fields
+PASS golden: reject uploaded video reference
+PASS golden: render create using public TaskView without properties
+PASS golden: render completed snapshot without private state
 
-114/114 passed; 0 failed
+130/130 passed; 0 failed

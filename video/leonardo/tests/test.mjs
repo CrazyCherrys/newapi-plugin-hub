@@ -36,13 +36,13 @@ const driver = body => ({
   requestBody: body, requestHeaders: { Authorization: 'Bearer user-key-must-not-leak' },
   action: 'text_to_video', model: body.model, upstreamModel: MODEL,
   baseUrl: 'https://cloud.leonardo.ai', apiKey: 'test-only-not-a-real-key',
-  authHeader: 'Bearer test-only-not-a-real-key', upstream: { kind: 'vendor' },
+  authHeader: 'test-only-not-a-real-key', upstream: { kind: 'vendor' },
   files: [], publicTaskId: 'task_example'
 });
 const query = state => ({
   taskId: ID, publicTaskId: 'task_example', action: 'text_to_video',
   model: MODEL, upstreamModel: MODEL, baseUrl: 'https://cloud.leonardo.ai',
-  apiKey: 'test-only-not-a-real-key', authHeader: 'Bearer test-only-not-a-real-key',
+  apiKey: 'test-only-not-a-real-key', authHeader: 'test-only-not-a-real-key',
   upstream: { kind: 'vendor' }, data: {}, state: state || {}
 });
 const decode = body => ({
@@ -89,7 +89,7 @@ add('plugin executes in isolated JS context with no Node globals', () => {
   const sandboxed = vm.runInNewContext(transformed, Object.create(null), { timeout: 1000 });
   const descriptor = sandboxed.buildSubmitRequest(freeze(driver(raw)));
   assert.equal(descriptor.body.parameters.duration, 8);
-  // This is a restricted V8 test, NOT a substitute for New API's Goja engine.
+  // This is a restricted V8 test, NOT a substitute for New API's runtime.
 });
 add('decode normalizes defaults without changing input', () => {
   assert.deepEqual(call('protocols.openai_video.decodeRequest', decode(raw)), {
@@ -215,6 +215,28 @@ add('auth fallback and missing key', () => {
   assert.equal(call('buildSubmitRequest', { ...driver(raw), authHeader: '' }).headers.Authorization, 'Bearer test-only-not-a-real-key');
   expectError('buildSubmitRequest', [{ ...driver(raw), authHeader: '', apiKey: '' }], 'missing_credentials');
 });
+for (const credentials of [
+  { apiKey: 'channel-key', authHeader: 'channel-key' },
+  { apiKey: 'channel-key', authHeader: 'Bearer different-header-key' },
+  { apiKey: 'channel-key', authHeader: '' },
+  { apiKey: '', authHeader: 'channel-key' },
+  { apiKey: '', authHeader: 'Bearer channel-key' },
+  { apiKey: 'Bearer channel-key', authHeader: 'Bearer channel-key' }
+]) {
+  add('channel credentials normalized for submit and query: ' + JSON.stringify(credentials), () => {
+    for (const [hook, ctx] of [['buildSubmitRequest', driver(raw)], ['buildQueryRequest', query()]]) {
+      const result = call(hook, { ...ctx, ...credentials });
+      assert.equal(result.headers.Authorization, 'Bearer channel-key');
+    }
+  });
+}
+for (const credential of ['', 'Bearer ', 'Bearer Bearer channel-key', 'key with spaces', 'key\r\nX-Injected: yes']) {
+  add('invalid channel credential rejected: ' + JSON.stringify(credential), () => {
+    for (const [hook, ctx] of [['buildSubmitRequest', driver(raw)], ['buildQueryRequest', query()]]) {
+      expectError(hook, [{ ...ctx, apiKey: credential, authHeader: credential }], 'missing_credentials');
+    }
+  });
+}
 for (const baseUrl of ['http://cloud.leonardo.ai', 'https://cloud.leonardo.ai/v1', 'https://u:p@cloud.leonardo.ai', 'https://cloud.leonardo.ai?q=1']) {
   add('unsafe/misconfigured API root rejected: ' + baseUrl, () => {
     expectError('buildSubmitRequest', [{ ...driver(raw), baseUrl }], 'invalid_base_url');
@@ -373,12 +395,13 @@ add('independent tasks do not share state', () => {
   assert.equal(b.state.missingVideoPolls, 1);
 });
 
-// CLI-compatible golden fixtures exercise flat exported hooks.
+// CLI-compatible fixtures exercise driver hooks and nested protocol members.
 const golden = JSON.parse(fs.readFileSync(new URL('./golden.json', import.meta.url), 'utf8'));
 for (const c of golden.cases) {
   add('golden: ' + c.name, () => {
-    if (c.expectedError) assert.throws(() => call(c.hook, ...c.args), e => e.message.includes(c.expectedError));
-    else assert.deepEqual(call(c.hook, ...c.args), c.expected);
+    const hook = [c.hook, ...(c.path || (c.member ? [c.member] : []))].join('.');
+    if (c.expectedError) assert.throws(() => call(hook, ...c.args), e => e.message.includes(c.expectedError));
+    else assert.deepEqual(call(hook, ...c.args), c.expected);
   });
 }
 
@@ -397,7 +420,7 @@ const report = {
     actual_new_api_cli: false,
     actual_new_api_host_lifecycle: false,
     actual_leonardo_api: false,
-    note: 'Synthetic fixtures only; no network, no API credits consumed. V8 tests do not certify Goja/runtime compatibility.'
+    note: 'Synthetic fixtures only; no network, no API credits consumed. V8 tests do not certify host runtime compatibility.'
   }
 };
 fs.writeFileSync(new URL('./test-results.json', import.meta.url), JSON.stringify(report, null, 2) + '\n');
