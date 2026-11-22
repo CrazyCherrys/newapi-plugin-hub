@@ -58,7 +58,7 @@ test('Hub catalog, published source checksum and request examples match the plug
 });
 test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
-  assert.equal(plugin.meta.version, '1.2.0');
+  assert.equal(plugin.meta.version, '1.3.0');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
@@ -117,6 +117,52 @@ test('all 26 documented H3 sizes pass request and usage validation', () => {
   }
   assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '768P' }), /size/);
 });
+test('H3 defaults and common size aliases are reflected in both upstream requests and usage', () => {
+  const cases = [
+    [undefined, '768x1376', '768P'],
+    ['1280x720', '1376x768', '768P'], ['720x1280', '768x1376', '768P'],
+    ['1792x1024', '1920x1088', '1080P'], ['1024x1792', '1088x1920', '1080P'],
+    ['1920x1080', '1920x1088', '1080P'], ['1080x1920', '1088x1920', '1080P']
+  ];
+  for (const [clientSize, size, resolution] of cases) {
+    const ctx = driver('minimax-h3', { prompt: 'cat', size: clientSize });
+    const result = plugin.buildSubmitRequest(ctx);
+    assert.equal(result.body.seconds, 4);
+    assert.equal(result.body.size, size);
+    const facts = plugin.extractUsage({ ...ctx, usagePurpose: 'facts' });
+    assert.equal(facts.seconds, result.body.seconds);
+    assert.equal(facts.size, result.body.size);
+    assert.equal(facts.resolution, resolution);
+  }
+  for (const size of [null, '', ['1280x720'], 'foo', '1920X1080', '1366x768', 'constructor']) {
+    assert.throws(() => driver('minimax-h3', { prompt: 'cat', size }), /size/);
+  }
+  assert.throws(() => driver('wan3.0-video', { resolution: '720P' }), /seconds/);
+});
+test('H3 converts standard JSON image objects to billable images without altering the caller object', () => {
+  const imageUrl = 'https://example.com/ref.jpg?sig=example%2Baccess';
+  const original = { prompt: 'cat', seconds: '8', size: '1280x720', input_reference: { image_url: imageUrl } };
+  for (const model of ['minimax-h3', 'minimax-h3-lh']) {
+    const ctx = driver(model, original);
+    const request = plugin.buildSubmitRequest(ctx);
+    assert.equal(ctx.action, 'reference_to_video');
+    assert.deepEqual(request.body, { model, prompt: 'cat', seconds: 8, size: '1376x768', images: [imageUrl] });
+    const facts = plugin.extractUsage({ ...ctx, usagePurpose: 'facts' });
+    assert.equal(facts.input_images, 1);
+    assert.equal(facts.input_references, 0);
+    assert.equal(facts.seconds, 8);
+  }
+  assert.deepEqual(original.input_reference, { image_url: imageUrl });
+  assert.throws(() => driver('minimax-h3-fl2v', original), /first or last frames/);
+  assert.throws(() => driver('minimax-h3', { ...original, images: [imageUrl] }), /use either/);
+  for (const input_reference of [{ file_id: 'file-1' }, { image_url: imageUrl, file_id: 'file-1' },
+    { image_url: 'data:image/png;base64,Zg==' }, { image_url: 'https://user@example.com/ref' }, { image_url: 'https://a.test/a\n.png' }]) {
+    assert.throws(() => driver('minimax-h3', { ...original, input_reference }), /image_url/);
+  }
+  const legacy = driver('minimax-h3', { ...original, input_reference: imageUrl });
+  assert.equal(plugin.buildSubmitRequest(legacy).body.input_reference, imageUrl);
+  assert.equal(plugin.extractUsage(legacy).input_references, 1);
+});
 test('H3 honours documented optional fields and reports billable dimensions without legacy multipliers', () => {
   const payload = { prompt: 'cat', seconds: 5, size: '1568x672', aspect_ratio: '21:9', mode: 'example',
     images: Array.from({ length: 6 }, (_, i) => `https://example.com/${i}.png`),
@@ -154,8 +200,8 @@ test('all 19 model examples build one common create route with valid profile fac
     assertUsage(ctx.model, plugin.extractUsage(ctx));
   }
 });
-test('duration ranges are validated rather than silently clamped or defaulted', () => {
-  for (const seconds of [undefined, null, true, [], ['5'], '', 0, -1, 3, 16, 5.5, Infinity, 'NaN']) {
+test('explicit invalid durations are rejected without clamping or defaulting', () => {
+  for (const seconds of [null, true, [], ['5'], '', 0, -1, 3, 16, 5.5, Infinity, 'NaN']) {
     assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds, size: '1376x768' }), /seconds/);
   }
   for (const seconds of [2, 30]) assert.doesNotThrow(() => driver('wan3.0-video', { seconds, resolution: '480P' }));
@@ -234,6 +280,32 @@ test('multipart rejects ambiguous scalar aliases so usage matches the transmitte
   const fields = { model: ['minimax-h3'], prompt: ['cat'], seconds: ['5'],
     size: ['1376x768'], 'size[]': ['2K'] };
   assert.throws(() => decode('minimax-h3', {}, { body: { kind: 'multipart', fields, files: [] } }), /provided once/);
+});
+test('H3 multipart sends the same default dimensions and image that are used for pricing', () => {
+  const model = 'minimax-h3';
+  const imageUrl = 'https://example.com/ref.jpg';
+  const base = { kind: 'multipart', fields: { model: [model], prompt: ['cat'], size: ['1280x720'],
+    'input_reference[image_url]': [imageUrl] }, files: [] };
+  const context = body => ({ ...driver(model, { prompt: 'cat' }), files: body.files,
+    requestBody: decode(model, {}, { body }).requestBody });
+  const ctx = context(base);
+  const parts = plugin.buildSubmitRequest(ctx).parts;
+  assert.deepEqual(Object.fromEntries(parts.map(p => [p.name, p.value])),
+    { model, prompt: 'cat', size: '1376x768', images: imageUrl, seconds: '4' });
+  const facts = plugin.extractUsage(ctx);
+  assert.equal(facts.size, '1376x768');
+  assert.equal(facts.seconds, 4);
+  assert.equal(facts.input_images, 1);
+  assert.equal(facts.input_references, 0);
+  const ref = { ref: 'file:input_reference:0', field: 'input_reference', filename: 'ref.jpg', mimeType: 'image/jpeg', size: 100 };
+  const native = context({ kind: 'multipart', fields: { model: [model], prompt: ['cat'] }, files: [ref] });
+  const sent = plugin.buildSubmitRequest(native).parts;
+  assert.ok(sent.some(p => p.name === 'size' && p.value === '768x1376'));
+  assert.ok(sent.some(p => p.name === 'seconds' && p.value === '4'));
+  assert.ok(sent.some(p => p.name === ref.field && p.fileRef === ref.ref));
+  assert.equal(plugin.extractUsage(native).input_references, 1);
+  assert.throws(() => context({ ...base, files: [ref] }), /use either/);
+  assert.throws(() => context({ ...base, fields: { ...base.fields, 'input_reference[file_id]': ['file-1'] } }), /exactly one image_url/);
 });
 test('documented media limits count files plus URL references', () => {
   const fields = { model: ['minimax-h3'], prompt: ['cat'], seconds: ['5'], size: ['1376x768'],

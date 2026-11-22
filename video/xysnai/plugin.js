@@ -29,6 +29,15 @@ const H3_SIZES_BY_TIER = {
 };
 const H3_TIERS = Object.keys(H3_SIZES_BY_TIER);
 const H3_SIZES = H3_TIERS.flatMap(function (tier) { return H3_SIZES_BY_TIER[tier]; });
+const H3_COMPAT_SIZES = {
+  "1280x720": "1376x768",
+  "720x1280": "768x1376",
+  "1792x1024": "1920x1088",
+  "1024x1792": "1088x1920",
+  "1920x1080": "1920x1088",
+  "1080x1920": "1088x1920"
+};
+const REFERENCE_OBJECT_FIELD = /^input_reference\[[^\]]+\]/;
 const H3_ASPECT_RATIOS = ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"];
 const ARRAY_FIELDS = ["images", "reference_images", "reference_image_urls",
   "reference_videos", "reference_audios"];
@@ -78,7 +87,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "XYSNAI Video",
   description: { en: "XYSNAI unified video tasks", zh: "XYSNAI 多模型视频任务适配" },
-  version: "1.2.0",
+  version: "1.3.0",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -244,6 +253,46 @@ function readBody(ctx) {
   return { payload: req, files: body.files || [], fields };
 }
 
+function normalizeH3Request(parsed, model) {
+  const { payload, files, fields } = parsed;
+  if (payload.seconds === undefined) payload.seconds = 4;
+  if (payload.size === undefined) payload.size = "720x1280";
+  if (typeof payload.size === "string" && own(H3_COMPAT_SIZES, payload.size)) {
+    payload.size = H3_COMPAT_SIZES[payload.size];
+  }
+
+  let reference = payload.input_reference;
+  // Standard SDKs can encode an object as a multipart bracket field.
+  const referenceFields = fields ? Object.keys(fields).filter(name => REFERENCE_OBJECT_FIELD.test(name)) : [];
+  if (files.some(file => REFERENCE_OBJECT_FIELD.test(file.field))) {
+    throw new Error("input_reference image_url must be an HTTP(S) URL, not a file part");
+  }
+  if (referenceFields.length) {
+    const name = referenceFields[0];
+    if (reference !== undefined || referenceFields.length !== 1 || name !== "input_reference[image_url]" || fields[name].length !== 1) {
+      throw new Error("input_reference image objects require exactly one image_url field");
+    }
+    reference = { image_url: fields[name][0] };
+    delete fields[name];
+  }
+  if (!isObject(reference)) return;
+  if (model === "minimax-h3-fl2v") {
+    throw new Error("minimax-h3-fl2v does not map input_reference image objects to first or last frames");
+  }
+  const url = reference.image_url;
+  if (Object.keys(reference).length !== 1 || !own(reference, "image_url") || typeof url !== "string"
+      || !/^https?:\/\/[^\s/?#@\\\x00-\x1f\x7f]+(?:[/?#][^\s\\\x00-\x1f\x7f]*)?$/i.test(url)) {
+    throw new Error("input_reference image objects require a publicly accessible HTTP(S) image_url");
+  }
+  if (payload.images !== undefined || files.some(file => ["images", "input_reference"].includes(fieldName(file.field)))) {
+    throw new Error("use either the input_reference image object or uploaded/referenced images");
+  }
+  delete payload.input_reference;
+  for (const name of referenceFields) delete payload[name];
+  payload.images = [url];
+  if (fields) fields.images = [url];
+}
+
 export const protocols = {
   openai_video: {
     decodeRequest: function (ctx) {
@@ -252,6 +301,7 @@ export const protocols = {
       }
       const parsed = readBody(ctx);
       const model = upstreamModel(ctx);
+      if (family(model) === "h3") normalizeH3Request(parsed, model);
       validate(parsed.payload, parsed.files, model);
       parsed.payload.model = ctx.model;
       let mediaCount = parsed.files.length;
@@ -304,16 +354,20 @@ export function buildSubmitRequest(ctx) {
   if (fields !== null && fields !== undefined) {
     const parts = [];
     const seen = Object.create(null);
+    const h3 = family(req.model) === "h3";
     for (const name of Object.keys(fields)) {
       const canonical = fieldName(name);
       seen[canonical] = true;
-      if (canonical === "model" || canonical === "seconds" || canonical === "scale" || canonical === "enhancement_strength") {
+      if (canonical === "model" || canonical === "seconds" || canonical === "scale" || canonical === "enhancement_strength" || (h3 && canonical === "size")) {
         parts.push({ name, value: String(req[canonical]) });
       } else {
         for (const value of fields[name]) parts.push({ name, value });
       }
     }
     if (!seen.model) parts.push({ name: "model", value: req.model });
+    if (h3) {
+      for (const name of ["seconds", "size"]) if (!seen[name]) parts.push({ name, value: String(req[name]) });
+    }
     for (const file of ctx.files || []) parts.push({ name: file.field, fileRef: file.ref, filename: file.filename });
     return { url: base(ctx) + "/v1/videos", method: "POST", headers, bodyType: "multipart", parts, rewriteModel: req.model };
   }

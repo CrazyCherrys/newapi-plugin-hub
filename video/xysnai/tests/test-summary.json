@@ -1,9 +1,9 @@
 {
   "date": "2026-11-22",
   "plugin_file": "plugin.js",
-  "sha256": "8d947c868da6187140a46ed01076ca7cf00b34ce7f0a5383490f1e062130a7a5",
-  "offline_node_groups_passed": 23,
-  "official_host_format_golden_cases_passed_in_node": 17,
+  "sha256": "9479f88e0dad07764923c2eedbc894a8fc1df51cb31b4f012a3d318c2c6607e6",
+  "offline_node_groups_passed": 26,
+  "official_host_format_golden_cases_passed_in_node": 20,
   "declared_models": 19,
   "h3_sizes_checked": 26,
   "live_http_requests": 0,
@@ -27,13 +27,25 @@
     "community_author_namespace_checked": true,
     "public_models_match_upstream_without_prefix": true
   },
-  "official_rc51_fixture_cases_passed": 17,
+  "official_rc51_fixture_cases_passed": 20,
   "official_rc51_mock_billing": {
     "builtin_hailuo_disabled_due_to_model_name_conflict": true,
     "task_usage_success_quota": 50000,
     "fixed_per_call_success_quota": 10000,
     "failed_task_quota_after_refund": 0,
     "old_fixed_per_call_quota": 100000,
+    "mock_content_download_byte_match": true
+  },
+  "official_rc51_h3_compat_mock_billing": {
+    "request_encodings": ["json", "multipart"],
+    "request_size": "1280x720",
+    "upstream_size": "1376x768",
+    "resolution": "768P",
+    "default_seconds": 4,
+    "input_images": 1,
+    "precharged_quota": 45000,
+    "success_quota": 45000,
+    "failed_task_quota_after_refund": 0,
     "mock_content_download_byte_match": true
   }
 }

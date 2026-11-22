@@ -76,7 +76,7 @@ curl --fail --silent --show-error \
 
 ## MiniMax H3 型号与参数
 
-三个型号都使用 `POST /v1/videos`，都需要 `prompt`、`seconds` 和 `size`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。
+三个型号都使用 `POST /v1/videos`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。以下默认值和尺寸映射适用于插件 1.3.0 及以上版本。
 
 | `model` | 用法 |
 |---|---|
@@ -88,9 +88,20 @@ curl --fail --silent --show-error \
 |---|---|
 | `model` | 必填，选择上表中已开通的型号 |
 | `prompt` | 必填，用文字描述画面和动作 |
-| `seconds` | 必填，`4` 至 `15` 的整数 |
-| `size` | 必填，输出尺寸，例如 `1376x768`。使用下表中的值 |
+| `seconds` | 可选，`4` 至 `15` 的整数，也可传数字字符串。省略时使用 `4` 秒 |
+| `size` | 可选，使用 H3 原生尺寸或下方的兼容尺寸。省略时使用 `768x1376` |
 | `images` | 可选。服务方开放参考图时，传入 1 至 9 个可公开读取的图片 URL |
+
+已有 OpenAI Video 客户端可以保留以下常用尺寸。插件转换后按发给 XYSNAI 的尺寸、时长和图片数计费，生成尺寸可能与客户端传入值不同。
+
+| 客户端 `size` | 转发给 H3 的 `size` | 计费档位 |
+|---|---|---|
+| `1280x720` | `1376x768` | 768P |
+| `720x1280` 或省略 | `768x1376` | 768P |
+| `1792x1024`、`1920x1080` | `1920x1088` | 1080P |
+| `1024x1792`、`1080x1920` | `1088x1920` | 1080P |
+
+下表为 H3 原生 `size`，可直接填写。实际档位以服务方开放的配置为准。
 
 | 尺寸类别 | `size` 可填值 |
 |---|---|
@@ -109,6 +120,17 @@ curl --fail --silent --show-error \
   "seconds": 5,
   "size": "1376x768",
   "images": ["https://cdn.example.com/reference.jpg"]
+}
+```
+
+标准版和 LH 版也接受已有客户端传来的 `input_reference: { "image_url": "https://…" }`。multipart 客户端可以传同样的 URL 到 `input_reference[image_url]` 文本字段。选择图片对象时省略 `images`，插件会把 URL 作为一张图片转发。图片对象只接受可公开读取的 HTTP 或 HTTPS URL。
+
+```json
+{
+  "model": "minimax-h3",
+  "prompt": "保留参考图中的主角，镜头缓慢拉远",
+  "size": "1280x720",
+  "input_reference": { "image_url": "https://cdn.example.com/reference.jpg" }
 }
 ```
 
@@ -131,7 +153,7 @@ curl --fail-with-body --silent --show-error \
 
 ### H3 FL2V 基础请求
 
-XYSNAI 将此型号标为首尾帧模式，但公开示例只包含模型名、提示词、时长和尺寸。`images` 在文档中是通用图片 URL 数组，首尾帧专用字段和数组顺序尚未公布。实际传入首尾帧前，请向服务方确认字段与顺序。下方命令对应官方的无素材基础请求。[XYSNAI FL2V 接口文档](https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2)
+XYSNAI 将此型号标为首尾帧模式，但公开示例只包含模型名、提示词、时长和尺寸。首尾帧专用字段与数组顺序尚未公布，插件会拒绝 FL2V 的 `input_reference` 图片对象。实际传入首尾帧前，请向服务方确认字段与顺序。下方命令对应官方的无素材基础请求。[XYSNAI FL2V 接口文档](https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2)
 
 ```bash
 curl --fail-with-body --silent --show-error \

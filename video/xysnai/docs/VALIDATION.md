@@ -1,10 +1,10 @@
 # 验证记录
 
-日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.2.0`。
+日期为 2026-11-22，插件为 `crazycherrys_xysnai-video` 1.3.0。
 
 ## 已完成
 
-1. Node.js 模块加载与同步 hook 行为：23 组通过，其中包含 17 个 New API 官方格式 fixture case 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
+1. Node.js 模块加载与同步 hook 行为共通过 26 组测试，包含 20 个 New API 官方格式 fixture 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
 2. 元数据：使用 New API `v1.0.0-rc.51` 随附的官方 API v1 JSON Schema 独立校验，通过。
 3. 模型声明：19 个唯一模型，各属于一个 usage profile，分组数量为 3 / 1 / 2 / 12 / 1。
 4. 请求和用量：覆盖全部模型、26 个 H3 尺寸、秒数数字/字符串、必填字段、非法时长拒绝。
@@ -32,14 +32,14 @@ new-api plugin lint plugin.js
 new-api plugin test plugin.js --fixture tests/golden.json
 ```
 
-已用官方 New API rc.51 二进制运行全部命令。官方 fixture 为 17/17。
+Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过，官方宿主通过全部 20 个 fixture。
 
 ## 源码摘要
 
 `plugin.js` SHA-256：
 
 ```text
-8d947c868da6187140a46ed01076ca7cf00b34ce7f0a5383490f1e062130a7a5
+9479f88e0dad07764923c2eedbc894a8fc1df51cb31b4f012a3d318c2c6607e6
 ```
 
 ## 官方校验规范
@@ -89,3 +89,10 @@ new-api plugin test plugin.js --fixture tests/golden.json
 - 从 New API 下载已完成的模拟视频，确认返回字节与模拟上游一致。
 
 上述价格仅用于测试。用户实际部署、XYSNAI 付费生成、输入视频实际计费时长和超分结算字段仍待验收。
+
+## 1.3.0 H3 标准请求兼容
+
+- 离线测试覆盖 6 种尺寸映射、默认时长和尺寸、JSON 和 multipart 图片对象转换、旧版图片传参，以及冲突字段和无效对象拒绝。
+- 在官方 New API rc.51 中分别用 JSON 图片对象和 multipart 的 `input_reference[image_url]` 创建任务。两种请求均省略时长并请求 `1280x720`，模拟上游均收到 `1376x768`、4 秒和 1 张 `images` 图片。New API 以同一尺寸、时长和图片数计算用量，分辨率档位为 `768P`。
+- 测试费率为每秒 USD 0.02、每张图片 USD 0.01。两种请求各预扣 45,000 quota，成功后最终扣除 45,000 quota，失败后退款至 0。成功任务的下载字节与模拟上游一致。
+- 本次宿主验证使用隔离的测试库和模拟上游。用户宿主和 XYSNAI 真实生成仍未联测。

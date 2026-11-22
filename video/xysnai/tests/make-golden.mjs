@@ -9,6 +9,9 @@ const context = {
 };
 const auth = { Authorization: 'Bearer fixture-key' };
 const usageCommon = { requests: 1, input_images: 0, input_videos: 0, input_audios: 0, input_references: 0 };
+const compatImage = 'https://example.com/ref.jpg';
+const compatPayload = { model: 'minimax-h3', prompt: 'cat', seconds: 4, size: '1376x768', images: [compatImage] };
+const compatDriver = { ...context, action: 'reference_to_video', requestBody: { payload: compatPayload, formFields: null } };
 const fixture = {
   unixNow: 1700000000,
   cases: [
@@ -23,6 +26,28 @@ const fixture = {
       args: [{ model: 'minimax-h3', upstreamModel: 'minimax-h3', operation: 'create',
         body: { kind: 'json', value: { model: 'minimax-h3', prompt: 'cat', seconds: '5', size: '1376x768' } } }],
       expected: { kind: 'submit', model: 'minimax-h3', action: 'text_to_video', requestBody: context.requestBody }
+    },
+    {
+      name: 'H3 standard size and JSON image object normalize before pricing', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
+      args: [{ model: 'minimax-h3', operation: 'create', body: { kind: 'json', value: {
+        model: 'minimax-h3', prompt: 'cat', size: '1280x720', input_reference: { image_url: compatImage }
+      } } }],
+      expected: { kind: 'submit', model: 'minimax-h3', action: 'reference_to_video', requestBody: compatDriver.requestBody }
+    },
+    {
+      name: 'H3 normalized dimensions and image are billable usage', hook: 'extractUsage',
+      args: [{ ...compatDriver, usagePurpose: 'facts' }],
+      expected: { ...usageCommon, seconds: 4, size: '1376x768', resolution: '768P', input_images: 1 }
+    },
+    {
+      name: 'H3 multipart forwarding writes normalized size and inserts the default seconds', hook: 'buildSubmitRequest',
+      args: [{ ...compatDriver, requestBody: { payload: compatPayload, formFields: {
+        images: [compatImage], model: ['minimax-h3'], prompt: ['cat'], size: ['1280x720']
+      } } }],
+      expected: { url: 'https://xysnai.cn/v1/videos', method: 'POST', headers: auth, bodyType: 'multipart',
+        parts: [{ name: 'images', value: compatImage }, { name: 'model', value: 'minimax-h3' }, { name: 'prompt', value: 'cat' },
+          { name: 'size', value: '1376x768' }, { name: 'seconds', value: '4' }],
+        rewriteModel: 'minimax-h3' }
     },
     {
       name: 'Invalid H3 enum rejected before upstream', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
