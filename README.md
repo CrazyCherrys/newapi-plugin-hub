@@ -2,7 +2,7 @@
 
 # New API Plugin Hub
 
-New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video 1.1.0**：用一个任务插件接入 Wan、MiniMax H3、Seedance 与视频超分共 19 个模型。
+New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video 1.2.0**：用一个任务插件接入 Wan、MiniMax H3、Seedance 与视频超分共 19 个模型。
 
 ## 添加市场源
 
@@ -12,7 +12,7 @@ New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video
 https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 ```
 
-保存、刷新市场，选择 **XYSNAI Video 1.1.0** 安装并启用，再按[使用指南](video/xysnai/README.md)完成渠道与模型定价：
+保存、刷新市场，选择 **XYSNAI Video 1.2.0** 安装并启用，再按[使用指南](video/xysnai/README.md)完成渠道与模型定价：
 
 | 配置项 | 填写内容 |
 |---|---|
@@ -31,15 +31,17 @@ https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 
 社区插件 key 仍为 `crazycherrys_xysnai-video`，保留安装要求的 GitHub 作者命名空间。1.0.1 使用同一插件 key；更早的 `xysnai-video` 1.0.0 已退出当前索引，原发布文件保留作历史记录。
 
+如果安装时报 `MiniMax-H3` 与 `minimax-h3` 冲突，请检查 New API 内置 Hailuo 插件及关联渠道。rc.51 按大小写不敏感匹配模型名。确定不再使用该内置插件时，可先停用它，再安装 XYSNAI。
+
 ## 插件目录
 
 | 图标 | 插件 | 模型与能力 | 文档 |
 |---|---|---|---|
-| <img src="plugins/tasks/crazycherrys_xysnai-video/icon.svg" width="40" height="40" alt="XYSNAI Video"> | XYSNAI Video · 1.1.0 | 19 个模型；文生视频、多媒体参考、视频超分、异步查询与下载 | [安装与使用](video/xysnai/README.md) · [模型目录](video/xysnai/model-catalog.json) · [更新日志](plugins/tasks/crazycherrys_xysnai-video/1.1.0/CHANGELOG.zh-CN.md) |
+| <img src="plugins/tasks/crazycherrys_xysnai-video/icon.svg" width="40" height="40" alt="XYSNAI Video"> | XYSNAI Video · 1.2.0 | 19 个模型；文生视频、多媒体参考、视频超分、异步查询与下载 | [安装与使用](video/xysnai/README.md) · [模型目录](video/xysnai/model-catalog.json) · [更新日志](plugins/tasks/crazycherrys_xysnai-video/1.2.0/CHANGELOG.zh-CN.md) |
 
-手动安装：[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js)，在插件管理中上传并启用。仅需一个 JS 文件；图标可另选 [icon.svg](plugins/tasks/crazycherrys_xysnai-video/icon.svg)。
+手动安装：[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.2.0/plugin.js)，在插件管理中上传并启用。仅需一个 JS 文件；图标可另选 [icon.svg](plugins/tasks/crazycherrys_xysnai-video/icon.svg)。
 
-**验证范围：** 离线测试覆盖全部声明模型的请求与用量、multipart 描述符、任务状态、内容代理和官方格式 fixture；不代表已在实际 New API 容器安装或完成 XYSNAI 真实生成。验证记录见 [VALIDATION.md](video/xysnai/docs/VALIDATION.md)。
+1.2.0 修复了普通按次定价误将用量当作倍率的问题，并为 H3 增加 `resolution` 计费档位。已通过 New API rc.51 官方 CLI 和本地用量测试。实际部署与 XYSNAI 付费生成待验收。验证记录见 [VALIDATION.md](video/xysnai/docs/VALIDATION.md)。
 
 Leonardo 已从本仓库源码、发布目录和市场中移除。已安装的旧插件不会被市场自动删除；需要在 New API 中自行停用旧渠道，并为 XYSNAI 新建渠道、配置密钥与价格，旧配置不会自动迁移。
 
@@ -51,7 +53,8 @@ marketplace.json                    # 插件注册与明确下架记录
 plugins/tasks/crazycherrys_xysnai-video/
 ├── icon.svg                        # 市场图标
 ├── 1.0.1/                          # 保留的历史版本
-└── 1.1.0/                          # 无模型前缀的新版本
+├── 1.1.0/                          # 取消模型前缀
+└── 1.2.0/                          # 按次扣费修复与 H3 计费档位
 video/xysnai/
 ├── README.md                       # 安装、配置、计费及调用说明
 ├── plugin.js                       # 单文件插件源码

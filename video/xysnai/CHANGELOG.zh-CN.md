@@ -1,18 +1,20 @@
 ---
 changelogVersion: 1
 plugin: 'crazycherrys_xysnai-video'
-version: '1.1.0'
+version: '1.2.0'
 locale: 'zh-CN'
 ---
 # Changelog
 
-## [1.1.0]
+## [1.2.0]
 
-### Changed
-- 移除全部 19 个对外模型名及其用量分组中的 xysnai/ 服务商前缀，客户端直接使用 minimax-h3、wan3.0-video、Video-upscale2.6 等原始名称。
-- 请求转发直接使用选中的上游模型名，不再自动去除前缀；示例和请求、响应 fixture 同步更新。
+### Added
+- 根据文档中的尺寸归类上报 H3 分辨率计费档位，同时上报原始尺寸和请求时长。
+
+### Fixed
+- 修正 New API 普通按次模式将用量当作价格倍率的问题，固定售价按任务收取一次。
+- 按上游文档校验 H3 的宽高比、mode 和可选素材数组。只将文档中的 images 字段计入 H3 图片用量，类型不明的素材单独上报。
 
 ### Migration
-- 用量字段和计费计算保持不变，但模型价格对应的名称发生变化。请为改名后的模型重新配置售价及插件级价格覆盖；不会自动迁移价格。
-- 升级前完成进行中的任务。安装 1.1.0 后，更新渠道模型、客户端请求及令牌模型限制，并删除仍指向旧前缀模型名的映射。
-- 插件 key crazycherrys_xysnai-video、XYSNAI Base URL 和 API Key 保持不变；插件 key 中的 GitHub 作者前缀仍用于满足社区安装要求。
+- 固定按次价格现在每个请求只收一次。既有 seconds 和 size 计费表达式可继续使用。H3 的 input_images 按文档中的 images 字段统计，也可使用新增的 resolution 按档位定价。
+- 请在 New API 中按模型和开放档位配置美元售价。输出时长和明确的图片数可以根据请求用量计价。启用输入视频按秒售价前，需与 XYSNAI 核对该项实际用量。

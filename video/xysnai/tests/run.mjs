@@ -58,7 +58,7 @@ test('Hub catalog, published source checksum and request examples match the plug
 });
 test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
-  assert.equal(plugin.meta.version, '1.1.0');
+  assert.equal(plugin.meta.version, '1.2.0');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
@@ -111,9 +111,33 @@ test('all 26 documented H3 sizes pass request and usage validation', () => {
   for (const size of sizes) {
     const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size });
     assert.equal(plugin.buildSubmitRequest(ctx).body.size, size);
-    assertUsage(ctx.model, plugin.extractUsage(ctx));
+    const usage = plugin.extractUsage(ctx);
+    assertUsage(ctx.model, usage);
+    assert.ok(usage.resolution, size + ' is missing its pricing tier');
   }
   assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '768P' }), /size/);
+});
+test('H3 honours documented optional fields and reports billable dimensions without legacy multipliers', () => {
+  const payload = { prompt: 'cat', seconds: 5, size: '1568x672', aspect_ratio: '21:9', mode: 'example',
+    images: Array.from({ length: 6 }, (_, i) => `https://example.com/${i}.png`),
+    reference_video: 'https://example.com/input.mp4', input_reference: 'https://example.com/media' };
+  const ctx = driver('minimax-h3', payload);
+  assert.equal(plugin.buildSubmitRequest(ctx).body.aspect_ratio, '21:9');
+  assert.equal(plugin.buildSubmitRequest(ctx).body.mode, 'example');
+  const facts = plugin.extractUsage({ ...ctx, usagePurpose: 'facts' });
+  assert.deepEqual(facts, { requests: 1, input_images: 6, input_videos: 1, input_audios: 0,
+    input_references: 1, seconds: 5, size: '1568x672', resolution: '768P' });
+  assert.equal(plugin.extractUsage({ ...ctx, usagePurpose: 'billing_ratios' }), null);
+  assert.deepEqual(plugin.extractUsageOnComplete(ctx, { status: 'SUCCESS' }, { cost: '0.40' }), {});
+  const knownSizes = [['640x640', '480P'], ['1024x1024', '768P'], ['1440x1440', '1080P'], ['2K', '2K'], ['4K', '4K']];
+  for (const [size, tier] of knownSizes) {
+    assert.equal(plugin.extractUsage(driver('minimax-h3', { ...payload, size })).resolution, tier);
+  }
+  for (const field of ['images', 'reference_videos', 'reference_audios']) {
+    assert.throws(() => decode('minimax-h3', { ...payload, [field]: [] }), /at least 1 reference/);
+  }
+  assert.throws(() => decode('minimax-h3', { ...payload, aspect_ratio: 'adaptive' }), /aspect_ratio/);
+  assert.throws(() => decode('minimax-h3', { ...payload, mode: 7 }), /mode must be a string/);
 });
 test('all 19 model examples build one common create route with valid profile facts', () => {
   for (const model of plugin.meta.models) {

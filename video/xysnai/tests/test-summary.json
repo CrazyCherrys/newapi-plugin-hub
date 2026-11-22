@@ -1,18 +1,18 @@
 {
   "date": "2026-11-22",
   "plugin_file": "plugin.js",
-  "sha256": "246f165fa0c633e7454c01d62686aae4c77fd21dcfe329c5e817915566fd8ff1",
-  "offline_node_groups_passed": 22,
-  "official_host_format_golden_cases_passed_in_node": 16,
+  "sha256": "8d947c868da6187140a46ed01076ca7cf00b34ce7f0a5383490f1e062130a7a5",
+  "offline_node_groups_passed": 23,
+  "official_host_format_golden_cases_passed_in_node": 17,
   "declared_models": 19,
   "h3_sizes_checked": 26,
   "live_http_requests": 0,
-  "new_api_binary_cli_run": false,
+  "new_api_binary_cli_run": true,
   "live_installed": false,
   "limitations": [
-    "New API plugin runtime CLI needs to be run on the target release; fixtures are supplied.",
-    "XYSNAI live multipart and HEAD compatibility not exercised.",
-    "Upscale actual usage billing remains unverified; use explicit per-task pricing first."
+    "Test settlement used the official New API rc.51 with a local mock upstream.",
+    "The user deployment, XYSNAI paid generation, and live multipart/HEAD/Range remain untested.",
+    "Reference video duration, untyped reference kind, and actual upscale billing are not verified upstream facts."
   ],
   "official_rc51_metadata_schema_validated": true,
   "standalone_request_examples_checked": 5,
@@ -22,9 +22,18 @@
     "marketplace_tool_tests_passed": 6,
     "catalog_and_standalone_examples_checked_by_test_suite": true,
     "usage_profiles_preserved_in_index": true,
-    "new_api_binary_cli_run": false,
+    "new_api_binary_cli_run": true,
     "live_http_requests": 0,
     "community_author_namespace_checked": true,
     "public_models_match_upstream_without_prefix": true
+  },
+  "official_rc51_fixture_cases_passed": 17,
+  "official_rc51_mock_billing": {
+    "builtin_hailuo_disabled_due_to_model_name_conflict": true,
+    "task_usage_success_quota": 50000,
+    "fixed_per_call_success_quota": 10000,
+    "failed_task_quota_after_refund": 0,
+    "old_fixed_per_call_quota": 100000,
+    "mock_content_download_byte_match": true
   }
 }

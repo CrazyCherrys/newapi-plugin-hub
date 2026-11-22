@@ -149,32 +149,45 @@
             "size": {
               "enum": [
                 "864x480",
-                "1376x768",
-                "1920x1088",
                 "480x864",
-                "768x1376",
-                "1088x1920",
                 "640x640",
-                "1024x1024",
-                "1440x1440",
                 "544x800",
-                "832x1248",
-                "1184x1760",
                 "800x544",
-                "1248x832",
-                "1760x1184",
                 "576x736",
-                "896x1184",
-                "1248x1664",
                 "736x576",
-                "1184x896",
-                "1664x1248",
                 "992x416",
+                "1376x768",
+                "768x1376",
+                "1024x1024",
+                "832x1248",
+                "1248x832",
+                "896x1184",
+                "1184x896",
                 "1568x672",
+                "1920x1088",
+                "1088x1920",
+                "1440x1440",
+                "1184x1760",
+                "1760x1184",
+                "1248x1664",
+                "1664x1248",
                 "2208x960",
                 "2K",
                 "4K"
               ]
+            },
+            "resolution": {
+              "enum": [
+                "480P",
+                "768P",
+                "1080P",
+                "2K",
+                "4K"
+              ],
+              "description": {
+                "en": "XYSNAI size pricing tier",
+                "zh": "XYSNAI 尺寸计费档位"
+              }
             }
           }
         },
@@ -457,8 +470,31 @@
           }
         }
       ],
-      "latest": "1.1.0",
+      "latest": "1.2.0",
       "versions": [
+        {
+          "version": "1.2.0",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.2.0/plugin.js",
+          "sha256": "8d947c868da6187140a46ed01076ca7cf00b34ce7f0a5383490f1e062130a7a5",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://xysnai.cn",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.2.0/CHANGELOG.md",
+            "sha256": "2ff5f862d45acfe8ac512dcf26be5f24714d684737ac34c9cbb879207a869af0",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.2.0/CHANGELOG.zh-CN.md",
+                "sha256": "e2bea23d7d94c7351778e802223599af374f3042b17bd96c84c22a861b96811c"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/xysnai/README.md",
+            "sha256": "87c14ce189dee7623099865b99d1110a87c65950627ece9e7bdb6f3eabf25604"
+          }
+        },
         {
           "version": "1.1.0",
           "path": "plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js",
@@ -476,10 +512,6 @@
                 "sha256": "d71c3d9cf91964e99cdf669b0310c5d6eeab4e4d18cf0f0f300242fe71a40cb5"
               }
             }
-          },
-          "readme": {
-            "path": "video/xysnai/README.md",
-            "sha256": "62b51cb9f0c9d9f0e46a17cd6db4a18d198238b7b5263bfe656f9950170e3a94"
           }
         },
         {

@@ -19,19 +19,23 @@ const UPSTREAM_MODELS = [
   "特价seedance-2.5-nv-1080p-30s", "特价seedance-2.5-nv-480p",
   "特价seedance-2.5-nv-720p-30s", "Video-upscale2.6"
 ];
-const H3_SIZES = [
-  "864x480", "1376x768", "1920x1088", "480x864", "768x1376",
-  "1088x1920", "640x640", "1024x1024", "1440x1440", "544x800",
-  "832x1248", "1184x1760", "800x544", "1248x832", "1760x1184",
-  "576x736", "896x1184", "1248x1664", "736x576", "1184x896",
-  "1664x1248", "992x416", "1568x672", "2208x960", "2K", "4K"
-];
+// XYSNAI groups portrait, landscape and square sizes into explicit price tiers.
+const H3_SIZES_BY_TIER = {
+  "480P": ["864x480", "480x864", "640x640", "544x800", "800x544", "576x736", "736x576", "992x416"],
+  "768P": ["1376x768", "768x1376", "1024x1024", "832x1248", "1248x832", "896x1184", "1184x896", "1568x672"],
+  "1080P": ["1920x1088", "1088x1920", "1440x1440", "1184x1760", "1760x1184", "1248x1664", "1664x1248", "2208x960"],
+  "2K": ["2K"],
+  "4K": ["4K"]
+};
+const H3_TIERS = Object.keys(H3_SIZES_BY_TIER);
+const H3_SIZES = H3_TIERS.flatMap(function (tier) { return H3_SIZES_BY_TIER[tier]; });
+const H3_ASPECT_RATIOS = ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"];
 const ARRAY_FIELDS = ["images", "reference_images", "reference_image_urls",
   "reference_videos", "reference_audios"];
 const MEDIA_FIELDS = ARRAY_FIELDS.concat(["input_reference", "first_image",
   "last_image", "reference_video", "reference_audio"]);
 const BOOLEAN_FIELDS = ["generate_audio", "watermark", "prompt_extend", "prompt_enhance"];
-const SCALAR_FIELDS = ["model", "prompt", "seconds", "size", "resolution", "aspect_ratio",
+const SCALAR_FIELDS = ["model", "prompt", "seconds", "size", "resolution", "aspect_ratio", "mode",
   "quality", "scale", "enhancement_strength", "seed", "input_reference", "first_image",
   "last_image", "reference_video", "reference_audio"].concat(BOOLEAN_FIELDS);
 const COMMON_USAGE = {
@@ -43,7 +47,11 @@ const COMMON_USAGE = {
 };
 const SECONDS = { type: "number", unit: "second", description: { en: "Video generation unit price", zh: "视频生成单价" } };
 const AUDIO_MODE = { enum: ["unspecified", "on", "off"], description: { en: "Generate audio option", zh: "生成音频选项" } };
-const H3_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, size: { enum: H3_SIZES } });
+const H3_USAGE = Object.assign({}, COMMON_USAGE, {
+  seconds: SECONDS,
+  size: { enum: H3_SIZES },
+  resolution: { enum: H3_TIERS, description: { en: "XYSNAI size pricing tier", zh: "XYSNAI 尺寸计费档位" } }
+});
 const WAN_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, resolution: { enum: ["480P", "720P", "1080P"] }, audio_mode: AUDIO_MODE });
 const SD_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, resolution: { enum: ["480p", "720p", "1080p", "2k", "4k"] }, audio_mode: AUDIO_MODE });
 const SEEDANCE_USAGE = Object.assign({}, COMMON_USAGE, {
@@ -70,7 +78,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "XYSNAI Video",
   description: { en: "XYSNAI unified video tasks", zh: "XYSNAI 多模型视频任务适配" },
-  version: "1.1.0",
+  version: "1.2.0",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -141,14 +149,16 @@ function countField(req, files, key) {
   for (const file of files) if (fieldName(file.field) === key) count++;
   return count;
 }
-function checkArray(req, files, key, max) {
+function checkArray(req, files, key, max, min = 0) {
   if (req[key] !== undefined && !Array.isArray(req[key])) throw new Error(key + " must be an array");
   if (Array.isArray(req[key])) {
     for (const value of req[key]) {
       if (typeof value !== "string" || !value.trim()) throw new Error(key + " must contain nonempty URL strings");
     }
   }
-  if (countField(req, files, key) > max) throw new Error(key + " accepts at most " + max + " references");
+  const count = countField(req, files, key);
+  if (req[key] !== undefined && count < min) throw new Error(key + " requires at least " + min + " reference when provided");
+  if (count > max) throw new Error(key + " accepts at most " + max + " references");
 }
 function validate(req, files, model) {
   const kind = family(model);
@@ -163,9 +173,11 @@ function validate(req, files, model) {
   else if (req.seconds !== undefined) throw new Error("Video-upscale2.6 does not use the seconds field");
   if (kind === "h3") {
     enumValue(req.size, "size", H3_SIZES, true);
-    checkArray(req, files, "images", 9);
-    checkArray(req, files, "reference_audios", 3);
-    checkArray(req, files, "reference_videos", 3);
+    enumValue(req.aspect_ratio, "aspect_ratio", H3_ASPECT_RATIOS, false);
+    if (req.mode !== undefined && typeof req.mode !== "string") throw new Error("mode must be a string");
+    checkArray(req, files, "images", 9, 1);
+    checkArray(req, files, "reference_audios", 3, 1);
+    checkArray(req, files, "reference_videos", 3, 1);
   } else if (kind === "wan") {
     enumValue(req.resolution, "resolution", ["480P", "720P", "1080P"], true);
     checkArray(req, files, "reference_images", 10);
@@ -345,17 +357,24 @@ export function parseTaskResult(ctx, body) {
 }
 
 export function extractUsage(ctx) {
+  // New API's fixed per-call path multiplies every positive numeric ratio.
+  // Usage facts below are quantities for task expressions, never price ratios.
+  if (ctx.usagePurpose === "billing_ratios") return null;
   const req = request(ctx);
   const files = ctx.files || [];
   const kind = family(upstreamModel(ctx));
   const facts = { requests: 1, input_images: 0, input_videos: 0, input_audios: 0, input_references: 0 };
-  for (const name of ["images", "reference_images", "reference_image_urls", "first_image", "last_image"]) facts.input_images += countField(req, files, name);
+  const imageFields = kind === "h3" ? ["images"] : ["images", "reference_images", "reference_image_urls", "first_image", "last_image"];
+  for (const name of imageFields) facts.input_images += countField(req, files, name);
   for (const name of ["reference_video", "reference_videos"]) facts.input_videos += countField(req, files, name);
   for (const name of ["reference_audio", "reference_audios"]) facts.input_audios += countField(req, files, name);
   // A URL input_reference can be an image OR a video. Do not guess its MIME type.
   facts.input_references = countField(req, files, "input_reference");
   if (kind !== "upscale") facts.seconds = req.seconds;
-  if (kind === "h3") facts.size = req.size;
+  if (kind === "h3") {
+    facts.size = req.size;
+    facts.resolution = H3_TIERS.find(function (tier) { return H3_SIZES_BY_TIER[tier].indexOf(req.size) >= 0; });
+  }
   if (kind === "wan" || kind === "sd") {
     facts.resolution = req.resolution;
     facts.audio_mode = req.generate_audio === undefined ? "unspecified" : req.generate_audio ? "on" : "off";

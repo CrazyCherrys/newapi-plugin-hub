@@ -67,7 +67,11 @@ const fixture = {
     },
     {
       name: 'H3 usage matches sent duration and size', hook: 'extractUsage', args: [context],
-      expected: { ...usageCommon, seconds: 5, size: '1376x768' }
+      expected: { ...usageCommon, seconds: 5, size: '1376x768', resolution: '768P' }
+    },
+    {
+      name: 'Fixed per-call price has no usage multipliers', hook: 'extractUsage',
+      args: [{ ...context, usagePurpose: 'billing_ratios' }], expected: null
     },
     {
       name: 'Wan omitted audio retains unspecified pricing dimension', hook: 'extractUsage',

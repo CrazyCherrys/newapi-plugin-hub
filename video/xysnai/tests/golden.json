@@ -331,8 +331,38 @@
         "input_audios": 0,
         "input_references": 0,
         "seconds": 5,
-        "size": "1376x768"
+        "size": "1376x768",
+        "resolution": "768P"
       }
+    },
+    {
+      "name": "Fixed per-call price has no usage multipliers",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
+          "baseUrl": "https://xysnai.cn",
+          "apiKey": "fixture-key",
+          "authHeader": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "action": "text_to_video",
+          "requestBody": {
+            "payload": {
+              "model": "minimax-h3",
+              "prompt": "cat",
+              "seconds": 5,
+              "size": "1376x768"
+            },
+            "formFields": null
+          },
+          "usagePurpose": "billing_ratios"
+        }
+      ],
+      "expected": null
     },
     {
       "name": "Wan omitted audio retains unspecified pricing dimension",

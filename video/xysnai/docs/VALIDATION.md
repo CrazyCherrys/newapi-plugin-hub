@@ -1,10 +1,10 @@
 # 验证记录
 
-日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.1.0`。
+日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.2.0`。
 
 ## 已完成
 
-1. Node.js 模块加载与同步 hook 行为：22 组通过，其中包含 16 个 New API 官方格式 fixture case 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
+1. Node.js 模块加载与同步 hook 行为：23 组通过，其中包含 17 个 New API 官方格式 fixture case 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
 2. 元数据：使用 New API `v1.0.0-rc.51` 随附的官方 API v1 JSON Schema 独立校验，通过。
 3. 模型声明：19 个唯一模型，各属于一个 usage profile，分组数量为 3 / 1 / 2 / 12 / 1。
 4. 请求和用量：覆盖全部模型、26 个 H3 尺寸、秒数数字/字符串、必填字段、非法时长拒绝。
@@ -17,7 +17,6 @@
 
 ## 未执行
 
-- 未运行 New API 实际二进制中的 plugin lint / plugin test。
 - 未在用户 New API 中安装或启用插件。
 - 未替用户发送任何付费生成请求。
 - 未验证上游所有模型真实生成、multipart 上传、HEAD/Range 响应或成本结算。
@@ -33,14 +32,14 @@ new-api plugin lint plugin.js
 new-api plugin test plugin.js --fixture tests/golden.json
 ```
 
-前者在本包中已执行；后两条供目标 New API 环境执行。
+已用官方 New API rc.51 二进制运行全部命令。官方 fixture 为 17/17。
 
 ## 源码摘要
 
 `plugin.js` SHA-256：
 
 ```text
-246f165fa0c633e7454c01d62686aae4c77fd21dcfe329c5e817915566fd8ff1
+8d947c868da6187140a46ed01076ca7cf00b34ce7f0a5383490f1e062130a7a5
 ```
 
 ## 官方校验规范
@@ -58,7 +57,7 @@ new-api plugin test plugin.js --fixture tests/golden.json
 - 测试套件读取全部 5 份请求样例及模型目录；原始参考材料记录的 README 沙盒示例检查不替代目标宿主的执行。
 - SHA256SUMS.txt 覆盖源码、模型目录、日志、示例、测试和本记录；GitHub Actions 同步执行语法及校验清单检查。
 
-本次没有执行 New API 二进制 CLI、安装到实际宿主或发送 XYSNAI 付费请求。超分的实际结算和 multipart、HEAD/Range 的上游行为仍需联调。
+1.1.0 发布时未执行 New API 二进制 CLI、安装到实际宿主或发送 XYSNAI 付费请求。超分的实际结算和 multipart、HEAD/Range 的上游行为仍需联调。
 
 ## 社区市场安装规则回归
 
@@ -67,7 +66,7 @@ new-api plugin test plugin.js --fixture tests/golden.json
 - 核对 [New API 安装控制器](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/controller/task_plugin.go)：社区及第三方来源安装要求 key 带作者前缀与下划线。
 - 核对 [ValidPluginKey](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/pkg/jsplugin/registry.go)：允许小写字母、数字、下划线和连字符，最多 30 字符。
 - 发布工具同时校验 key 的格式、长度、GitHub 作者主页与前缀一致性；回归测试拒绝旧 key、错误作者、空插件名、大写 key 和超长 key，并验证发布入口确实拒绝旧标识。
-- 当前市场条目使用 crazycherrys_xysnai-video 1.1.0，作者为 CrazyCherrys；1.0.1 的历史文件保持不变，旧 key 的 1.0.0 不再出现在当前索引中。
+- 1.1.0 市场条目使用 crazycherrys_xysnai-video 1.1.0，作者为 CrazyCherrys；1.0.1 的历史文件保持不变，旧 key 的 1.0.0 不再出现在当前索引中。
 
 此回归验证覆盖已定位的命名准入规则，不代表已在用户宿主完成安装或真实生成。
 
@@ -79,3 +78,14 @@ new-api plugin test plugin.js --fixture tests/golden.json
 - 同步更新 5 份示例、16 个宿主格式 fixture、安装文档和升级迁移说明；模型价格与渠道配置需由管理员按新名称调整。
 
 本次验证仍为离线测试与发布检查，没有执行实际宿主安装或付费生成。
+
+## 1.2.0 协议与计费复核
+
+- 直接读取 [XYSNAI 模型目录](https://xysnai.cn/zh/models)及 [H3 接口文档](https://xysnai.cn/zh/docs?model_id=4d25e564-875f-44ef-bdf5-d0f3194a10b1)页面加载的公开数据。目录中的 19 个视频模型与插件完全一致。逐一比对了 26 个 H3 尺寸与公开价格的 5 个档位。
+- 使用官方 [New API rc.51 发布二进制](https://github.com/QuantumNous/new-api/releases/tag/v1.0.0-rc.51)执行 `plugin lint` 和 `plugin test`，17 个 fixture 全部通过。
+- 在独立的 rc.51 和 SQLite 测试库中，停用产生同名冲突的内置 Hailuo 后，安装并启用本插件，绑定类型 61 渠道。使用本地模拟上游生成成功和失败任务，核对实际预扣、结算及全额退款。
+- 模拟用量表达式按 `resolution=768P` 与 5 秒计费，每个任务预扣 50,000 quota，成功任务最终扣 50,000，失败任务退款后为 0。
+- 模拟普通按次 USD 0.02，5 秒和 2 张图片在 1.1.0 会预扣 100,000 quota。1.2.0 每次预扣 10,000 quota，成功最终扣 10,000，失败退款后为 0。
+- 从 New API 下载已完成的模拟视频，确认返回字节与模拟上游一致。
+
+上述价格仅用于测试。用户实际部署、XYSNAI 付费生成、输入视频实际计费时长和超分结算字段仍待验收。
