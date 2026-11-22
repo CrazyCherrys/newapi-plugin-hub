@@ -15,11 +15,20 @@ rc.51 安装时报 `MiniMax-H3` 与 `minimax-h3` 冲突时，先检查内置 Hai
 
 ## 配置 MiniMax H3 价格
 
-1.3.0 先规范化 H3 请求，再用实际转发的 `seconds`、`size`、`resolution` 和图片数计费。可继续使用已有表达式。`1280x720` 会转为 `1376x768` 并按 `768P` 计费，省略时长会按 4 秒计费，URL 图片对象会按一张 `images` 计量。给 LH 版启用 1080P 别名之前，请先确认该档位的上游成本并配置售价。[客户端尺寸映射](API.md#minimax-h3-型号与参数)
+插件自 1.3.0 起按实际转发的时长、分辨率档位和图片数计量。`1280x720` 会转为 `1376x768` 并归入 `768P`，省略时长会按 4 秒计费，URL 图片对象会按一张 `images` 计量。[客户端尺寸映射](API.md#minimax-h3-型号与参数)
 
-在 **系统设置 → 模型价格** 中找到 `minimax-h3`，选择 **任务用量定价 → 表达式编辑器**，粘贴下方整段。如果列出了多个提供方，在 DreamStudio Video 的插件级价格覆盖中设置，键为 `crazycherrys_xysnai-video::minimax-h3`。原始表达式输出 USD，最终扣费会乘以 New API 分组倍率。[New API 计费文档](https://docs.newapi.pro/zh/docs/plugins/billing)
+### 在 New API rc.51 保存价格
 
-表达式按 2026 年 11 月 20 日人民币中间价 **1 USD = ¥6.7131** 换算。XYSNAI 标准 H3 的输出档位从低到高为 ¥0.05、¥0.08、¥0.14、¥0.20、¥0.25 每秒。`images` 前 5 张免费，之后 ¥0.10 每张。根据实际结算汇率和计划售价调整表达式。[汇率中间价](https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do?endDate=2026-11-20&queryYN=true&startDate=2026-11-20) · [XYSNAI 上游费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4d25e564-875f-44ef-bdf5-d0f3194a10b1)
+1. 用超级管理员账号打开 **系统设置 → 计费与支付 → 模型定价 → 模型价格**。如果列表里找不到模型，查看 **未设置价格模型**，并确认已启用插件和渠道，渠道里填了该模型名。
+2. 选中模型，打开 **DreamStudio Video** 标签，开启 **为此服务方单独设置**。
+3. 将 **编辑器模式** 切到 **表达式编辑器**。在 **计费表达式** 文本框里全选替换为下方对应模型的整段公式。
+4. 保持表达式编辑器，点击 **保存模型价格** 并确认。三个模型各填一次。
+
+**请求规则计费** 接收数字倍率，会把输入乘到基础价上。把 `u("resolution") == "480P"` 填在这里会出现 `float64 * string`。页面的 **切换到 JSON** 用于固定价格和倍率字段。这两条任务用量公式应填在各模型的 **计费表达式** 框。[New API 计费文档](https://docs.newapi.pro/zh/docs/plugins/billing)
+
+### minimax-h3 和 minimax-h3-fl2v
+
+给 `minimax-h3` 和 `minimax-h3-fl2v` 分别粘贴下方同一段公式。公式按 2026 年 11 月 20 日人民币中间价 **1 USD = ¥6.7131** 换算，返回美元金额。New API 再应用分组倍率。480P、768P、1080P、2K、4K 的秒价依次为 ¥0.05、¥0.08、¥0.14、¥0.20、¥0.25。前 5 张 `images` 免费，之后 ¥0.10 每张。[汇率中间价](https://www.safe.gov.cn/AppStructured/hlw/RMBQuery.do?endDate=2026-11-20&queryYN=true&startDate=2026-11-20) · [H3 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4d25e564-875f-44ef-bdf5-d0f3194a10b1) · [FL2V 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2)
 
 ```text
 u("resolution") == "480P"
@@ -33,10 +42,21 @@ u("resolution") == "480P"
   : tier("4K", (u("seconds") * 0.25 + max(u("input_images") - 5, 0) * 0.10) / 6.7131)
 ```
 
-分组倍率为 `1` 时，用 `1376x768` 生成 5 秒视频的基础金额约为 `$0.059585`，传 6 张 `images` 则约为 `$0.074481`。这段配置已经在隔离的 rc.51 上验证了五个档位的预扣。
+分组倍率为 `1` 时，用 `1376x768` 生成 5 秒视频的基础金额约为 `$0.059585`，传 6 张 `images` 则约为 `$0.074481`。
 
-- **素材计费**。此表达式覆盖纯文本、明确传入的 `images` 和转换为 `images` 的 H3 图片对象。XYSNAI 按参考视频的实际时长收费，插件只上报视频数量。通过 `input_reference` 字段传入的旧格式字符串或上传文件仍计为未区分类型的参考素材。要与上游成本对齐，请先限制这些未能按素材实际用量计价的输入。
-- **H3 变体**。`minimax-h3-fl2v` 使用相同的公开费率，可在其价格项单独粘贴。`minimax-h3-lh` 的公开价格只有 `480P` 的 ¥0.01/秒和 `768P` 的 ¥0.04/秒，需要独立定价。[FL2V 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2) · [LH 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37)
+### minimax-h3-lh
+
+LH 公布的秒价为 `480P` ¥0.01、`768P` ¥0.04，图片仍是前 5 张免费，之后 ¥0.10 每张。**开放 LH 前，请把请求限制在 480P 和 768P**。以下公式的第二个分支会把其他档位也按 768P 收费。[LH 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37)
+
+```text
+u("resolution") == "480P"
+  ? tier("480P", (u("seconds") * 0.01 + max(u("input_images") - 5, 0) * 0.10) / 6.7131)
+  : tier("768P", (u("seconds") * 0.04 + max(u("input_images") - 5, 0) * 0.10) / 6.7131)
+```
+
+两段公式已在隔离的 rc.51 上验证保存和预扣。
+
+- **素材计费**。公式覆盖纯文本、明确传入的 `images` 和转换为 `images` 的 H3 图片对象。XYSNAI 按参考视频的实际时长收费，插件只上报视频数量。通过 `input_reference` 字段传入的旧格式字符串或上传文件仍计为未区分类型的参考素材。要与上游成本对齐，请先限制这些未能按素材实际用量计价的输入。
 - **其他模型**。按各自上游口径和用量字段定价。部分 Seedance 型号按任务计费。视频超分按上游实际用量收费，现阶段可配置明确的按次售价，实际时长结算需要先核实上游返回字段。[XYSNAI 模型目录](https://xysnai.cn/zh/models)
 
 ## 排查接入
