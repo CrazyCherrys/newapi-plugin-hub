@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import vm from 'node:vm';
 import { createHash } from 'node:crypto';
@@ -31,15 +32,23 @@ export async function metadata(code) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(meta.key) || !versionPattern.test(meta.version) || meta.apiVersion !== 1) throw Error('Invalid plugin identity or API version');
   return meta;
 }
-async function config(base) {
-  const cfg = JSON.parse(await read(base, 'marketplace.json'));
+function validateConfig(cfg, base) {
   const keys = new Set();
   for (const item of cfg.plugins) {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.key) || keys.has(item.key)) throw Error('Invalid or duplicate plugin key');
     keys.add(item.key);
     safePath(base, item.source);
   }
+  const retired = cfg.retiredPlugins ?? [];
+  if (!Array.isArray(retired) || new Set(retired).size !== retired.length) throw Error('Invalid retired plugin list');
+  for (const key of retired) {
+    if (typeof key !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(key) || keys.has(key)) throw Error('Invalid or active retired plugin key');
+    if (existsSync(safePath(base, `plugins/tasks/${key}`))) throw Error(`Retired plugin directory must be fully removed: ${key}`);
+  }
   return cfg;
+}
+async function config(base) {
+  return validateConfig(JSON.parse(await read(base, 'marketplace.json')), base);
 }
 async function changelog(base, dir, meta) {
   for (const [file, locale] of [['CHANGELOG.md', 'en'], ['CHANGELOG.zh-CN.md', 'zh-CN']]) {
@@ -89,7 +98,14 @@ export async function buildIndex(base = root) {
       if (meta.key !== item.key || meta.version !== version) throw Error(`Release identity mismatch: ${file}`);
       await changelog(base, `${dir}/${version}`, meta);
       latestMeta ??= meta;
-      releases.push({ version, path: file, sha256: hash(bytes), minApiVersion: meta.apiVersion, kind: 'task' });
+      releases.push({ version, path: file, sha256: hash(bytes), minApiVersion: meta.apiVersion, kind: 'task',
+        baseUrl: meta.baseUrl, auth: meta.auth,
+        changelog: {
+          path: `${dir}/${version}/CHANGELOG.md`, sha256: hash(await read(base, `${dir}/${version}/CHANGELOG.md`)),
+          translations: { 'zh-CN': {
+            path: `${dir}/${version}/CHANGELOG.zh-CN.md`, sha256: hash(await read(base, `${dir}/${version}/CHANGELOG.zh-CN.md`))
+          } }
+        } });
     }
     const icon = entries.find(e => e.isFile() && /^icon\.(png|svg)$/.test(e.name));
     if (!icon) throw Error(`Missing logo: ${dir}`);
@@ -101,20 +117,28 @@ export async function buildIndex(base = root) {
     const sourceMeta = await metadata(sourceBytes.toString());
     const pkg = JSON.parse(await read(base, `${item.source}/package.json`));
     if (sourceMeta.key !== item.key || sourceMeta.version !== m.version || pkg.version !== m.version || hash(sourceBytes) !== releases[0].sha256) throw Error(`Source differs from latest release: ${item.key}; bump version and run release`);
-    plugins.push({ key: m.key, name: m.name, description: m.description,
+    releases[0].readme = { path: `${item.source}/README.md`, sha256: hash(await read(base, `${item.source}/README.md`)) };
+    plugins.push({ key: m.key, name: m.name, description: m.description, website: m.website,
       iconFile: { path: iconPath, sha256: hash(iconBytes) },
+      routes: m.routes ?? [], task: true, provider: false, transform: false,
       protocols: (m.protocols ?? []).map(p => typeof p === 'string' ? { name: p } : p),
       models: m.models ?? [], usageSchema: m.usageSchema, usageExamples: m.usageExamples,
+      usageProfiles: m.usageProfiles,
       latest: m.version, versions: releases });
   }
   return json({ indexVersion: 1, name: cfg.name, plugins });
 }
 export function immutableAgainst(ref, base = root) {
   if (!/^[a-f0-9]{40}$/.test(ref)) throw Error('Base must be a full Git commit SHA');
+  const cfg = validateConfig(JSON.parse(readFileSync(safePath(base, 'marketplace.json'), 'utf8')), base);
+  const retired = new Set(cfg.retiredPlugins ?? []);
   const oldFiles = execFileSync('git', ['ls-tree', '-r', '--name-only', ref, '--', 'plugins/tasks'], { cwd: base, encoding: 'utf8' }).trim().split('\n');
   const published = new Set(oldFiles.map(n => n.match(/^(plugins\/tasks\/[^/]+\/\d+\.\d+\.\d+)\//)?.[1]).filter(Boolean));
   const names = execFileSync('git', ['diff', '--no-renames', '--name-only', ref, '--', 'plugins/tasks'], { cwd: base, encoding: 'utf8' }).trim().split('\n');
-  for (const name of names) if (published.has(name.match(/^(plugins\/tasks\/[^/]+\/\d+\.\d+\.\d+)\//)?.[1])) throw Error(`Published directory changed: ${name}`);
+  for (const name of names) {
+    const match = name.match(/^(plugins\/tasks\/([^/]+)\/\d+\.\d+\.\d+)\//);
+    if (match && published.has(match[1]) && !retired.has(match[2])) throw Error(`Published directory changed: ${name}`);
+  }
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {

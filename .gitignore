@@ -22,3 +22,6 @@ smoke-*/
 
 # Local repository archives
 *.bundle
+
+# Original local plugin import material
+/参考/

@@ -1,0 +1,8 @@
+{
+  "model": "xysnai/wan3.0-video",
+  "prompt": "镜头缓慢推进，一只橘猫在窗边晒太阳",
+  "seconds": 5,
+  "resolution": "720P",
+  "aspect_ratio": "16:9",
+  "generate_audio": true
+}

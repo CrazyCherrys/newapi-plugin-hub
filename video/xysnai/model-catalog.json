@@ -1,0 +1,363 @@
+{
+  "checked_on": "2026-11-22",
+  "observation": "Public XYSNAI documentation read through the rendered website. Documentary compatibility is not paid generation verification.",
+  "base_url": "https://xysnai.cn",
+  "transport": {
+    "auth": "Bearer platform_api_key",
+    "create": {
+      "method": "POST",
+      "path": "/v1/videos",
+      "accepted_status": 202
+    },
+    "query": {
+      "method": "GET",
+      "path": "/v1/videos/{video_id}"
+    },
+    "content": {
+      "method": "GET",
+      "path": "/v1/videos/{video_id}/content",
+      "variant": "video"
+    },
+    "states": [
+      "queued",
+      "in_progress",
+      "completed",
+      "failed"
+    ],
+    "body_formats": [
+      "application/json",
+      "multipart/form-data"
+    ]
+  },
+  "models": [
+    {
+      "upstream_model": "wan3.0-video",
+      "public_model": "xysnai/wan3.0-video",
+      "family": "wan",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=bbc49ae0-c92d-46dd-876f-bf56e1b0579a"
+    },
+    {
+      "upstream_model": "minimax-h3",
+      "public_model": "xysnai/minimax-h3",
+      "family": "h3",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=4d25e564-875f-44ef-bdf5-d0f3194a10b1"
+    },
+    {
+      "upstream_model": "minimax-h3-fl2v",
+      "public_model": "xysnai/minimax-h3-fl2v",
+      "family": "h3",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2"
+    },
+    {
+      "upstream_model": "minimax-h3-lh",
+      "public_model": "xysnai/minimax-h3-lh",
+      "family": "h3",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37"
+    },
+    {
+      "upstream_model": "sd-2.0",
+      "public_model": "xysnai/sd-2.0",
+      "family": "sd",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=6aa239ef-cbaa-4818-a01c-0ec39a1580a9"
+    },
+    {
+      "upstream_model": "sd-2.5",
+      "public_model": "xysnai/sd-2.5",
+      "family": "sd",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=6ff9b9e1-67b0-45f7-8d9a-80a0e780c13d"
+    },
+    {
+      "upstream_model": "mg-seedance-2.0-720p",
+      "public_model": "xysnai/mg-seedance-2.0-720p",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=5c744e97-1298-40a7-82a8-87396c880d7f"
+    },
+    {
+      "upstream_model": "mg-seedance-2.5-480p",
+      "public_model": "xysnai/mg-seedance-2.5-480p",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=5fa98546-07d2-4c6e-8acb-d3ddcea69692"
+    },
+    {
+      "upstream_model": "mg-seedance-2.5-4k",
+      "public_model": "xysnai/mg-seedance-2.5-4k",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=df140871-c451-4931-a8d9-3b7d9f7775e4"
+    },
+    {
+      "upstream_model": "mg-seedance-2.5-720p",
+      "public_model": "xysnai/mg-seedance-2.5-720p",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=e75fbf94-843e-4416-ba70-5dcde8839565"
+    },
+    {
+      "upstream_model": "ov-seedance-2.5-1080p-nv",
+      "public_model": "xysnai/ov-seedance-2.5-1080p-nv",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=29e0767d-9c84-4c94-b34a-ee541e240eeb"
+    },
+    {
+      "upstream_model": "ov-seedance-2.5-480p-nv",
+      "public_model": "xysnai/ov-seedance-2.5-480p-nv",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=ed292847-da54-415f-8449-0cf77e707ee6"
+    },
+    {
+      "upstream_model": "ov-seedance-2.5-720p-nv",
+      "public_model": "xysnai/ov-seedance-2.5-720p-nv",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=4c0bea6b-ceeb-4872-98c0-fb49841baf89"
+    },
+    {
+      "upstream_model": "特价V2seedance-2.5-720p-30s",
+      "public_model": "xysnai/特价V2seedance-2.5-720p-30s",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=fbca8af2-0e5d-4e94-9169-2bf8d54af1c3"
+    },
+    {
+      "upstream_model": "特价seedance-2.5-480p-30s",
+      "public_model": "xysnai/特价seedance-2.5-480p-30s",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=9455f671-103b-4603-84f6-0eed4391d3f4"
+    },
+    {
+      "upstream_model": "特价seedance-2.5-nv-1080p-30s",
+      "public_model": "xysnai/特价seedance-2.5-nv-1080p-30s",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=71747033-0de3-4ae7-9431-2282e23de551"
+    },
+    {
+      "upstream_model": "特价seedance-2.5-nv-480p",
+      "public_model": "xysnai/特价seedance-2.5-nv-480p",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=1cf91b42-6a3f-486c-8a65-7ced77e34fb1"
+    },
+    {
+      "upstream_model": "特价seedance-2.5-nv-720p-30s",
+      "public_model": "xysnai/特价seedance-2.5-nv-720p-30s",
+      "family": "seedance_fixed",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=fe212ef6-5ecd-4c4c-8ec1-33485b0b57d8"
+    },
+    {
+      "upstream_model": "Video-upscale2.6",
+      "public_model": "xysnai/Video-upscale2.6",
+      "family": "upscale",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=962644b7-a8ef-463e-8af5-7b05cf04f008"
+    }
+  ],
+  "families": {
+    "wan": {
+      "required": [
+        "seconds",
+        "resolution"
+      ],
+      "seconds": {
+        "type": "integer",
+        "min": 2,
+        "max": 30
+      },
+      "resolution": [
+        "480P",
+        "720P",
+        "1080P"
+      ],
+      "fields": [
+        "seed",
+        "prompt",
+        "seconds",
+        "web_link",
+        "watermark",
+        "last_image",
+        "resolution",
+        "first_image",
+        "aspect_ratio",
+        "prompt_extend",
+        "generate_audio",
+        "reference_file",
+        "reference_audios",
+        "reference_images",
+        "reference_videos"
+      ],
+      "max_media_counts": {
+        "reference_images": 10,
+        "reference_videos": 5,
+        "reference_audios": 5
+      },
+      "note": "The page describes DashScope internally, but the client-facing create path is still /v1/videos."
+    },
+    "h3": {
+      "required": [
+        "prompt",
+        "seconds",
+        "size"
+      ],
+      "seconds": {
+        "type": "integer",
+        "min": 4,
+        "max": 15
+      },
+      "size": [
+        "864x480",
+        "1376x768",
+        "1920x1088",
+        "480x864",
+        "768x1376",
+        "1088x1920",
+        "640x640",
+        "1024x1024",
+        "1440x1440",
+        "544x800",
+        "832x1248",
+        "1184x1760",
+        "800x544",
+        "1248x832",
+        "1760x1184",
+        "576x736",
+        "896x1184",
+        "1248x1664",
+        "736x576",
+        "1184x896",
+        "1664x1248",
+        "992x416",
+        "1568x672",
+        "2208x960",
+        "2K",
+        "4K"
+      ],
+      "fields": [
+        "mode",
+        "size",
+        "images",
+        "prompt",
+        "seconds",
+        "aspect_ratio",
+        "prompt_enhance",
+        "input_reference",
+        "reference_audio",
+        "reference_video",
+        "reference_audios",
+        "reference_videos"
+      ],
+      "max_media_counts": {
+        "images": 9,
+        "reference_videos": 3,
+        "reference_audios": 3
+      },
+      "note": "fl2v is described as first/last-frame mode; the generic published sample lacks frame semantics, so frame ordering remains unverified."
+    },
+    "sd": {
+      "required": [
+        "prompt",
+        "seconds",
+        "resolution"
+      ],
+      "seconds": {
+        "type": "integer",
+        "min": 4,
+        "max": 30
+      },
+      "resolution": [
+        "480p",
+        "720p",
+        "1080p",
+        "2k",
+        "4k"
+      ],
+      "fields": [
+        "seed",
+        "prompt",
+        "seconds",
+        "watermark",
+        "last_image",
+        "resolution",
+        "first_image",
+        "aspect_ratio",
+        "generate_audio",
+        "reference_audios",
+        "reference_images",
+        "reference_videos"
+      ],
+      "max_media_counts": {
+        "reference_images": 30,
+        "reference_videos": 10,
+        "reference_audios": 10
+      }
+    },
+    "seedance_fixed": {
+      "required": [
+        "prompt",
+        "seconds",
+        "aspect_ratio"
+      ],
+      "seconds": {
+        "type": "integer",
+        "min": 4,
+        "max": 30
+      },
+      "aspect_ratio": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9",
+        "adaptive"
+      ],
+      "quality": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "fields": [
+        "size",
+        "prompt",
+        "quality",
+        "seconds",
+        "aspect_ratio",
+        "reference_audios",
+        "reference_videos",
+        "reference_image_urls"
+      ],
+      "max_media_counts": {
+        "reference_image_urls": 30,
+        "reference_videos": 10,
+        "reference_audios": 10
+      },
+      "note": "size is a string without a public enum; do not import Sora dimension restrictions."
+    },
+    "upscale": {
+      "fields": [
+        "scale",
+        "reference_video",
+        "reference_videos",
+        "enhancement_strength"
+      ],
+      "scale": {
+        "type": "number",
+        "min": 1,
+        "max": 4
+      },
+      "enhancement_strength": {
+        "type": "number",
+        "min": 0.5,
+        "max": 1.5
+      },
+      "max_media_counts": {
+        "reference_videos": 1
+      },
+      "billing": "Documented as actual instance-occupation time charged after completion, not output video duration. Confirm completed response metering before using billing_seconds for final price."
+    }
+  },
+  "verification": {
+    "live_confirmed_by_user": [
+      "minimax-h3 text-to-video 5 seconds 1376x768; create, completed query, MP4 download"
+    ],
+    "not_live_tested_by_assistant": [
+      "all paid model generations",
+      "multipart upstream acceptance",
+      "HEAD and Range behavior",
+      "live New API installation",
+      "upscale billing_seconds unit and settlement"
+    ]
+  }
+}

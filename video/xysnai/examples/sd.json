@@ -1,0 +1,7 @@
+{
+  "model": "xysnai/sd-2.5",
+  "prompt": "海边日出，镜头缓慢向前移动",
+  "seconds": 5,
+  "resolution": "720p",
+  "aspect_ratio": "16:9"
+}

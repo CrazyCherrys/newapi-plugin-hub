@@ -1,0 +1,28 @@
+{
+  "date": "2026-11-22",
+  "plugin_file": "plugin.js",
+  "sha256": "8c3f2b9e44457667a935bc8cf4acfa4ece5b982312fdbfb68f3c4d89cf7f4292",
+  "offline_node_groups_passed": 21,
+  "official_host_format_golden_cases_passed_in_node": 16,
+  "declared_models": 19,
+  "h3_sizes_checked": 26,
+  "live_http_requests": 0,
+  "new_api_binary_cli_run": false,
+  "live_installed": false,
+  "limitations": [
+    "New API plugin runtime CLI needs to be run on the target release; fixtures are supplied.",
+    "XYSNAI live multipart and HEAD compatibility not exercised.",
+    "Upscale actual usage billing remains unverified; use explicit per-task pricing first."
+  ],
+  "official_rc51_metadata_schema_validated": true,
+  "standalone_request_examples_checked": 5,
+  "readme_sandbox_examples_checked": 1,
+  "hub_integration": {
+    "source_renamed_without_code_changes": true,
+    "marketplace_tool_tests_passed": 5,
+    "catalog_and_standalone_examples_checked_by_test_suite": true,
+    "usage_profiles_preserved_in_index": true,
+    "new_api_binary_cli_run": false,
+    "live_http_requests": 0
+  }
+}

@@ -22,8 +22,13 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
   try {
     await fs.copyFile(path.join(root, 'marketplace.json'), path.join(temp, 'marketplace.json'));
     await fs.cp(path.join(root, 'video'), path.join(temp, 'video'), { recursive: true });
-    await fs.mkdir(path.join(temp, 'plugins/tasks/leonardo-video'), { recursive: true });
-    await fs.copyFile(path.join(root, 'plugins/tasks/leonardo-video/icon.png'), path.join(temp, 'plugins/tasks/leonardo-video/icon.png'));
+    const cfg = JSON.parse(await fs.readFile(path.join(root, 'marketplace.json'), 'utf8'));
+    for (const item of cfg.plugins) {
+      const dir = `plugins/tasks/${item.key}`;
+      await fs.mkdir(path.join(temp, dir), { recursive: true });
+      const icon = (await fs.readdir(path.join(root, dir))).find(name => /^icon\.(png|svg)$/.test(name));
+      await fs.copyFile(path.join(root, dir, icon), path.join(temp, dir, icon));
+    }
     await release(temp);
     const first = await buildIndex(temp);
     await release(temp);
@@ -31,6 +36,18 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     const entry = JSON.parse(first).plugins[0];
     assert.equal(hash(await fs.readFile(path.join(temp, entry.versions[0].path))), entry.versions[0].sha256);
     assert.equal(hash(await fs.readFile(path.join(temp, entry.iconFile.path))), entry.iconFile.sha256);
+    const meta = await metadata(await fs.readFile(path.join(temp, entry.versions[0].path), 'utf8'));
+    assert.deepEqual(entry.usageProfiles, meta.usageProfiles);
+    assert.equal(entry.task, true);
+    assert.equal(entry.versions[0].baseUrl, meta.baseUrl);
+    assert.equal(entry.versions[0].auth, meta.auth);
+    for (const doc of [entry.versions[0].readme, entry.versions[0].changelog,
+      entry.versions[0].changelog.translations['zh-CN']]) {
+      assert.equal(hash(await fs.readFile(path.join(temp, doc.path))), doc.sha256);
+    }
+    assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
+    assert.equal(entry.usageProfiles.find(p => p.models.includes('xysnai/minimax-h3')).schema.size.enum.length, 26);
+    assert.ok(entry.usageProfiles.find(p => p.models.includes('xysnai/Video-upscale2.6')).schema.billing_seconds);
     await fs.appendFile(path.join(temp, entry.versions[0].path), '\n// tampered\n');
     await assert.rejects(release(temp), /immutable/);
     await assert.rejects(buildIndex(temp), /Source differs/);
@@ -48,6 +65,8 @@ test('Git baseline prevents additions or edits inside published versions', async
     const oldDir = path.join(temp, 'plugins/tasks/example/1.0.0');
     await fs.mkdir(oldDir, { recursive: true });
     await fs.writeFile(path.join(oldDir, 'plugin.js'), '// original\n');
+    const cfg = { name: 'Test', plugins: [{ key: 'example', source: 'video/example' }] };
+    await fs.writeFile(path.join(temp, 'marketplace.json'), JSON.stringify(cfg));
     git('add', '.');
     git('commit', '-m', 'initial');
     const ref = git('rev-parse', 'HEAD');
@@ -64,5 +83,19 @@ test('Git baseline prevents additions or edits inside published versions', async
     await fs.writeFile(path.join(temp, 'plugins/tasks/example/1.0.1/plugin.js'), '// new\n');
     git('add', '.');
     immutableAgainst(ref, temp);
+    await fs.rm(oldDir, { recursive: true });
+    assert.throws(() => immutableAgainst(ref, temp), /Published directory changed/);
+    // Removing a registration alone must not authorize deleting published files.
+    cfg.plugins = [];
+    await fs.writeFile(path.join(temp, 'marketplace.json'), JSON.stringify(cfg));
+    assert.throws(() => immutableAgainst(ref, temp), /Published directory changed/);
+    cfg.retiredPlugins = ['example'];
+    await fs.writeFile(path.join(temp, 'marketplace.json'), JSON.stringify(cfg));
+    assert.throws(() => immutableAgainst(ref, temp), /fully removed/);
+    await fs.rm(path.join(temp, 'plugins/tasks/example'), { recursive: true });
+    immutableAgainst(ref, temp);
+    cfg.plugins = [{ key: 'example', source: 'video/example' }];
+    await fs.writeFile(path.join(temp, 'marketplace.json'), JSON.stringify(cfg));
+    assert.throws(() => immutableAgainst(ref, temp), /active retired/);
   } finally { await fs.rm(temp, { recursive: true, force: true }); }
 });
