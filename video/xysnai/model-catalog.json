@@ -243,7 +243,7 @@
         "reference_videos": 3,
         "reference_audios": 3
       },
-      "note": "fl2v is described as first/last-frame mode; the generic published sample lacks frame semantics, so frame ordering remains unverified."
+      "note": "For minimax-h3-fl2v, the verified multipart request uses one or two JPEG file parts named images. Send the first frame first and the optional last frame second."
     },
     "sd": {
       "required": [
@@ -352,9 +352,12 @@
     "live_confirmed_by_user": [
       "minimax-h3 text-to-video 5 seconds 1376x768; create, completed query, MP4 download"
     ],
+    "live_confirmed_through_new_api": [
+      "minimax-h3-fl2v multipart JPEG at 4 seconds and 864x480; single first frame and ordered first/last frames; completed query, MP4 download and decoded frame comparison"
+    ],
     "not_live_tested_by_assistant": [
       "all paid model generations",
-      "multipart upstream acceptance",
+      "multipart upstream acceptance outside the verified FL2V JPEG requests",
       "HEAD and Range behavior",
       "live New API installation",
       "upscale billing_seconds unit and settlement"

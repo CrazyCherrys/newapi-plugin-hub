@@ -74,4 +74,4 @@ u("resolution") == "480P"
 | 上游鉴权失败 | 检查类型 61 渠道的 XYSNAI API Key 和 Base URL |
 | 任务长期无进度或无法下载 | 根据 New API 任务 ID 查看后台轮询、上游响应和内容代理日志 |
 
-上线验收优先使用 JSON。真实 XYSNAI 请求、multipart 上传及 HEAD/Range 以部署后的实际测试为准。[验证范围](VALIDATION.md)
+上线验收时按型号选择请求示例。FL2V 的 JPEG 单图和双图已通过测试网关实测，使用 `multipart/form-data` 上传。其他型号的 multipart 上传及 HEAD/Range 以部署后的实际测试为准。[FL2V 请求示例](API.md#h3-fl2v-首尾帧请求示例) · [验证范围](VALIDATION.md)

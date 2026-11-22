@@ -19,7 +19,7 @@ export NEW_API_TOKEN='替换为你的 New API 令牌'
 
 ## 创建任务
 
-下方以标准版 `minimax-h3` 为例，生成一段 5 秒视频。[H3 型号与参数](#minimax-h3-型号与参数) · [参考图调用示例](#h3-参考图请求示例) · [其他模型](#其他模型)
+下方以标准版 `minimax-h3` 为例，生成一段 5 秒视频。[H3 型号与参数](#minimax-h3-型号与参数) · [H3 参考图](#h3-参考图请求示例) · [FL2V 单图和双图](#h3-fl2v-首尾帧请求示例) · [其他模型](#其他模型)
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -84,7 +84,7 @@ curl --fail --silent --show-error \
 |---|---|
 | `minimax-h3` | 标准版，可使用上面的文生视频示例 |
 | `minimax-h3-lh` | [H3 LH 请求示例](#h3-lh-请求示例)，尺寸按服务方开放的档位选择 |
-| `minimax-h3-fl2v` | [H3 首尾帧版基础请求](#h3-fl2v-基础请求)，素材格式见该示例前的说明 |
+| `minimax-h3-fl2v` | 首帧必填，尾帧可选。[FL2V 单图和双图](#h3-fl2v-首尾帧请求示例) |
 
 | 字段 | 用法 |
 |---|---|
@@ -92,7 +92,7 @@ curl --fail --silent --show-error \
 | `prompt` | 必填，用文字描述画面和动作 |
 | `seconds` | 可选，`4` 至 `15` 的整数，也可传数字字符串。省略时使用 `4` 秒 |
 | `size` | 可选，见下方常用画幅和 [2K、4K 档位](#h3-的-2k-和-4k)。省略时使用竖屏 `768x1376` |
-| `images` | 可选。服务方开放参考图时，传入 1 至 9 个可公开读取的图片 URL |
+| `images` | H3 标准版和已开放参考图的 LH 可传 1 至 9 个可公开读取的图片 URL。FL2V 使用 `multipart/form-data` 发送 1 至 2 份同名 `images` 图片文件，按首帧、尾帧顺序排列 |
 
 ### H3 常用画幅
 
@@ -212,22 +212,40 @@ curl --fail-with-body --silent --show-error \
   }'
 ```
 
-### H3 FL2V 基础请求
+### H3 FL2V 首尾帧请求示例
 
-XYSNAI 将此型号标为首尾帧模式，但公开示例只包含模型名、提示词、时长和尺寸。首尾帧专用字段与数组顺序尚未公布，插件会拒绝 FL2V 的 `input_reference` 图片对象。实际传入首尾帧前，请向服务方确认字段与顺序。下方命令对应官方的无素材基础请求。[XYSNAI FL2V 接口文档](https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2)
+向 `POST /v1/videos` 提交 `multipart/form-data`。首帧必填，尾帧可选。每张图片都作为独立的二进制文件提交，**字段都叫 `images`**。传两张图时，**第一份 `images` 是首帧，第二份 `images` 是尾帧**。`curl --form` 按命令中的顺序发送文件，并自动生成 multipart 的 `Content-Type` 和 boundary。
+
+下面的命令沿用上文的 New API 地址和令牌。将当前目录下的 JPEG 文件名替换成你的文件路径。示例使用 `864x480` 和 4 秒。
+
+#### 单图（仅首帧）
 
 ```bash
 curl --fail-with-body --silent --show-error \
   "$NEW_API_BASE_URL/v1/videos" \
   -H "Authorization: Bearer $NEW_API_TOKEN" \
-  -H 'Content-Type: application/json' \
-  --data '{
-    "model": "minimax-h3-fl2v",
-    "prompt": "一只橘猫望向窗外，镜头缓慢靠近",
-    "seconds": 5,
-    "size": "1376x768"
-  }'
+  --form-string 'model=minimax-h3-fl2v' \
+  --form-string 'prompt=从首帧开始，镜头缓慢推进' \
+  --form-string 'seconds=4' \
+  --form-string 'size=864x480' \
+  --form 'images=@./first.jpg;type=image/jpeg'
 ```
+
+#### 双图（首帧和尾帧）
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  --form-string 'model=minimax-h3-fl2v' \
+  --form-string 'prompt=固定镜头，画面平滑过渡' \
+  --form-string 'seconds=4' \
+  --form-string 'size=864x480' \
+  --form 'images=@./first.jpg;type=image/jpeg' \
+  --form 'images=@./last.jpg;type=image/jpeg'
+```
+
+创建后使用返回的 `id` 查询，任务完成后从 `/v1/videos/{id}/content` 下载。单首帧和首尾双帧均已在测试网关成功生成并解码核对。[查询任务](#查询任务) · [下载视频](#下载视频) · [FL2V 验证记录](VALIDATION.md#fl2v-multipart-真实生成)
 
 ## 其他模型
 
