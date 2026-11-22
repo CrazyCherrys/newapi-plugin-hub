@@ -32,115 +32,115 @@
   "models": [
     {
       "upstream_model": "wan3.0-video",
-      "public_model": "xysnai/wan3.0-video",
+      "public_model": "wan3.0-video",
       "family": "wan",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=bbc49ae0-c92d-46dd-876f-bf56e1b0579a"
     },
     {
       "upstream_model": "minimax-h3",
-      "public_model": "xysnai/minimax-h3",
+      "public_model": "minimax-h3",
       "family": "h3",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=4d25e564-875f-44ef-bdf5-d0f3194a10b1"
     },
     {
       "upstream_model": "minimax-h3-fl2v",
-      "public_model": "xysnai/minimax-h3-fl2v",
+      "public_model": "minimax-h3-fl2v",
       "family": "h3",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2"
     },
     {
       "upstream_model": "minimax-h3-lh",
-      "public_model": "xysnai/minimax-h3-lh",
+      "public_model": "minimax-h3-lh",
       "family": "h3",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37"
     },
     {
       "upstream_model": "sd-2.0",
-      "public_model": "xysnai/sd-2.0",
+      "public_model": "sd-2.0",
       "family": "sd",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=6aa239ef-cbaa-4818-a01c-0ec39a1580a9"
     },
     {
       "upstream_model": "sd-2.5",
-      "public_model": "xysnai/sd-2.5",
+      "public_model": "sd-2.5",
       "family": "sd",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=6ff9b9e1-67b0-45f7-8d9a-80a0e780c13d"
     },
     {
       "upstream_model": "mg-seedance-2.0-720p",
-      "public_model": "xysnai/mg-seedance-2.0-720p",
+      "public_model": "mg-seedance-2.0-720p",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=5c744e97-1298-40a7-82a8-87396c880d7f"
     },
     {
       "upstream_model": "mg-seedance-2.5-480p",
-      "public_model": "xysnai/mg-seedance-2.5-480p",
+      "public_model": "mg-seedance-2.5-480p",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=5fa98546-07d2-4c6e-8acb-d3ddcea69692"
     },
     {
       "upstream_model": "mg-seedance-2.5-4k",
-      "public_model": "xysnai/mg-seedance-2.5-4k",
+      "public_model": "mg-seedance-2.5-4k",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=df140871-c451-4931-a8d9-3b7d9f7775e4"
     },
     {
       "upstream_model": "mg-seedance-2.5-720p",
-      "public_model": "xysnai/mg-seedance-2.5-720p",
+      "public_model": "mg-seedance-2.5-720p",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=e75fbf94-843e-4416-ba70-5dcde8839565"
     },
     {
       "upstream_model": "ov-seedance-2.5-1080p-nv",
-      "public_model": "xysnai/ov-seedance-2.5-1080p-nv",
+      "public_model": "ov-seedance-2.5-1080p-nv",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=29e0767d-9c84-4c94-b34a-ee541e240eeb"
     },
     {
       "upstream_model": "ov-seedance-2.5-480p-nv",
-      "public_model": "xysnai/ov-seedance-2.5-480p-nv",
+      "public_model": "ov-seedance-2.5-480p-nv",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=ed292847-da54-415f-8449-0cf77e707ee6"
     },
     {
       "upstream_model": "ov-seedance-2.5-720p-nv",
-      "public_model": "xysnai/ov-seedance-2.5-720p-nv",
+      "public_model": "ov-seedance-2.5-720p-nv",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=4c0bea6b-ceeb-4872-98c0-fb49841baf89"
     },
     {
       "upstream_model": "特价V2seedance-2.5-720p-30s",
-      "public_model": "xysnai/特价V2seedance-2.5-720p-30s",
+      "public_model": "特价V2seedance-2.5-720p-30s",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=fbca8af2-0e5d-4e94-9169-2bf8d54af1c3"
     },
     {
       "upstream_model": "特价seedance-2.5-480p-30s",
-      "public_model": "xysnai/特价seedance-2.5-480p-30s",
+      "public_model": "特价seedance-2.5-480p-30s",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=9455f671-103b-4603-84f6-0eed4391d3f4"
     },
     {
       "upstream_model": "特价seedance-2.5-nv-1080p-30s",
-      "public_model": "xysnai/特价seedance-2.5-nv-1080p-30s",
+      "public_model": "特价seedance-2.5-nv-1080p-30s",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=71747033-0de3-4ae7-9431-2282e23de551"
     },
     {
       "upstream_model": "特价seedance-2.5-nv-480p",
-      "public_model": "xysnai/特价seedance-2.5-nv-480p",
+      "public_model": "特价seedance-2.5-nv-480p",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=1cf91b42-6a3f-486c-8a65-7ced77e34fb1"
     },
     {
       "upstream_model": "特价seedance-2.5-nv-720p-30s",
-      "public_model": "xysnai/特价seedance-2.5-nv-720p-30s",
+      "public_model": "特价seedance-2.5-nv-720p-30s",
       "family": "seedance_fixed",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=fe212ef6-5ecd-4c4c-8ec1-33485b0b57d8"
     },
     {
       "upstream_model": "Video-upscale2.6",
-      "public_model": "xysnai/Video-upscale2.6",
+      "public_model": "Video-upscale2.6",
       "family": "upscale",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=962644b7-a8ef-463e-8af5-7b05cf04f008"
     }

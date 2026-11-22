@@ -1,5 +1,5 @@
 {
-  "model": "xysnai/mg-seedance-2.5-720p",
+  "model": "mg-seedance-2.5-720p",
   "prompt": "海边日出，镜头缓慢向前移动",
   "seconds": 5,
   "aspect_ratio": "16:9"

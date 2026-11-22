@@ -17,9 +17,9 @@ function test(name, fn) {
 }
 function decode(model, payload, extra = {}) {
   return plugin.protocols.openai_video.decodeRequest({
-    model: 'xysnai/' + model, upstreamModel: 'xysnai/' + model,
+    model: model, upstreamModel: model,
     protocol: 'openai_video', operation: 'create', method: 'POST', path: '/v1/videos',
-    body: { kind: 'json', value: { model: 'xysnai/' + model, ...payload } }, ...extra
+    body: { kind: 'json', value: { model: model, ...payload } }, ...extra
   });
 }
 function driver(model, payload, extra = {}) {
@@ -52,13 +52,13 @@ test('Hub catalog, published source checksum and request examples match the plug
   assert.equal(createHash('sha256').update(source).digest('hex'), summary.sha256);
   assert.deepEqual(catalog.models.map(m => m.public_model).sort(), plugin.meta.models.toSorted());
   for (const example of examples) {
-    const model = example.model.slice('xysnai/'.length);
+    const model = example.model;
     assert.equal(plugin.buildSubmitRequest(driver(model, example)).body.model, model);
   }
 });
-test('manifest declares 19 isolated model names, one protocol, and no legacy channel takeover', () => {
+test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
-  assert.equal(plugin.meta.version, '1.0.1');
+  assert.equal(plugin.meta.version, '1.1.0');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
@@ -69,6 +69,20 @@ test('manifest declares 19 isolated model names, one protocol, and no legacy cha
   const profiled = plugin.meta.usageProfiles.flatMap(p => p.models);
   assert.equal(new Set(profiled).size, 19);
   assert.deepEqual(profiled.toSorted(), plugin.meta.models.toSorted());
+});
+test('public models and pricing profiles use upstream names without a provider prefix', () => {
+  assert.deepEqual(plugin.meta.models.toSorted(), catalog.models.map(m => m.upstream_model).sort());
+  assert.ok(plugin.meta.models.every(model => !model.includes('/')));
+  for (const profile of plugin.meta.usageProfiles) {
+    assert.ok(profile.models.every(model => !model.includes('/')));
+  }
+  const payload = { prompt: 'cat', seconds: 5, size: '1376x768' };
+  assert.throws(() => decode('xysnai/minimax-h3', payload), /Unsupported XYSNAI model/);
+  const ctx = driver('minimax-h3', payload);
+  assert.throws(() => plugin.buildSubmitRequest({ ...ctx, upstreamModel: 'xysnai/minimax-h3' }), /Unsupported XYSNAI model/);
+  const submit = plugin.buildSubmitRequest(ctx);
+  assert.equal(submit.body.model, 'minimax-h3');
+  assert.equal(submit.rewriteModel, 'minimax-h3');
 });
 test('H3 accepts numeric and string seconds, sends a number, preserves arrays/false/zero/extra fields', () => {
   for (const seconds of [5, '5']) {
@@ -92,7 +106,7 @@ test('H3 accepts numeric and string seconds, sends a number, preserves arrays/fa
   }
 });
 test('all 26 documented H3 sizes pass request and usage validation', () => {
-  const sizes = profile('xysnai/minimax-h3').size.enum;
+  const sizes = profile('minimax-h3').size.enum;
   assert.equal(sizes.length, 26);
   for (const size of sizes) {
     const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size });
@@ -102,8 +116,7 @@ test('all 26 documented H3 sizes pass request and usage validation', () => {
   assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '768P' }), /size/);
 });
 test('all 19 model examples build one common create route with valid profile facts', () => {
-  for (const prefixed of plugin.meta.models) {
-    const model = prefixed.slice('xysnai/'.length);
+  for (const model of plugin.meta.models) {
     let req;
     if (model === 'wan3.0-video') req = { seconds: 5, resolution: '720P', generate_audio: false, seed: 0 };
     else if (model.startsWith('minimax-h3')) req = { prompt: 'cat', seconds: 5, size: '1376x768' };
@@ -163,7 +176,7 @@ test('multipart preserves repeated strings, JSON-array strings, file refs, filen
     { ref: 'opaque-file-2', field: 'reference_images', filename: 'two.png', mimeType: 'image/png', size: 500 },
     { ref: 'opaque-video', field: 'reference_videos', filename: 'in.mp4', mimeType: 'video/mp4', size: 500 }
   ];
-  const fields = { model: ['xysnai/wan3.0-video'], seconds: ['5'], resolution: ['720P'],
+  const fields = { model: ['wan3.0-video'], seconds: ['5'], resolution: ['720P'],
     reference_images: ['https://example.com/a.jpg', 'https://example.com/b.jpg'],
     reference_audios: ['["https://example.com/a.mp3","https://example.com/b.mp3"]'],
     watermark: ['false'], seed: ['0'], custom: ['one', 'two'] };
@@ -187,33 +200,33 @@ test('multipart preserves repeated strings, JSON-array strings, file refs, filen
   assertUsage(ctx.model, usage);
 });
 test('multipart without files still preserves form representation and repeated values', () => {
-  const fields = { model: ['xysnai/mg-seedance-2.5-720p'], prompt: ['cat'], seconds: ['5'], aspect_ratio: ['16:9'],
+  const fields = { model: ['mg-seedance-2.5-720p'], prompt: ['cat'], seconds: ['5'], aspect_ratio: ['16:9'],
     reference_image_urls: ['https://example.com/1.png', 'https://example.com/2.png'] };
   const intent = decode('mg-seedance-2.5-720p', {}, { body: { kind: 'multipart', fields, files: [] } });
   const ctx = { ...driver('mg-seedance-2.5-720p', { prompt: 'cat', seconds: 5, aspect_ratio: '16:9' }), requestBody: intent.requestBody };
   assert.equal(plugin.buildSubmitRequest(ctx).parts.filter(p => p.name === 'reference_image_urls').length, 2);
 });
 test('multipart rejects ambiguous scalar aliases so usage matches the transmitted values', () => {
-  const fields = { model: ['xysnai/minimax-h3'], prompt: ['cat'], seconds: ['5'],
+  const fields = { model: ['minimax-h3'], prompt: ['cat'], seconds: ['5'],
     size: ['1376x768'], 'size[]': ['2K'] };
   assert.throws(() => decode('minimax-h3', {}, { body: { kind: 'multipart', fields, files: [] } }), /provided once/);
 });
 test('documented media limits count files plus URL references', () => {
-  const fields = { model: ['xysnai/minimax-h3'], prompt: ['cat'], seconds: ['5'], size: ['1376x768'],
+  const fields = { model: ['minimax-h3'], prompt: ['cat'], seconds: ['5'], size: ['1376x768'],
     images: Array.from({ length: 9 }, (_, i) => 'https://example.com/' + i + '.png') };
   assert.throws(() => decode('minimax-h3', {}, { body: { kind: 'multipart', fields,
     files: [{ ref: 'opaque', field: 'images', filename: 'extra.png', mimeType: 'image/png', size: 10 }] } }), /at most 9/);
 });
-test('channel aliases preserve public identity while stripping the namespace upstream', () => {
+test('channel aliases preserve public identity while using the selected upstream model', () => {
   const intent = decode('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' },
-    { model: 'my-private-h3', upstreamModel: 'xysnai/minimax-h3' });
+    { model: 'my-private-h3', upstreamModel: 'minimax-h3' });
   assert.equal(intent.model, 'my-private-h3');
   const ctx = { ...driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' }),
-    model: 'my-private-h3', upstreamModel: 'xysnai/minimax-h3', requestBody: intent.requestBody };
+    model: 'my-private-h3', upstreamModel: 'minimax-h3', requestBody: intent.requestBody };
   assert.equal(plugin.buildSubmitRequest(ctx).body.model, 'minimax-h3');
   assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' },
-    { upstreamModel: 'xysnai/wan3.0-video' }) && plugin.buildSubmitRequest(driver('minimax-h3',
-    { prompt: 'cat', seconds: 5, size: '1376x768' }, { upstreamModel: 'xysnai/wan3.0-video' })), /Cross-family/);
+    { upstreamModel: 'wan3.0-video' }) && plugin.buildSubmitRequest(driver('minimax-h3',
+    { prompt: 'cat', seconds: 5, size: '1376x768' }, { upstreamModel: 'wan3.0-video' })), /Cross-family/);
 });
 test('submission accepts 202 task shape and query/content use upstream rather than public IDs', () => {
   const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' });
@@ -237,9 +250,9 @@ test('client renderer emits public ID and gateway content path without upstream 
   const data = { id: 'upstream-id', model: 'minimax-h3', status: 'completed', progress: 100, cost: '0.4',
     balance: '0.6', billing_amount: '0.4', result_url: 'http://upstream/private-task', api_key: 'must-not-leak' };
   const output = plugin.protocols.openai_video.render({}, { task_id: 'public-id', status: 'SUCCESS', data,
-    properties: { origin_model_name: 'xysnai/minimax-h3' }, created_at: 123 });
+    properties: { origin_model_name: 'minimax-h3' }, created_at: 123 });
   assert.equal(output.id, 'public-id');
-  assert.equal(output.model, 'xysnai/minimax-h3');
+  assert.equal(output.model, 'minimax-h3');
   assert.equal(output.result_url, '/v1/videos/public-id/content');
   for (const key of ['cost', 'balance', 'billing_amount', 'api_key']) assert.equal(output[key], undefined);
   assert.equal(data.id, 'upstream-id');

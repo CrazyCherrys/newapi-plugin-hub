@@ -1,19 +1,20 @@
 ---
 changelogVersion: 1
 plugin: 'crazycherrys_xysnai-video'
-version: '1.0.1'
+version: '1.1.0'
 locale: 'en'
 translations:
   zh-CN: CHANGELOG.zh-CN.md
 ---
 # Changelog
 
-## [1.0.1]
+## [1.1.0]
 
-### Fixed
-- Use the GitHub author namespace crazycherrys_xysnai-video and declare CrazyCherrys as the author with a matching GitHub profile URL, satisfying community marketplace admission.
-- Publish the corrected identity in its matching release directory and marketplace entry. The unprefixed 1.0.0 release is no longer listed.
+### Changed
+- Remove the xysnai/ provider prefix from all 19 public model names and model-specific usage profiles. Clients now use names such as minimax-h3, wan3.0-video and Video-upscale2.6 directly.
+- Use the selected upstream model name without automatic prefix stripping; update examples and request/response fixtures to the same names.
 
 ### Migration
-- Usage facts and pricing calculations are unchanged for all 19 xysnai/ model names. Administrators with plugin-specific prices under xysnai-video must recreate those overrides under crazycherrys_xysnai-video; no automatic migration is performed.
-- Refresh the marketplace and install 1.0.1 under the new key. Existing installations of the old key must rebind their type-61 channels to the new plugin. Keep the XYSNAI Base URL, API key and model names.
+- Usage fields and pricing calculations are unchanged, but model pricing keys change. Reconfigure each renamed model's prices and any plugin-specific overrides; no automatic price migration is performed.
+- Complete pending tasks before upgrading. Install 1.1.0, replace prefixed names in channel models, client requests and token model restrictions, and remove mappings that target the old prefixed names.
+- Keep the plugin key crazycherrys_xysnai-video, XYSNAI Base URL and API key. The author's GitHub prefix in the plugin key remains required for community installation.

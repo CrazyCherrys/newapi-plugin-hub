@@ -2,9 +2,11 @@
 
 [返回 Hub](../../README.md) · [验证记录](docs/VALIDATION.md) · [更新日志](CHANGELOG.zh-CN.md)
 
-核对日期：2026-11-22。插件版本：1.0.1。插件 key：`crazycherrys_xysnai-video`。
+核对日期：2026-11-22。插件版本：1.1.0。插件 key：`crazycherrys_xysnai-video`。
 
-1.0.1 修正社区市场安装的作者命名空间：作者为 GitHub 用户 `CrazyCherrys`，key 使用小写前缀 `crazycherrys_`。如果仍提示作者前缀错误，请刷新市场源并确认下载的是 1.0.1。旧 key `xysnai-video` 不再列入市场；已有旧渠道应重新绑定新插件，并迁移使用旧 key 的插件级价格覆盖。模型名称、上游参数与用量含义均保持不变。
+1.1.0 取消全部模型的 `xysnai/` 前缀，模型名直接使用上游名称。插件 key 仍为 `crazycherrys_xysnai-video`，其中 `crazycherrys_` 是社区插件安装要求的作者命名空间。
+
+升级前请先完成旧版本进行中的任务。安装 1.1.0 后，将渠道模型列表、客户端请求、令牌模型限制和模型价格（含插件级覆盖）中的旧模型名改为无前缀名称，例如 `xysnai/minimax-h3` 改为 `minimax-h3`；不会自动迁移价格。上游 Base URL、API Key、用量字段与计费计算保持不变。
 
 ## 结论与验证边界
 
@@ -35,16 +37,16 @@ XYSNAI 当前公开文档中的 19 个视频模型都通过 `POST /v1/videos` �
 
 ## 2. 在 New API 中配置
 
-推荐先按 [Hub 首页](../../README.md#添加市场源)添加市场源，刷新后安装 **XYSNAI Video 1.0.1**。市场中只有一个插件，安装后可以选择其声明的 19 个模型；不需要按模型安装多份插件。
+推荐先按 [Hub 首页](../../README.md#添加市场源)添加市场源，刷新后安装 **XYSNAI Video 1.1.0**。市场中只有一个插件，安装后可以选择其声明的 19 个模型；不需要按模型安装多份插件。
 
-也可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js)手动上传。以下渠道配置对两种安装方式均适用。
+也可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js)手动上传。以下渠道配置对两种安装方式均适用。
 
 1. 以 Root 身份进入插件管理，启用任务插件功能。
 2. 上传 `plugin.js`，或在源码导入处粘贴其完整内容；保存、启用。
 3. 添加渠道，类型选择 **Task Plugin（61）**，插件选择 **XYSNAI Video**，key 为 `crazycherrys_xysnai-video`。
 4. Base URL 填 `https://xysnai.cn`，不要追加 `/v1` 或 `/v1/videos`。
 5. API Key 填 XYSNAI 的上游密钥。
-6. 模型从插件声明列表选取，例如 `xysnai/minimax-h3` 与 `xysnai/wan3.0-video`。
+6. 模型从插件声明列表选取，例如 `minimax-h3` 与 `wan3.0-video`。
 7. 选择你的实例实际使用的分组，确认客户端 New API 令牌可访问此分组和模型。
 8. 初次联调将模型映射留空，保存渠道，然后分别配置模型价格。
 
@@ -54,15 +56,15 @@ XYSNAI 当前公开文档中的 19 个视频模型都通过 `POST /v1/videos` �
 
 | 客户端请求 New API 的 model | 插件发给 XYSNAI 的 model |
 |---|---|
-| `xysnai/minimax-h3` | `minimax-h3` |
-| `xysnai/wan3.0-video` | `wan3.0-video` |
-| `xysnai/sd-2.5` | `sd-2.5` |
-| `xysnai/mg-seedance-2.5-720p` | `mg-seedance-2.5-720p` |
-| `xysnai/Video-upscale2.6` | `Video-upscale2.6` |
+| `minimax-h3` | `minimax-h3` |
+| `wan3.0-video` | `wan3.0-video` |
+| `sd-2.5` | `sd-2.5` |
+| `mg-seedance-2.5-720p` | `mg-seedance-2.5-720p` |
+| `Video-upscale2.6` | `Video-upscale2.6` |
 
-前缀是本插件的隔离策略，用于避开当前实例中的模型大小写认领和价格冲突，并非 New API 对所有插件的硬性要求。前缀由插件在构建上游请求时移除，不需要逐个填写映射。客户端调用和渠道模型列表必须使用声明的带前缀名称。
+客户端模型名与上游名称一致，渠道模型列表和调用请求直接使用上表中的原始名称，不需要填写模型映射。名称大小写以模型目录为准。
 
-不要只改渠道模型列表来移除前缀；`meta.models`、协议认领和用量 profile 必须保持一致。跨家族映射会改变校验和计费含义，本版会拒绝。
+模型声明、请求转发和各家族的 usage profile 已统一使用无前缀名称。跨家族映射会改变校验和计费含义，本版仍会拒绝。
 
 ## 3. 参数按模型保留
 
@@ -135,7 +137,7 @@ curl --fail-with-body --silent --show-error \
   -H "Authorization: Bearer $XYS_NEWAPI_KEY" \
   -H 'Content-Type: application/json' \
   --data '{
-    "model": "xysnai/minimax-h3",
+    "model": "minimax-h3",
     "prompt": "镜头缓慢推进，一只橘猫在窗边晒太阳",
     "seconds": 5,
     "size": "1376x768"
@@ -150,7 +152,7 @@ curl --fail-with-body --silent --show-error \
   -H "Authorization: Bearer $XYS_NEWAPI_KEY" \
   -H 'Content-Type: application/json' \
   --data '{
-    "model": "xysnai/wan3.0-video",
+    "model": "wan3.0-video",
     "prompt": "镜头缓慢推进，一只橘猫在窗边晒太阳",
     "seconds": 5,
     "resolution": "720P",
@@ -203,14 +205,14 @@ new-api plugin test plugin.js --fixture tests/golden.json
 ```json
 [
   {
-    "model": "xysnai/minimax-h3",
-    "upstreamModel": "xysnai/minimax-h3",
+    "model": "minimax-h3",
+    "upstreamModel": "minimax-h3",
     "baseUrl": "https://xysnai.cn",
     "apiKey": "test-key-for-sandbox-only",
     "files": [],
     "requestBody": {
         "payload": {
-          "model": "xysnai/minimax-h3",
+          "model": "minimax-h3",
           "prompt": "窗边的一只猫",
           "seconds": "5",
           "size": "1376x768"
@@ -226,9 +228,9 @@ new-api plugin test plugin.js --fixture tests/golden.json
 | 症状 | 优先检查 |
 |---|---|
 | `invalid_api_platform: 58` | 请求仍选中了高级自定义渠道，核对类型 61 与插件 key |
-| 报 `MiniMax-H3` 无可用渠道 | 请求或渠道仍用旧名称；本版使用 `xysnai/minimax-h3` |
+| 报 `MiniMax-H3` 无可用渠道 | 请求或渠道仍用旧名称；本版使用 `minimax-h3` |
 | `model_not_found` | 插件启用状态、声明模型、渠道模型和令牌分组是否一致 |
-| `model_price_error` | 对应带前缀模型的任务用量售价是否已配置 |
+| `model_price_error` | 对应无前缀模型的任务用量售价是否已配置 |
 | `plugin_usage_invalid` | 实际命中插件与其 usage profile；记录完整错误和钩子事实 |
 | 上游 401/403 | XYSNAI Key、权限与 `Bearer` 鉴权 |
 | 上游 404 | 实际 URL 是否误含双 `/v1` 或原生厂商路径 |

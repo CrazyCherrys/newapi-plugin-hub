@@ -1,10 +1,10 @@
 # 验证记录
 
-日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.0.1`。
+日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.1.0`。
 
 ## 已完成
 
-1. Node.js 模块加载与同步 hook 行为：21 组通过，其中包含 16 个 New API 官方格式 fixture case 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
+1. Node.js 模块加载与同步 hook 行为：22 组通过，其中包含 16 个 New API 官方格式 fixture case 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
 2. 元数据：使用 New API `v1.0.0-rc.51` 随附的官方 API v1 JSON Schema 独立校验，通过。
 3. 模型声明：19 个唯一模型，各属于一个 usage profile，分组数量为 3 / 1 / 2 / 12 / 1。
 4. 请求和用量：覆盖全部模型、26 个 H3 尺寸、秒数数字/字符串、必填字段、非法时长拒绝。
@@ -40,7 +40,7 @@ new-api plugin test plugin.js --fixture tests/golden.json
 `plugin.js` SHA-256：
 
 ```text
-686514f490e1a496d42bfd574e8b3468f99cbe8d448813f5dbbab3f4366b7c74
+246f165fa0c633e7454c01d62686aae4c77fd21dcfe329c5e817915566fd8ff1
 ```
 
 ## 官方校验规范
@@ -51,10 +51,10 @@ new-api plugin test plugin.js --fixture tests/golden.json
 
 ## 本次 Hub 接入
 
-- 将参考文件 `xysnai-video.js` 整理为 `video/xysnai/plugin.js`；1.0.1 修改了 key、版本和作者元数据，请求适配与用量逻辑保持原实现。
+- 将参考文件 `xysnai-video.js` 整理为 `video/xysnai/plugin.js`；1.1.0 取消对外模型前缀及上游前缀转换，19 个模型和 5 个计费用量分组改用原始名称，其余参数与用量逻辑沿用原实现。
 - 从当前仓库删除旧插件的源码、发布文件和市场入口，登记完整下架记录；Git 历史仍保留旧提交。
-- 市场发布为 `plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js`，补齐中英文日志与原创适配图标；索引保留全部 5 个 usage profile 及 19 个模型。
-- 执行 6 组发布工具测试、21 组插件测试（包含 16 个宿主格式 fixture）、Node 语法检查、官方 rc.51 元数据 Schema 校验、发布生成与索引校验。
+- 市场发布为 `plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js`，补齐中英文日志与原创适配图标；索引保留全部 5 个 usage profile 及 19 个模型。
+- 执行 6 组发布工具测试、22 组插件测试（包含 16 个宿主格式 fixture）、Node 语法检查、官方 rc.51 元数据 Schema 校验、发布生成与索引校验。
 - 测试套件读取全部 5 份请求样例及模型目录；原始参考材料记录的 README 沙盒示例检查不替代目标宿主的执行。
 - SHA256SUMS.txt 覆盖源码、模型目录、日志、示例、测试和本记录；GitHub Actions 同步执行语法及校验清单检查。
 
@@ -67,6 +67,15 @@ new-api plugin test plugin.js --fixture tests/golden.json
 - 核对 [New API 安装控制器](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/controller/task_plugin.go)：社区及第三方来源安装要求 key 带作者前缀与下划线。
 - 核对 [ValidPluginKey](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/pkg/jsplugin/registry.go)：允许小写字母、数字、下划线和连字符，最多 30 字符。
 - 发布工具同时校验 key 的格式、长度、GitHub 作者主页与前缀一致性；回归测试拒绝旧 key、错误作者、空插件名、大写 key 和超长 key，并验证发布入口确实拒绝旧标识。
-- 新市场条目使用 crazycherrys_xysnai-video 1.0.1，作者为 CrazyCherrys；已发布的旧 1.0.0 文件保持不变，不再出现在当前索引中。
+- 当前市场条目使用 crazycherrys_xysnai-video 1.1.0，作者为 CrazyCherrys；1.0.1 的历史文件保持不变，旧 key 的 1.0.0 不再出现在当前索引中。
 
 此回归验证覆盖已定位的命名准入规则，不代表已在用户宿主完成安装或真实生成。
+
+## 1.1.0 模型名称回归
+
+- 验证 19 个模型声明、5 个用量分组和模型目录中的名称与上游原名一致，不含服务商前缀。
+- 全部家族的 JSON 请求、multipart 表单、模型别名和公开响应 fixture 使用无前缀模型名；额外测试拒绝旧前缀模型及旧前缀上游映射。
+- 发布工具检查最新市场模型列表和用量分组均不含前缀；历史固定版本文件不修改。
+- 同步更新 5 份示例、16 个宿主格式 fixture、安装文档和升级迁移说明；模型价格与渠道配置需由管理员按新名称调整。
+
+本次验证仍为离线测试与发布检查，没有执行实际宿主安装或付费生成。

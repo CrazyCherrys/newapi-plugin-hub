@@ -28,25 +28,25 @@
         }
       ],
       "models": [
-        "xysnai/wan3.0-video",
-        "xysnai/minimax-h3",
-        "xysnai/minimax-h3-fl2v",
-        "xysnai/minimax-h3-lh",
-        "xysnai/mg-seedance-2.0-720p",
-        "xysnai/mg-seedance-2.5-480p",
-        "xysnai/mg-seedance-2.5-4k",
-        "xysnai/mg-seedance-2.5-720p",
-        "xysnai/ov-seedance-2.5-1080p-nv",
-        "xysnai/ov-seedance-2.5-480p-nv",
-        "xysnai/ov-seedance-2.5-720p-nv",
-        "xysnai/sd-2.0",
-        "xysnai/sd-2.5",
-        "xysnai/特价V2seedance-2.5-720p-30s",
-        "xysnai/特价seedance-2.5-480p-30s",
-        "xysnai/特价seedance-2.5-nv-1080p-30s",
-        "xysnai/特价seedance-2.5-nv-480p",
-        "xysnai/特价seedance-2.5-nv-720p-30s",
-        "xysnai/Video-upscale2.6"
+        "wan3.0-video",
+        "minimax-h3",
+        "minimax-h3-fl2v",
+        "minimax-h3-lh",
+        "mg-seedance-2.0-720p",
+        "mg-seedance-2.5-480p",
+        "mg-seedance-2.5-4k",
+        "mg-seedance-2.5-720p",
+        "ov-seedance-2.5-1080p-nv",
+        "ov-seedance-2.5-480p-nv",
+        "ov-seedance-2.5-720p-nv",
+        "sd-2.0",
+        "sd-2.5",
+        "特价V2seedance-2.5-720p-30s",
+        "特价seedance-2.5-480p-30s",
+        "特价seedance-2.5-nv-1080p-30s",
+        "特价seedance-2.5-nv-480p",
+        "特价seedance-2.5-nv-720p-30s",
+        "Video-upscale2.6"
       ],
       "usageSchema": {
         "requests": {
@@ -93,9 +93,9 @@
       "usageProfiles": [
         {
           "models": [
-            "xysnai/minimax-h3",
-            "xysnai/minimax-h3-fl2v",
-            "xysnai/minimax-h3-lh"
+            "minimax-h3",
+            "minimax-h3-fl2v",
+            "minimax-h3-lh"
           ],
           "schema": {
             "requests": {
@@ -180,7 +180,7 @@
         },
         {
           "models": [
-            "xysnai/wan3.0-video"
+            "wan3.0-video"
           ],
           "schema": {
             "requests": {
@@ -253,8 +253,8 @@
         },
         {
           "models": [
-            "xysnai/sd-2.0",
-            "xysnai/sd-2.5"
+            "sd-2.0",
+            "sd-2.5"
           ],
           "schema": {
             "requests": {
@@ -329,18 +329,18 @@
         },
         {
           "models": [
-            "xysnai/mg-seedance-2.0-720p",
-            "xysnai/mg-seedance-2.5-480p",
-            "xysnai/mg-seedance-2.5-4k",
-            "xysnai/mg-seedance-2.5-720p",
-            "xysnai/ov-seedance-2.5-1080p-nv",
-            "xysnai/ov-seedance-2.5-480p-nv",
-            "xysnai/ov-seedance-2.5-720p-nv",
-            "xysnai/特价V2seedance-2.5-720p-30s",
-            "xysnai/特价seedance-2.5-480p-30s",
-            "xysnai/特价seedance-2.5-nv-1080p-30s",
-            "xysnai/特价seedance-2.5-nv-480p",
-            "xysnai/特价seedance-2.5-nv-720p-30s"
+            "mg-seedance-2.0-720p",
+            "mg-seedance-2.5-480p",
+            "mg-seedance-2.5-4k",
+            "mg-seedance-2.5-720p",
+            "ov-seedance-2.5-1080p-nv",
+            "ov-seedance-2.5-480p-nv",
+            "ov-seedance-2.5-720p-nv",
+            "特价V2seedance-2.5-720p-30s",
+            "特价seedance-2.5-480p-30s",
+            "特价seedance-2.5-nv-1080p-30s",
+            "特价seedance-2.5-nv-480p",
+            "特价seedance-2.5-nv-720p-30s"
           ],
           "schema": {
             "requests": {
@@ -403,7 +403,7 @@
         },
         {
           "models": [
-            "xysnai/Video-upscale2.6"
+            "Video-upscale2.6"
           ],
           "schema": {
             "requests": {
@@ -457,8 +457,31 @@
           }
         }
       ],
-      "latest": "1.0.1",
+      "latest": "1.1.0",
       "versions": [
+        {
+          "version": "1.1.0",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js",
+          "sha256": "246f165fa0c633e7454c01d62686aae4c77fd21dcfe329c5e817915566fd8ff1",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://xysnai.cn",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.1.0/CHANGELOG.md",
+            "sha256": "994064d9c90df6719afe095a2a46fe1a1f734771233ad4d5df2268517b3fc576",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.1.0/CHANGELOG.zh-CN.md",
+                "sha256": "d71c3d9cf91964e99cdf669b0310c5d6eeab4e4d18cf0f0f300242fe71a40cb5"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/xysnai/README.md",
+            "sha256": "62b51cb9f0c9d9f0e46a17cd6db4a18d198238b7b5263bfe656f9950170e3a94"
+          }
+        },
         {
           "version": "1.0.1",
           "path": "plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js",
@@ -476,10 +499,6 @@
                 "sha256": "a1e9fbc91c52b652818604c8a6f83d8a3a044169c83dac71f0bdc6aa3dc376f5"
               }
             }
-          },
-          "readme": {
-            "path": "video/xysnai/README.md",
-            "sha256": "78de109ca5b466b342d96b798d51db5602dca850db01c3a8d7b3b07da5c48f02"
           }
         }
       ]

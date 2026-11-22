@@ -2,13 +2,12 @@
  * XYSNAI Video — New API Task Plugin API v1
  * Protocol snapshot: XYSNAI public video docs, 2026-11-22.
  * Configure a type-61 channel, Base URL https://xysnai.cn, and its API key.
- * Public model names use xysnai/; the prefix is removed only upstream.
+ * Public model names match the upstream model names directly.
  * No prices are included. Configure each model's task usage pricing separately.
  * Offline contract tests accompany this file; live New API/XYSNAI deployment
  * has not been exercised. Multipart and HEAD need a live integration check.
  */
 
-const PREFIX = "xysnai/";
 const UPSTREAM_MODELS = [
   "wan3.0-video",
   "minimax-h3", "minimax-h3-fl2v", "minimax-h3-lh",
@@ -63,8 +62,7 @@ function family(model) {
   return "seedance";
 }
 function publicModels(kind) {
-  return UPSTREAM_MODELS.filter(function (model) { return family(model) === kind; })
-    .map(function (model) { return PREFIX + model; });
+  return UPSTREAM_MODELS.filter(function (model) { return family(model) === kind; });
 }
 
 export const meta = {
@@ -72,7 +70,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "XYSNAI Video",
   description: { en: "XYSNAI unified video tasks", zh: "XYSNAI 多模型视频任务适配" },
-  version: "1.0.1",
+  version: "1.1.0",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -80,7 +78,7 @@ export const meta = {
   upstreams: ["vendor"],
   fetchMode: "per_task",
   protocols: ["openai_video"],
-  models: UPSTREAM_MODELS.map(function (model) { return PREFIX + model; }),
+  models: UPSTREAM_MODELS.slice(),
   // No channelTypes: do not capture the official Sora/OpenAI/MiniMax providers.
   usageSchema: COMMON_USAGE,
   usageProfiles: [
@@ -96,14 +94,10 @@ function own(object, name) { return Object.prototype.hasOwnProperty.call(object,
 function isObject(value) { return value !== null && typeof value === "object" && !Array.isArray(value); }
 function copy(value) { return JSON.parse(JSON.stringify(value)); }
 function fieldName(value) { return String(value).replace(/\[\]$/, ""); }
-function stripPrefix(model) {
-  const value = String(model || "");
-  return value.indexOf(PREFIX) === 0 ? value.slice(PREFIX.length) : value;
-}
 function upstreamModel(ctx) {
-  const model = stripPrefix(ctx.upstreamModel || ctx.model);
+  const model = String(ctx.upstreamModel || ctx.model || "");
   if (UPSTREAM_MODELS.indexOf(model) < 0) throw new Error("Unsupported XYSNAI model: " + model);
-  const source = stripPrefix(ctx.model);
+  const source = String(ctx.model || "");
   // Cross-family remapping could select the wrong pricing profile.
   if (UPSTREAM_MODELS.indexOf(source) >= 0 && family(source) !== family(model)) {
     throw new Error("Cross-family model mapping is not supported by xysnai-video");

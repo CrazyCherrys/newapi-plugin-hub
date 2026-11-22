@@ -59,8 +59,9 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
       assert.equal(hash(await fs.readFile(path.join(temp, doc.path))), doc.sha256);
     }
     assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
-    assert.equal(entry.usageProfiles.find(p => p.models.includes('xysnai/minimax-h3')).schema.size.enum.length, 26);
-    assert.ok(entry.usageProfiles.find(p => p.models.includes('xysnai/Video-upscale2.6')).schema.billing_seconds);
+    assert.ok(entry.models.every(model => !model.includes('/')));
+    assert.equal(entry.usageProfiles.find(p => p.models.includes('minimax-h3')).schema.size.enum.length, 26);
+    assert.ok(entry.usageProfiles.find(p => p.models.includes('Video-upscale2.6')).schema.billing_seconds);
     const sourcePath = path.join(temp, cfg.plugins[0].source, 'plugin.js');
     const source = await fs.readFile(sourcePath, 'utf8');
     await fs.writeFile(sourcePath, source.replace('key: "crazycherrys_xysnai-video"', 'key: "xysnai-video"'));

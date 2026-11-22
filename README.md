@@ -2,7 +2,7 @@
 
 # New API Plugin Hub
 
-New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video 1.0.1**：用一个任务插件接入 Wan、MiniMax H3、Seedance 与视频超分共 19 个模型。
+New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video 1.1.0**：用一个任务插件接入 Wan、MiniMax H3、Seedance 与视频超分共 19 个模型。
 
 ## 添加市场源
 
@@ -12,7 +12,7 @@ New API 社区插件仓库与第三方市场源。当前只提供 **XYSNAI Video
 https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 ```
 
-保存、刷新市场，选择 **XYSNAI Video 1.0.1** 安装并启用，再按[使用指南](video/xysnai/README.md)完成渠道与模型定价：
+保存、刷新市场，选择 **XYSNAI Video 1.1.0** 安装并启用，再按[使用指南](video/xysnai/README.md)完成渠道与模型定价：
 
 | 配置项 | 填写内容 |
 |---|---|
@@ -20,22 +20,24 @@ https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 | 插件 key | `crazycherrys_xysnai-video` |
 | Base URL | `https://xysnai.cn`，不追加 `/v1` |
 | 上游密钥 | 你的 XYSNAI API Key |
-| 对外模型 | 使用 `xysnai/` 前缀，例如 `xysnai/minimax-h3` |
+| 对外模型 | 直接使用上游名称，例如 `minimax-h3`，不加服务商前缀 |
 | 计费 | 按模型的 usage profile 独立设置；超分另设定价策略 |
 
 索引、图标和插件通过同源相对路径及 SHA-256 引用。浏览器需能访问 `raw.githubusercontent.com`；镜像需保留目录结构并支持跨域访问。Docker 容器无需挂载本仓库或安装 Node.js。
 
 刷新市场不会自动升级已安装插件。`minApiVersion: 1` 指插件 API 版本；本插件以 New API `v1.0.0-rc.51` 的 API v1 为目标，应在实际宿主确认兼容性。
 
-如果安装时提示“社区插件的标识必须以作者的 GitHub 用户名加下划线开头”，请刷新市场并选择 **1.0.1**：新 key 为 `crazycherrys_xysnai-video`。旧的 `xysnai-video` 1.0.0 已退出当前索引，固定版本文件只作为历史记录保留。已在旧宿主安装的用户需重新安装新 key、重新绑定渠道，并迁移旧 key 下的插件级价格覆盖；模型名和用量字段不变。
+1.1.0 已取消全部模型的 `xysnai/` 前缀。升级前请完成旧版本的进行中任务；升级后将渠道模型、调用请求、令牌的模型限制及模型价格（包括插件级价格覆盖）改为无前缀名称，原有价格不会自动迁移。用量字段和计费计算保持不变。
+
+社区插件 key 仍为 `crazycherrys_xysnai-video`，保留安装要求的 GitHub 作者命名空间。1.0.1 使用同一插件 key；更早的 `xysnai-video` 1.0.0 已退出当前索引，原发布文件保留作历史记录。
 
 ## 插件目录
 
 | 图标 | 插件 | 模型与能力 | 文档 |
 |---|---|---|---|
-| <img src="plugins/tasks/crazycherrys_xysnai-video/icon.svg" width="40" height="40" alt="XYSNAI Video"> | XYSNAI Video · 1.0.1 | 19 个模型；文生视频、多媒体参考、视频超分、异步查询与下载 | [安装与使用](video/xysnai/README.md) · [模型目录](video/xysnai/model-catalog.json) · [更新日志](plugins/tasks/crazycherrys_xysnai-video/1.0.1/CHANGELOG.zh-CN.md) |
+| <img src="plugins/tasks/crazycherrys_xysnai-video/icon.svg" width="40" height="40" alt="XYSNAI Video"> | XYSNAI Video · 1.1.0 | 19 个模型；文生视频、多媒体参考、视频超分、异步查询与下载 | [安装与使用](video/xysnai/README.md) · [模型目录](video/xysnai/model-catalog.json) · [更新日志](plugins/tasks/crazycherrys_xysnai-video/1.1.0/CHANGELOG.zh-CN.md) |
 
-手动安装：[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js)，在插件管理中上传并启用。仅需一个 JS 文件；图标可另选 [icon.svg](plugins/tasks/crazycherrys_xysnai-video/icon.svg)。
+手动安装：[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.1.0/plugin.js)，在插件管理中上传并启用。仅需一个 JS 文件；图标可另选 [icon.svg](plugins/tasks/crazycherrys_xysnai-video/icon.svg)。
 
 **验证范围：** 离线测试覆盖全部声明模型的请求与用量、multipart 描述符、任务状态、内容代理和官方格式 fixture；不代表已在实际 New API 容器安装或完成 XYSNAI 真实生成。验证记录见 [VALIDATION.md](video/xysnai/docs/VALIDATION.md)。
 
@@ -48,7 +50,8 @@ index.json                          # 自动生成的市场索引
 marketplace.json                    # 插件注册与明确下架记录
 plugins/tasks/crazycherrys_xysnai-video/
 ├── icon.svg                        # 市场图标
-└── 1.0.1/                          # 固定版本入口与中英文日志
+├── 1.0.1/                          # 保留的历史版本
+└── 1.1.0/                          # 无模型前缀的新版本
 video/xysnai/
 ├── README.md                       # 安装、配置、计费及调用说明
 ├── plugin.js                       # 单文件插件源码

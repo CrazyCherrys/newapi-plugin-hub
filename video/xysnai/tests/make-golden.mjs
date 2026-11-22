@@ -2,10 +2,10 @@
 // contract, not from calling the implementation under test.
 import fs from 'node:fs/promises';
 const context = {
-  model: 'xysnai/minimax-h3', upstreamModel: 'xysnai/minimax-h3',
+  model: 'minimax-h3', upstreamModel: 'minimax-h3',
   baseUrl: 'https://xysnai.cn', apiKey: 'fixture-key', authHeader: 'fixture-key',
   upstream: { kind: 'vendor' }, files: [], action: 'text_to_video',
-  requestBody: { payload: { model: 'xysnai/minimax-h3', prompt: 'cat', seconds: 5, size: '1376x768' }, formFields: null }
+  requestBody: { payload: { model: 'minimax-h3', prompt: 'cat', seconds: 5, size: '1376x768' }, formFields: null }
 };
 const auth = { Authorization: 'Bearer fixture-key' };
 const usageCommon = { requests: 1, input_images: 0, input_videos: 0, input_audios: 0, input_references: 0 };
@@ -14,27 +14,27 @@ const fixture = {
   cases: [
     {
       name: 'H3 numeric seconds decoder', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
-      args: [{ model: 'xysnai/minimax-h3', upstreamModel: 'xysnai/minimax-h3', operation: 'create',
-        body: { kind: 'json', value: { model: 'xysnai/minimax-h3', prompt: 'cat', seconds: 5, size: '1376x768' } } }],
-      expected: { kind: 'submit', model: 'xysnai/minimax-h3', action: 'text_to_video', requestBody: context.requestBody }
+      args: [{ model: 'minimax-h3', upstreamModel: 'minimax-h3', operation: 'create',
+        body: { kind: 'json', value: { model: 'minimax-h3', prompt: 'cat', seconds: 5, size: '1376x768' } } }],
+      expected: { kind: 'submit', model: 'minimax-h3', action: 'text_to_video', requestBody: context.requestBody }
     },
     {
       name: 'H3 string seconds normalized', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
-      args: [{ model: 'xysnai/minimax-h3', upstreamModel: 'xysnai/minimax-h3', operation: 'create',
-        body: { kind: 'json', value: { model: 'xysnai/minimax-h3', prompt: 'cat', seconds: '5', size: '1376x768' } } }],
-      expected: { kind: 'submit', model: 'xysnai/minimax-h3', action: 'text_to_video', requestBody: context.requestBody }
+      args: [{ model: 'minimax-h3', upstreamModel: 'minimax-h3', operation: 'create',
+        body: { kind: 'json', value: { model: 'minimax-h3', prompt: 'cat', seconds: '5', size: '1376x768' } } }],
+      expected: { kind: 'submit', model: 'minimax-h3', action: 'text_to_video', requestBody: context.requestBody }
     },
     {
       name: 'Invalid H3 enum rejected before upstream', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
-      args: [{ model: 'xysnai/minimax-h3', body: { kind: 'json', value: { prompt: 'cat', seconds: 5, size: '768P' } } }],
+      args: [{ model: 'minimax-h3', body: { kind: 'json', value: { prompt: 'cat', seconds: 5, size: '768P' } } }],
       expectedError: 'size must be one of'
     },
     {
       name: 'Wan retains false zero arrays', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
-      args: [{ model: 'xysnai/wan3.0-video', body: { kind: 'json', value: { seconds: '5', resolution: '720P', generate_audio: false,
+      args: [{ model: 'wan3.0-video', body: { kind: 'json', value: { seconds: '5', resolution: '720P', generate_audio: false,
         seed: 0, reference_images: ['https://example.com/a.png'] } } }],
-      expected: { kind: 'submit', model: 'xysnai/wan3.0-video', action: 'reference_to_video',
-        requestBody: { payload: { model: 'xysnai/wan3.0-video', seconds: 5, resolution: '720P', generate_audio: false,
+      expected: { kind: 'submit', model: 'wan3.0-video', action: 'reference_to_video',
+        requestBody: { payload: { model: 'wan3.0-video', seconds: 5, resolution: '720P', generate_audio: false,
           seed: 0, reference_images: ['https://example.com/a.png'] }, formFields: null } }
     },
     {
@@ -71,21 +71,21 @@ const fixture = {
     },
     {
       name: 'Wan omitted audio retains unspecified pricing dimension', hook: 'extractUsage',
-      args: [{ ...context, model: 'xysnai/wan3.0-video', upstreamModel: 'xysnai/wan3.0-video',
-        requestBody: { payload: { model: 'xysnai/wan3.0-video', seconds: 5, resolution: '720P' }, formFields: null } }],
+      args: [{ ...context, model: 'wan3.0-video', upstreamModel: 'wan3.0-video',
+        requestBody: { payload: { model: 'wan3.0-video', seconds: 5, resolution: '720P' }, formFields: null } }],
       expected: { ...usageCommon, seconds: 5, resolution: '720P', audio_mode: 'unspecified' }
     },
     {
       name: 'No invented upscale billing seconds', hook: 'extractUsageOnComplete',
-      args: [{ model: 'xysnai/Video-upscale2.6', upstreamModel: 'Video-upscale2.6' }, { status: 'SUCCESS' }, { billing_seconds: null }],
+      args: [{ model: 'Video-upscale2.6', upstreamModel: 'Video-upscale2.6' }, { status: 'SUCCESS' }, { billing_seconds: null }],
       expected: {}
     },
     {
       name: 'Client view does not expose upstream balance and cost', hook: 'protocols', path: ['openai_video', 'render'],
       args: [{}, { task_id: 'task_public', status: 'SUCCESS', created_at: 1700000000,
-        properties: { origin_model_name: 'xysnai/minimax-h3' },
+        properties: { origin_model_name: 'minimax-h3' },
         data: { id: 'task_upstream', model: 'minimax-h3', progress: 100, cost: '0.4', balance: '0.6', result_url: 'http://upstream/secret' } }],
-      expected: { id: 'task_public', object: 'video', model: 'xysnai/minimax-h3', status: 'completed', progress: 100,
+      expected: { id: 'task_public', object: 'video', model: 'minimax-h3', status: 'completed', progress: 100,
         created_at: 1700000000, result_url: '/v1/videos/task_public/content' }
     },
     {

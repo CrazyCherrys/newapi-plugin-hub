@@ -10,13 +10,13 @@
       ],
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "operation": "create",
           "body": {
             "kind": "json",
             "value": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": 5,
               "size": "1376x768"
@@ -26,11 +26,11 @@
       ],
       "expected": {
         "kind": "submit",
-        "model": "xysnai/minimax-h3",
+        "model": "minimax-h3",
         "action": "text_to_video",
         "requestBody": {
           "payload": {
-            "model": "xysnai/minimax-h3",
+            "model": "minimax-h3",
             "prompt": "cat",
             "seconds": 5,
             "size": "1376x768"
@@ -48,13 +48,13 @@
       ],
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "operation": "create",
           "body": {
             "kind": "json",
             "value": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": "5",
               "size": "1376x768"
@@ -64,11 +64,11 @@
       ],
       "expected": {
         "kind": "submit",
-        "model": "xysnai/minimax-h3",
+        "model": "minimax-h3",
         "action": "text_to_video",
         "requestBody": {
           "payload": {
-            "model": "xysnai/minimax-h3",
+            "model": "minimax-h3",
             "prompt": "cat",
             "seconds": 5,
             "size": "1376x768"
@@ -86,7 +86,7 @@
       ],
       "args": [
         {
-          "model": "xysnai/minimax-h3",
+          "model": "minimax-h3",
           "body": {
             "kind": "json",
             "value": {
@@ -108,7 +108,7 @@
       ],
       "args": [
         {
-          "model": "xysnai/wan3.0-video",
+          "model": "wan3.0-video",
           "body": {
             "kind": "json",
             "value": {
@@ -125,11 +125,11 @@
       ],
       "expected": {
         "kind": "submit",
-        "model": "xysnai/wan3.0-video",
+        "model": "wan3.0-video",
         "action": "reference_to_video",
         "requestBody": {
           "payload": {
-            "model": "xysnai/wan3.0-video",
+            "model": "wan3.0-video",
             "seconds": 5,
             "resolution": "720P",
             "generate_audio": false,
@@ -147,8 +147,8 @@
       "hook": "buildSubmitRequest",
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "baseUrl": "https://xysnai.cn",
           "apiKey": "fixture-key",
           "authHeader": "fixture-key",
@@ -159,7 +159,7 @@
           "action": "text_to_video",
           "requestBody": {
             "payload": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": 5,
               "size": "1376x768"
@@ -189,8 +189,8 @@
       "hook": "parseSubmitResponse",
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "baseUrl": "https://xysnai.cn",
           "apiKey": "fixture-key",
           "authHeader": "fixture-key",
@@ -201,7 +201,7 @@
           "action": "text_to_video",
           "requestBody": {
             "payload": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": 5,
               "size": "1376x768"
@@ -303,8 +303,8 @@
       "hook": "extractUsage",
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "baseUrl": "https://xysnai.cn",
           "apiKey": "fixture-key",
           "authHeader": "fixture-key",
@@ -315,7 +315,7 @@
           "action": "text_to_video",
           "requestBody": {
             "payload": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": 5,
               "size": "1376x768"
@@ -339,8 +339,8 @@
       "hook": "extractUsage",
       "args": [
         {
-          "model": "xysnai/wan3.0-video",
-          "upstreamModel": "xysnai/wan3.0-video",
+          "model": "wan3.0-video",
+          "upstreamModel": "wan3.0-video",
           "baseUrl": "https://xysnai.cn",
           "apiKey": "fixture-key",
           "authHeader": "fixture-key",
@@ -351,7 +351,7 @@
           "action": "text_to_video",
           "requestBody": {
             "payload": {
-              "model": "xysnai/wan3.0-video",
+              "model": "wan3.0-video",
               "seconds": 5,
               "resolution": "720P"
             },
@@ -375,7 +375,7 @@
       "hook": "extractUsageOnComplete",
       "args": [
         {
-          "model": "xysnai/Video-upscale2.6",
+          "model": "Video-upscale2.6",
           "upstreamModel": "Video-upscale2.6"
         },
         {
@@ -401,7 +401,7 @@
           "status": "SUCCESS",
           "created_at": 1700000000,
           "properties": {
-            "origin_model_name": "xysnai/minimax-h3"
+            "origin_model_name": "minimax-h3"
           },
           "data": {
             "id": "task_upstream",
@@ -416,7 +416,7 @@
       "expected": {
         "id": "task_public",
         "object": "video",
-        "model": "xysnai/minimax-h3",
+        "model": "minimax-h3",
         "status": "completed",
         "progress": 100,
         "created_at": 1700000000,
@@ -444,8 +444,8 @@
       "hook": "buildContentRequest",
       "args": [
         {
-          "model": "xysnai/minimax-h3",
-          "upstreamModel": "xysnai/minimax-h3",
+          "model": "minimax-h3",
+          "upstreamModel": "minimax-h3",
           "baseUrl": "https://xysnai.cn",
           "apiKey": "fixture-key",
           "authHeader": "fixture-key",
@@ -456,7 +456,7 @@
           "action": "text_to_video",
           "requestBody": {
             "payload": {
-              "model": "xysnai/minimax-h3",
+              "model": "minimax-h3",
               "prompt": "cat",
               "seconds": 5,
               "size": "1376x768"
