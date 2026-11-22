@@ -1,8 +1,8 @@
 {
   "date": "2026-11-22",
   "plugin_file": "plugin.js",
-  "plugin_version": "1.3.2",
-  "sha256": "e90db1b3653958fdf16447a852ac7d9a34ea17aa1ec8a06bc433f66656fdfeb8",
+  "plugin_version": "1.3.3",
+  "sha256": "49a5722e3b4532826d91d24d6e89a45cfc120230967d8face568cf575af4596a",
   "offline_node_groups_passed": 26,
   "official_host_format_golden_cases_passed_in_node": 20,
   "declared_models": 19,
@@ -73,5 +73,16 @@
     "shared_model_legacy_size_override_rejected_before_upstream": true,
     "shared_model_resolution_override_precharged_quota": 29792,
     "failed_task_quota_after_refund": 0
+  },
+  "official_rc51_marketplace_preview_upgrade": {
+    "from": "1.3.2",
+    "to": "1.3.3",
+    "static_preview_before": "unavailable",
+    "static_preview_after": "parsed",
+    "source_models": 19,
+    "readme_locales_verified": ["en", "zh-CN"],
+    "unsupported_readme_locale_falls_back_to_en": true,
+    "marketplace_upgrade_verified": true,
+    "incorrect_source_hash_rejected": true
   }
 }

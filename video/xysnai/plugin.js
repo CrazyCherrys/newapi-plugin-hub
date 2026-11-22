@@ -8,16 +8,31 @@
  * has not been exercised. Multipart and HEAD need a live integration check.
  */
 
+// New API reads these declarations without executing the plugin in its market preview.
+const WAN = "wan3.0-video";
+const H3 = "minimax-h3";
+const H3_FL2V = "minimax-h3-fl2v";
+const H3_LH = "minimax-h3-lh";
+const MG_2_0_720P = "mg-seedance-2.0-720p";
+const MG_2_5_480P = "mg-seedance-2.5-480p";
+const MG_2_5_4K = "mg-seedance-2.5-4k";
+const MG_2_5_720P = "mg-seedance-2.5-720p";
+const OV_1080P = "ov-seedance-2.5-1080p-nv";
+const OV_480P = "ov-seedance-2.5-480p-nv";
+const OV_720P = "ov-seedance-2.5-720p-nv";
+const SD_2_0 = "sd-2.0";
+const SD_2_5 = "sd-2.5";
+const SALE_V2_720P = "特价V2seedance-2.5-720p-30s";
+const SALE_480P = "特价seedance-2.5-480p-30s";
+const SALE_NV_1080P = "特价seedance-2.5-nv-1080p-30s";
+const SALE_NV_480P = "特价seedance-2.5-nv-480p";
+const SALE_NV_720P = "特价seedance-2.5-nv-720p-30s";
+const UPSCALE = "Video-upscale2.6";
 const UPSTREAM_MODELS = [
-  "wan3.0-video",
-  "minimax-h3", "minimax-h3-fl2v", "minimax-h3-lh",
-  "mg-seedance-2.0-720p", "mg-seedance-2.5-480p",
-  "mg-seedance-2.5-4k", "mg-seedance-2.5-720p",
-  "ov-seedance-2.5-1080p-nv", "ov-seedance-2.5-480p-nv",
-  "ov-seedance-2.5-720p-nv", "sd-2.0", "sd-2.5",
-  "特价V2seedance-2.5-720p-30s", "特价seedance-2.5-480p-30s",
-  "特价seedance-2.5-nv-1080p-30s", "特价seedance-2.5-nv-480p",
-  "特价seedance-2.5-nv-720p-30s", "Video-upscale2.6"
+  WAN, H3, H3_FL2V, H3_LH,
+  MG_2_0_720P, MG_2_5_480P, MG_2_5_4K, MG_2_5_720P,
+  OV_1080P, OV_480P, OV_720P, SD_2_0, SD_2_5,
+  SALE_V2_720P, SALE_480P, SALE_NV_1080P, SALE_NV_480P, SALE_NV_720P, UPSCALE
 ];
 // XYSNAI groups portrait, landscape and square sizes into explicit price tiers.
 const H3_SIZES_BY_TIER = {
@@ -77,16 +92,12 @@ function family(model) {
   if (model.indexOf("minimax-h3") === 0) return "h3";
   return "seedance";
 }
-function publicModels(kind) {
-  return UPSTREAM_MODELS.filter(function (model) { return family(model) === kind; });
-}
-
 export const meta = {
   apiVersion: 1,
   key: "crazycherrys_xysnai-video",
   name: "DreamStudio Video",
   description: { en: "Video generation and upscaling via XYSNAI", zh: "通过 XYSNAI 生成视频和超分" },
-  version: "1.3.2",
+  version: "1.3.3",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -94,15 +105,18 @@ export const meta = {
   upstreams: ["vendor"],
   fetchMode: "per_task",
   protocols: ["openai_video"],
-  models: UPSTREAM_MODELS.slice(),
+  models: UPSTREAM_MODELS,
   // No channelTypes: do not capture the official Sora/OpenAI/MiniMax providers.
   usageSchema: COMMON_USAGE,
   usageProfiles: [
-    { models: publicModels("h3"), schema: H3_USAGE },
-    { models: publicModels("wan"), schema: WAN_USAGE },
-    { models: publicModels("sd"), schema: SD_USAGE },
-    { models: publicModels("seedance"), schema: SEEDANCE_USAGE },
-    { models: publicModels("upscale"), schema: UPSCALE_USAGE }
+    { models: [H3, H3_FL2V, H3_LH], schema: H3_USAGE },
+    { models: [WAN], schema: WAN_USAGE },
+    { models: [SD_2_0, SD_2_5], schema: SD_USAGE },
+    { models: [
+      MG_2_0_720P, MG_2_5_480P, MG_2_5_4K, MG_2_5_720P, OV_1080P, OV_480P, OV_720P,
+      SALE_V2_720P, SALE_480P, SALE_NV_1080P, SALE_NV_480P, SALE_NV_720P
+    ], schema: SEEDANCE_USAGE },
+    { models: [UPSCALE], schema: UPSCALE_USAGE }
   ]
 };
 
@@ -121,7 +135,8 @@ function upstreamModel(ctx) {
   return model;
 }
 function base(ctx) {
-  const value = String(ctx.baseUrl || meta.baseUrl).replace(/\/+$/, "");
+  // The marketplace parser treats references to the manifest as potential mutations.
+  const value = String(ctx.baseUrl || "https://xysnai.cn").replace(/\/+$/, "");
   if (/\/v1$/.test(value)) throw new Error("Base URL must not end in /v1; use https://xysnai.cn");
   return value;
 }

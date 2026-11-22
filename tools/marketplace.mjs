@@ -128,7 +128,15 @@ export async function buildIndex(base = root) {
     const sourceMeta = await metadata(sourceBytes.toString());
     const pkg = JSON.parse(await read(base, `${item.source}/package.json`));
     if (sourceMeta.key !== item.key || sourceMeta.version !== m.version || pkg.version !== m.version || hash(sourceBytes) !== releases[0].sha256) throw Error(`Source differs from latest release: ${item.key}; bump version and run release`);
-    releases[0].readme = { path: `${item.source}/README.md`, sha256: hash(await read(base, `${item.source}/README.md`)) };
+    const readmePath = `${item.source}/README.md`;
+    const readme = { path: readmePath, sha256: hash(await read(base, readmePath)) };
+    const chineseReadmePath = `${item.source}/README.zh-CN.md`;
+    if (existsSync(safePath(base, chineseReadmePath))) {
+      readme.translations = {
+        'zh-CN': { path: chineseReadmePath, sha256: hash(await read(base, chineseReadmePath)) }
+      };
+    }
+    releases[0].readme = readme;
     plugins.push({ key: m.key, name: m.name, description: m.description, website: m.website, author,
       iconFile: { path: iconPath, sha256: hash(iconBytes) },
       routes: m.routes ?? [], task: true, provider: false, transform: false,

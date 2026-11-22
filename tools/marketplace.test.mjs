@@ -54,7 +54,10 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     assert.equal(entry.task, true);
     assert.equal(entry.versions[0].baseUrl, meta.baseUrl);
     assert.equal(entry.versions[0].auth, meta.auth);
-    for (const doc of [entry.versions[0].readme, entry.versions[0].changelog,
+    const readme = entry.versions[0].readme;
+    const chineseReadme = readme.translations['zh-CN'];
+    assert.equal(chineseReadme.path, 'video/xysnai/README.zh-CN.md');
+    for (const doc of [readme, chineseReadme, entry.versions[0].changelog,
       entry.versions[0].changelog.translations['zh-CN']]) {
       assert.equal(hash(await fs.readFile(path.join(temp, doc.path))), doc.sha256);
     }

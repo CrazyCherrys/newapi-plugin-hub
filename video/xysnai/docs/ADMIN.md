@@ -4,9 +4,9 @@
 
 ## 安装并配置渠道
 
-已有实例可刷新市场并升级到 DreamStudio Video **1.3.2**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
+已有实例可刷新市场并升级到 DreamStudio Video **1.3.3**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
 
-1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.2**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.2/plugin.js)
+1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.3**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.3/plugin.js)
 2. 新建 **Task Plugin（61）** 渠道，选择 `crazycherrys_xysnai-video`。上游 Base URL 填 `https://xysnai.cn`，API Key 填 XYSNAI 平台密钥。插件会在上游地址后追加 `/v1/videos`。
 3. 先开通 `minimax-h3`，选择调用令牌有权限访问的分组，模型映射留空。按需要再添加其他模型。[插件声明的模型目录](../model-catalog.json)
 4. 保存模型价格后，用一枚 New API 测试令牌走一遍创建、查询和下载，核对相应的扣费日志。用真实渠道提交会消耗上游额度。[用户调用步骤](API.md)
@@ -67,6 +67,8 @@ u("resolution") == "480P"
 
 | 症状 | 检查项 |
 |---|---|
+| 市场预览显示「部分插件信息无法读取」 | 1.3.3 修复了 rc.51 的源码预览兼容并提供中英文独立说明。可刷新市场后选 1.3.3 查看预览 |
+| 市场预览显示「文件尚未校验」 | 检查当前页面是否通过 HTTPS 打开且浏览器 Web Crypto 可用。通过市场安装时，New API 服务端会按索引校验文件哈希 |
 | 模型不可调用 | 启用插件并检查渠道模型、分组和令牌模型限制 |
 | `model_price_error` | 检查当前模型或提供方的计费配置，表达式字段需匹配 1.3.0 的用量定义 |
 | 上游鉴权失败 | 检查类型 61 渠道的 XYSNAI API Key 和 Base URL |
