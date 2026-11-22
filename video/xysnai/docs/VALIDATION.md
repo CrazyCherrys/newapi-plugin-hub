@@ -1,6 +1,6 @@
 # 验证记录
 
-日期：2026-11-22。插件：`xysnai-video`，版本：`1.0.0`。
+日期：2026-11-22。插件：`crazycherrys_xysnai-video`，版本：`1.0.1`。
 
 ## 已完成
 
@@ -40,7 +40,7 @@ new-api plugin test plugin.js --fixture tests/golden.json
 `plugin.js` SHA-256：
 
 ```text
-8c3f2b9e44457667a935bc8cf4acfa4ece5b982312fdbfb68f3c4d89cf7f4292
+686514f490e1a496d42bfd574e8b3468f99cbe8d448813f5dbbab3f4366b7c74
 ```
 
 ## 官方校验规范
@@ -51,11 +51,22 @@ new-api plugin test plugin.js --fixture tests/golden.json
 
 ## 本次 Hub 接入
 
-- 将参考文件 `xysnai-video.js` 整理为 `video/xysnai/plugin.js`；插件源码字节未改变，SHA-256 与上方原始摘要一致。
+- 将参考文件 `xysnai-video.js` 整理为 `video/xysnai/plugin.js`；1.0.1 修改了 key、版本和作者元数据，请求适配与用量逻辑保持原实现。
 - 从当前仓库删除旧插件的源码、发布文件和市场入口，登记完整下架记录；Git 历史仍保留旧提交。
-- 市场发布为 `plugins/tasks/xysnai-video/1.0.0/plugin.js`，补齐中英文日志与原创适配图标；索引保留全部 5 个 usage profile 及 19 个模型。
-- 执行 5 组发布工具测试、21 组插件测试（包含 16 个宿主格式 fixture）、Node 语法检查、官方 rc.51 元数据 Schema 校验、发布生成与索引校验。
+- 市场发布为 `plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js`，补齐中英文日志与原创适配图标；索引保留全部 5 个 usage profile 及 19 个模型。
+- 执行 6 组发布工具测试、21 组插件测试（包含 16 个宿主格式 fixture）、Node 语法检查、官方 rc.51 元数据 Schema 校验、发布生成与索引校验。
 - 测试套件读取全部 5 份请求样例及模型目录；原始参考材料记录的 README 沙盒示例检查不替代目标宿主的执行。
 - SHA256SUMS.txt 覆盖源码、模型目录、日志、示例、测试和本记录；GitHub Actions 同步执行语法及校验清单检查。
 
 本次没有执行 New API 二进制 CLI、安装到实际宿主或发送 XYSNAI 付费请求。超分的实际结算和 multipart、HEAD/Range 的上游行为仍需联调。
+
+## 社区市场安装规则回归
+
+用户在实际市场安装时遇到作者前缀错误。此前离线 Schema 校验没有覆盖控制器的市场准入检查。
+
+- 核对 [New API 安装控制器](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/controller/task_plugin.go)：社区及第三方来源安装要求 key 带作者前缀与下划线。
+- 核对 [ValidPluginKey](https://github.com/QuantumNous/new-api/blob/8542c9d6490b4330fe18160930f81ae7428bc777/pkg/jsplugin/registry.go)：允许小写字母、数字、下划线和连字符，最多 30 字符。
+- 发布工具同时校验 key 的格式、长度、GitHub 作者主页与前缀一致性；回归测试拒绝旧 key、错误作者、空插件名、大写 key 和超长 key，并验证发布入口确实拒绝旧标识。
+- 新市场条目使用 crazycherrys_xysnai-video 1.0.1，作者为 CrazyCherrys；已发布的旧 1.0.0 文件保持不变，不再出现在当前索引中。
+
+此回归验证覆盖已定位的命名准入规则，不代表已在用户宿主完成安装或真实生成。

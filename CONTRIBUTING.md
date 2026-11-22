@@ -34,6 +34,7 @@
 ## 市场发布
 
 1. 在 `marketplace.json` 登记插件 key 和源码目录，源码目录必须提供 `plugin.js`、带版本的 `package.json`、`CHANGELOG.md` 和 `CHANGELOG.zh-CN.md`。当前工具支持正式 `x.y.z` 版本。
+   社区插件使用 `<GitHub用户名小写>_<插件名>`，例如 `crazycherrys_xysnai-video`；key 仅允许小写字母、数字、下划线与连字符，最多 30 字符。`meta.author.url` 填对应 GitHub 个人主页，`meta.author.name` 记录作者。语法和 JSON Schema 校验不替代市场安装的作者前缀校验；发布工具会同时检查这两层规则。
 2. 修改时同步提升 `meta.version` 与 `package.json` 的版本。日志使用英文规范标题与 YAML 元数据，中文只翻译正文；说明计费和渠道配置迁移。
 3. 在 `plugins/tasks/<key>/icon.png` 或 `icon.svg` 放置服务商图标，在 `assets/README.md` 记录来源。图标不超过 1 MiB，不把远程图片地址或图片数据写进插件 meta。
 4. 在根目录执行 `npm test`、`npm run release`、`npm run check`。更新本插件的校验清单及文档；新增插件时把对应测试加入根 `package.json` 的测试命令。

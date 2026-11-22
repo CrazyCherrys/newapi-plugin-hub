@@ -2,7 +2,9 @@
 
 [返回 Hub](../../README.md) · [验证记录](docs/VALIDATION.md) · [更新日志](CHANGELOG.zh-CN.md)
 
-核对日期：2026-11-22。插件版本：1.0.0。插件 key：`xysnai-video`。
+核对日期：2026-11-22。插件版本：1.0.1。插件 key：`crazycherrys_xysnai-video`。
+
+1.0.1 修正社区市场安装的作者命名空间：作者为 GitHub 用户 `CrazyCherrys`，key 使用小写前缀 `crazycherrys_`。如果仍提示作者前缀错误，请刷新市场源并确认下载的是 1.0.1。旧 key `xysnai-video` 不再列入市场；已有旧渠道应重新绑定新插件，并迁移使用旧 key 的插件级价格覆盖。模型名称、上游参数与用量含义均保持不变。
 
 ## 结论与验证边界
 
@@ -33,13 +35,13 @@ XYSNAI 当前公开文档中的 19 个视频模型都通过 `POST /v1/videos` �
 
 ## 2. 在 New API 中配置
 
-推荐先按 [Hub 首页](../../README.md#添加市场源)添加市场源，刷新后安装 **XYSNAI Video 1.0.0**。市场中只有一个插件，安装后可以选择其声明的 19 个模型；不需要按模型安装多份插件。
+推荐先按 [Hub 首页](../../README.md#添加市场源)添加市场源，刷新后安装 **XYSNAI Video 1.0.1**。市场中只有一个插件，安装后可以选择其声明的 19 个模型；不需要按模型安装多份插件。
 
-也可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/xysnai-video/1.0.0/plugin.js)手动上传。以下渠道配置对两种安装方式均适用。
+也可[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js)手动上传。以下渠道配置对两种安装方式均适用。
 
 1. 以 Root 身份进入插件管理，启用任务插件功能。
 2. 上传 `plugin.js`，或在源码导入处粘贴其完整内容；保存、启用。
-3. 添加渠道，类型选择 **Task Plugin（61）**，插件选择 **XYSNAI Video**，key 为 `xysnai-video`。
+3. 添加渠道，类型选择 **Task Plugin（61）**，插件选择 **XYSNAI Video**，key 为 `crazycherrys_xysnai-video`。
 4. Base URL 填 `https://xysnai.cn`，不要追加 `/v1` 或 `/v1/videos`。
 5. API Key 填 XYSNAI 的上游密钥。
 6. 模型从插件声明列表选取，例如 `xysnai/minimax-h3` 与 `xysnai/wan3.0-video`。

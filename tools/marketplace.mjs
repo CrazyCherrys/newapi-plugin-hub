@@ -9,6 +9,15 @@ import { fileURLToPath } from 'node:url';
 export const root = fileURLToPath(new URL('../', import.meta.url));
 export const hash = data => createHash('sha256').update(data).digest('hex');
 const versionPattern = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+// Mirrors New API's ValidPluginKey; marketplace admission also needs a namespace.
+export const validPluginKey = key => typeof key === 'string' && key.length <= 30 && /^[a-z0-9][a-z0-9_-]*$/.test(key);
+export function communityAuthor(meta) {
+  const match = typeof meta.author?.url === 'string' && meta.author.url.match(/^https:\/\/github\.com\/([a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?)\/?$/i);
+  if (!validPluginKey(meta.key) || !match || !meta.key.startsWith(match[1].toLowerCase() + '_') || meta.key.length === match[1].length + 1) {
+    throw Error('Community plugin key must start with its GitHub author login and an underscore; set meta.author.url to the matching GitHub profile');
+  }
+  return { login: match[1], url: `https://github.com/${match[1]}` };
+}
 export function compareVersions(a, b) {
   if (!versionPattern.test(a) || !versionPattern.test(b)) throw Error('Only stable x.y.z release versions are supported');
   const aa = a.split('.').map(BigInt), bb = b.split('.').map(BigInt);
@@ -29,20 +38,20 @@ export async function metadata(code) {
   await mod.link(() => { throw Error('Plugins must not import dependencies'); });
   await mod.evaluate({ timeout: 1000 });
   const meta = JSON.parse(JSON.stringify(mod.namespace.meta));
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(meta.key) || !versionPattern.test(meta.version) || meta.apiVersion !== 1) throw Error('Invalid plugin identity or API version');
+  if (!validPluginKey(meta.key) || !versionPattern.test(meta.version) || meta.apiVersion !== 1) throw Error('Invalid plugin identity or API version');
   return meta;
 }
 function validateConfig(cfg, base) {
   const keys = new Set();
   for (const item of cfg.plugins) {
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.key) || keys.has(item.key)) throw Error('Invalid or duplicate plugin key');
+    if (!validPluginKey(item.key) || keys.has(item.key)) throw Error('Invalid or duplicate plugin key');
     keys.add(item.key);
     safePath(base, item.source);
   }
   const retired = cfg.retiredPlugins ?? [];
   if (!Array.isArray(retired) || new Set(retired).size !== retired.length) throw Error('Invalid retired plugin list');
   for (const key of retired) {
-    if (typeof key !== 'string' || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(key) || keys.has(key)) throw Error('Invalid or active retired plugin key');
+    if (!validPluginKey(key) || keys.has(key)) throw Error('Invalid or active retired plugin key');
     if (existsSync(safePath(base, `plugins/tasks/${key}`))) throw Error(`Retired plugin directory must be fully removed: ${key}`);
   }
   return cfg;
@@ -62,6 +71,7 @@ async function changelog(base, dir, meta) {
 export async function release(base = root) {
   for (const item of (await config(base)).plugins) {
     const meta = await metadata((await read(base, `${item.source}/plugin.js`)).toString());
+    communityAuthor(meta);
     const pkg = JSON.parse(await read(base, `${item.source}/package.json`));
     if (meta.key !== item.key || pkg.version !== meta.version) throw Error('Source identity/version mismatch');
     await changelog(base, item.source, meta);
@@ -113,12 +123,13 @@ export async function buildIndex(base = root) {
     const iconBytes = await read(base, iconPath);
     if (iconBytes.length > 1024 * 1024) throw Error('Logo exceeds 1 MiB');
     const m = latestMeta;
+    const author = communityAuthor(m);
     const sourceBytes = Buffer.from((await read(base, `${item.source}/plugin.js`)).toString().replace(/\r\n/g, '\n'));
     const sourceMeta = await metadata(sourceBytes.toString());
     const pkg = JSON.parse(await read(base, `${item.source}/package.json`));
     if (sourceMeta.key !== item.key || sourceMeta.version !== m.version || pkg.version !== m.version || hash(sourceBytes) !== releases[0].sha256) throw Error(`Source differs from latest release: ${item.key}; bump version and run release`);
     releases[0].readme = { path: `${item.source}/README.md`, sha256: hash(await read(base, `${item.source}/README.md`)) };
-    plugins.push({ key: m.key, name: m.name, description: m.description, website: m.website,
+    plugins.push({ key: m.key, name: m.name, description: m.description, website: m.website, author,
       iconFile: { path: iconPath, sha256: hash(iconBytes) },
       routes: m.routes ?? [], task: true, provider: false, transform: false,
       protocols: (m.protocols ?? []).map(p => typeof p === 'string' ? { name: p } : p),

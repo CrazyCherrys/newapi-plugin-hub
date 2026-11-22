@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { root, compareVersions, safePath, metadata, release, buildIndex, hash, immutableAgainst } from './marketplace.mjs';
+import { root, compareVersions, safePath, metadata, release, buildIndex, hash, immutableAgainst, validPluginKey, communityAuthor } from './marketplace.mjs';
 
 test('versions sort numerically and reject non-release versions', () => {
   assert.deepEqual(['0.1.9', '0.1.10', '1.0.0'].sort(compareVersions), ['1.0.0', '0.1.10', '0.1.9']);
@@ -12,6 +12,18 @@ test('versions sort numerically and reject non-release versions', () => {
 });
 test('paths reject traversal and absolute paths', () => {
   for (const value of ['../secret', '/secret', 'a/../b', 'a\\b']) assert.throws(() => safePath(root, value));
+});
+test('community keys match the GitHub author namespace and host key limits', () => {
+  const meta = { key: 'crazycherrys_xysnai-video', author: { name: 'CrazyCherrys', url: 'https://github.com/CrazyCherrys' } };
+  assert.deepEqual(communityAuthor(meta), { login: 'CrazyCherrys', url: 'https://github.com/CrazyCherrys' });
+  for (const key of ['xysnai-video', 'someone_xysnai-video', 'CrazyCherrys_xysnai-video', 'crazycherrys_', 'crazycherrys_' + 'x'.repeat(19)]) {
+    assert.throws(() => communityAuthor({ ...meta, key }), /Community plugin key/);
+  }
+  assert.equal(validPluginKey('a'.repeat(30)), true);
+  assert.equal(validPluginKey('a'.repeat(31)), false);
+  for (const url of [undefined, 'https://xysnai.cn', 'https://github.com/OtherAuthor', 'https://github.com/CrazyCherrys/repository']) {
+    assert.throws(() => communityAuthor({ ...meta, author: { url } }), /Community plugin key/);
+  }
 });
 test('metadata rejects imports and runaway evaluation', async () => {
   await assert.rejects(metadata('import x from "node:fs"; export const meta = {};'));
@@ -37,6 +49,7 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     assert.equal(hash(await fs.readFile(path.join(temp, entry.versions[0].path))), entry.versions[0].sha256);
     assert.equal(hash(await fs.readFile(path.join(temp, entry.iconFile.path))), entry.iconFile.sha256);
     const meta = await metadata(await fs.readFile(path.join(temp, entry.versions[0].path), 'utf8'));
+    assert.deepEqual(entry.author, communityAuthor(meta));
     assert.deepEqual(entry.usageProfiles, meta.usageProfiles);
     assert.equal(entry.task, true);
     assert.equal(entry.versions[0].baseUrl, meta.baseUrl);
@@ -48,6 +61,11 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
     assert.equal(entry.usageProfiles.find(p => p.models.includes('xysnai/minimax-h3')).schema.size.enum.length, 26);
     assert.ok(entry.usageProfiles.find(p => p.models.includes('xysnai/Video-upscale2.6')).schema.billing_seconds);
+    const sourcePath = path.join(temp, cfg.plugins[0].source, 'plugin.js');
+    const source = await fs.readFile(sourcePath, 'utf8');
+    await fs.writeFile(sourcePath, source.replace('key: "crazycherrys_xysnai-video"', 'key: "xysnai-video"'));
+    await assert.rejects(release(temp), /Community plugin key/);
+    await fs.writeFile(sourcePath, source);
     await fs.appendFile(path.join(temp, entry.versions[0].path), '\n// tampered\n');
     await assert.rejects(release(temp), /immutable/);
     await assert.rejects(buildIndex(temp), /Source differs/);

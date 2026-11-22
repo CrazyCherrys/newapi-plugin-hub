@@ -1,7 +1,7 @@
 {
   "name": "New API Plugin Hub",
   "plugins": [
-    { "key": "xysnai-video", "source": "video/xysnai" }
+    { "key": "crazycherrys_xysnai-video", "source": "video/xysnai" }
   ],
   "retiredPlugins": ["leonardo-video"]
 }

@@ -3,15 +3,19 @@
   "name": "New API Plugin Hub",
   "plugins": [
     {
-      "key": "xysnai-video",
+      "key": "crazycherrys_xysnai-video",
       "name": "XYSNAI Video",
       "description": {
         "en": "XYSNAI unified video tasks",
         "zh": "XYSNAI 多模型视频任务适配"
       },
       "website": "https://xysnai.cn/zh/docs",
+      "author": {
+        "login": "CrazyCherrys",
+        "url": "https://github.com/CrazyCherrys"
+      },
       "iconFile": {
-        "path": "plugins/tasks/xysnai-video/icon.svg",
+        "path": "plugins/tasks/crazycherrys_xysnai-video/icon.svg",
         "sha256": "3eb4b38b184b53f54ba4af35f4136d2a7e9e22890e96f11b9559ef86ee2c5218"
       },
       "routes": [],
@@ -453,29 +457,29 @@
           }
         }
       ],
-      "latest": "1.0.0",
+      "latest": "1.0.1",
       "versions": [
         {
-          "version": "1.0.0",
-          "path": "plugins/tasks/xysnai-video/1.0.0/plugin.js",
-          "sha256": "8c3f2b9e44457667a935bc8cf4acfa4ece5b982312fdbfb68f3c4d89cf7f4292",
+          "version": "1.0.1",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.0.1/plugin.js",
+          "sha256": "686514f490e1a496d42bfd574e8b3468f99cbe8d448813f5dbbab3f4366b7c74",
           "minApiVersion": 1,
           "kind": "task",
           "baseUrl": "https://xysnai.cn",
           "auth": "api_key",
           "changelog": {
-            "path": "plugins/tasks/xysnai-video/1.0.0/CHANGELOG.md",
-            "sha256": "367ab298cc6843848257676c47794802e5df292c3ee72fa2ce6fbe5a4006699f",
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.0.1/CHANGELOG.md",
+            "sha256": "0da2697d12874e1de57077c0b345514324cca85ef795438dc53a9425b5370b8a",
             "translations": {
               "zh-CN": {
-                "path": "plugins/tasks/xysnai-video/1.0.0/CHANGELOG.zh-CN.md",
-                "sha256": "27dbdda627a1bcc1104a796cde1a27eb30c98a7220a87ffd701926116e8cd6d7"
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.0.1/CHANGELOG.zh-CN.md",
+                "sha256": "a1e9fbc91c52b652818604c8a6f83d8a3a044169c83dac71f0bdc6aa3dc376f5"
               }
             }
           },
           "readme": {
             "path": "video/xysnai/README.md",
-            "sha256": "4d8f1519179e37ce8eecd0cd36a96202504a67abf0aa1fa05ce5673d7d29bd15"
+            "sha256": "78de109ca5b466b342d96b798d51db5602dca850db01c3a8d7b3b07da5c48f02"
           }
         }
       ]

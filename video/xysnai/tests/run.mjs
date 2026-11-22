@@ -57,6 +57,10 @@ test('Hub catalog, published source checksum and request examples match the plug
   }
 });
 test('manifest declares 19 isolated model names, one protocol, and no legacy channel takeover', () => {
+  assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
+  assert.equal(plugin.meta.version, '1.0.1');
+  assert.equal(plugin.meta.author.name, 'CrazyCherrys');
+  assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
   assert.equal(new Set(plugin.meta.models).size, 19);
   assert.deepEqual(plugin.meta.protocols, ['openai_video']);

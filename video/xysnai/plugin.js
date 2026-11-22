@@ -69,11 +69,11 @@ function publicModels(kind) {
 
 export const meta = {
   apiVersion: 1,
-  key: "xysnai-video",
+  key: "crazycherrys_xysnai-video",
   name: "XYSNAI Video",
   description: { en: "XYSNAI unified video tasks", zh: "XYSNAI 多模型视频任务适配" },
-  version: "1.0.0",
-  author: { name: "Private Integration" },
+  version: "1.0.1",
+  author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
   auth: "api_key",

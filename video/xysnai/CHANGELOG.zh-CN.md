@@ -1,19 +1,17 @@
 ---
 changelogVersion: 1
-plugin: 'xysnai-video'
-version: '1.0.0'
+plugin: 'crazycherrys_xysnai-video'
+version: '1.0.1'
 locale: 'zh-CN'
 ---
 # Changelog
 
-## [1.0.0]
+## [1.0.1]
 
-### Added
-- 新增 XYSNAI Video 任务插件，以带命名空间的名称接入 Wan、MiniMax H3、Seedance 与视频超分共 19 个模型。
-- 支持 JSON 与 multipart 提交、异步轮询以及携带上游鉴权的视频内容请求。
-- 保留各模型的参数与独立用量配置，包括时长、分辨率、尺寸、音频与素材数量；超分计费时长仅在上游实际返回时报告。
+### Fixed
+- 将插件标识改为带 GitHub 作者前缀的 crazycherrys_xysnai-video，并补齐作者 CrazyCherrys 及其 GitHub 主页，满足社区市场的安装校验。
+- 发布到与新标识一致的目录并更新市场入口；不带前缀的 1.0.0 不再列入当前市场。
 
 ### Migration
-- 本插件独立配置模型价格；Leonardo 的渠道配置和价格不会自动迁移。
-- 新建 Task Plugin（61）渠道并绑定 xysnai-video，Base URL 填 https://xysnai.cn，配置 XYSNAI API Key，使用声明的 xysnai/ 模型名称；启用请求前逐个配置模型用量价格。
-- 超分需要明确的定价策略；不能用输出视频时长替代上游实例计费时间，也不能将缺失的 billing_seconds 视为零。
+- 19 个 xysnai/ 模型的用量事实和计费计算保持不变。若已在 xysnai-video 下配置插件级价格覆盖，管理员需在 crazycherrys_xysnai-video 下重新配置；不会自动迁移。
+- 刷新市场后安装新 key 的 1.0.1。已安装旧 key 的用户需将类型 61 渠道重新绑定到新插件；XYSNAI Base URL、密钥与模型名保持原配置。
