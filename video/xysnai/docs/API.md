@@ -13,11 +13,11 @@ export NEW_API_TOKEN='替换为你的 New API 令牌'
 | 查询任务 | `GET /v1/videos/{id}` |
 | 下载视频 | `GET /v1/videos/{id}/content` |
 
-本页列出的 19 个插件模型共用这三个接口。创建时通过 JSON 的 `model` 选择型号，其余字段按所选模型填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
+本页列出的 19 个插件模型共用这三个接口。创建时在请求体中填写 `model`，其余字段按所选型号填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
 
 ## 创建任务
 
-下方以标准版 `minimax-h3` 为例，生成一段 5 秒视频。[H3 型号与参数](#minimax-h3-型号与参数) · [其他模型](#其他模型)
+下方以标准版 `minimax-h3` 为例，生成一段 5 秒视频。[H3 型号与参数](#minimax-h3-型号与参数) · [参考图调用示例](#h3-参考图请求示例) · [其他模型](#其他模型)
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -111,7 +111,38 @@ curl --fail --silent --show-error \
 | 2K | `2K` |
 | 4K | `4K` |
 
-如果服务方为标准版 `minimax-h3` 开放了参考图，可用下面的 JSON。把图片 URL 换成实际可访问的地址。
+### H3 参考图请求示例
+
+把示例中的图片 URL 换成可公开读取的 HTTP 或 HTTPS 地址。服务方开放了 LH 版参考图时，也可以把下方命令的 `model` 改为 `minimax-h3-lh`。
+
+**JSON**。已有 OpenAI Video 客户端可以使用 `input_reference.image_url`。插件会将 URL 作为一张图片转发。下方命令省略了时长，会按 4 秒和 `1376x768`（768P）提交和计费。
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "model": "minimax-h3",
+    "prompt": "保留参考图中的主角，镜头缓慢拉远",
+    "size": "1280x720",
+    "input_reference": { "image_url": "https://cdn.example.com/reference.jpg" }
+  }'
+```
+
+**multipart**。同一请求也可以用 `input_reference[image_url]` 文本字段提交。
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  --form-string 'model=minimax-h3' \
+  --form-string 'prompt=保留参考图中的主角，镜头缓慢拉远' \
+  --form-string 'size=1280x720' \
+  --form-string 'input_reference[image_url]=https://cdn.example.com/reference.jpg'
+```
+
+如果需要传多张图片，改用 JSON 的 `images` 数组，并省略 `input_reference`。
 
 ```json
 {
@@ -119,18 +150,10 @@ curl --fail --silent --show-error \
   "prompt": "保留参考图中的主角，镜头缓慢拉远",
   "seconds": 5,
   "size": "1376x768",
-  "images": ["https://cdn.example.com/reference.jpg"]
-}
-```
-
-标准版和 LH 版也接受已有客户端传来的 `input_reference: { "image_url": "https://…" }`。multipart 客户端可以传同样的 URL 到 `input_reference[image_url]` 文本字段。选择图片对象时省略 `images`，插件会把 URL 作为一张图片转发。图片对象只接受可公开读取的 HTTP 或 HTTPS URL。
-
-```json
-{
-  "model": "minimax-h3",
-  "prompt": "保留参考图中的主角，镜头缓慢拉远",
-  "size": "1280x720",
-  "input_reference": { "image_url": "https://cdn.example.com/reference.jpg" }
+  "images": [
+    "https://cdn.example.com/reference.jpg",
+    "https://cdn.example.com/reference-2.jpg"
+  ]
 }
 ```
 
