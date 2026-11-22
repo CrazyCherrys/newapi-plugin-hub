@@ -106,9 +106,24 @@ curl --fail --silent --show-error \
 
 ### H3 的 2K 和 4K
 
-使用 `minimax-h3` 或 `minimax-h3-fl2v` 时，如果服务方已开通对应档位，把请求里的 `size` 改为大写的 `"2K"` 或 `"4K"`。插件直接转发该值，New API 按对应档位计费。LH 的公开报价只覆盖 480P 和 768P。
+使用 `minimax-h3` 或 `minimax-h3-fl2v` 时，如果服务方已开通对应档位并配置价格，把请求里的 `size` 改为大写的 `"2K"` 或 `"4K"`。插件直接转发该值，New API 按对应档位计费。LH 的公开报价只覆盖 480P 和 768P。
 
-`2K` 和 `4K` 表示清晰度。上游公开协议未说明默认画幅，也未列出与 `aspect_ratio` 的组合规则。需要固定画幅时，可以直接选择明确的宽高尺寸。
+以下命令沿用开头设置的 New API 地址和令牌，用 `minimax-h3` 创建一段 5 秒的 2K 视频。调用 4K 时，把命令中的 `"size": "2K"` 改成 `"size": "4K"`。
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "model": "minimax-h3",
+    "prompt": "云海在群山之间缓慢流动，镜头向前推进",
+    "seconds": 5,
+    "size": "2K"
+  }'
+```
+
+`2K` 和 `4K` 表示清晰度。上游公开协议未说明默认画幅，也未列出与 `aspect_ratio` 的组合规则。如需固定画幅，可以从下方完整尺寸表中选择明确的宽高，最高到 1080P 档。
 
 <details>
 <summary>查看客户端尺寸映射和完整尺寸表</summary>
