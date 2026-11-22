@@ -34,7 +34,7 @@ u("resolution") == "480P"
 分组倍率为 `1` 时，用 `1376x768` 生成 5 秒视频的基础金额约为 `$0.059585`，传 6 张 `images` 则约为 `$0.074481`。这段配置已经在隔离的 rc.51 上验证了五个档位的预扣。
 
 - **素材计费**。此表达式覆盖纯文本和明确传入的 `images`。XYSNAI 按参考视频的实际时长收费，插件只上报视频数量。`input_reference` 还可能是图片或视频。此价格表达式不会拦截这些请求。按上游成本收费的服务应先限制 `reference_video`、`reference_videos` 和 `input_reference`，再开放对应输入。
-- **H3 变体**。`minimax-h3-fl2v` 使用相同的公开费率，可在其价格项单独粘贴。`minimax-h3-lh` 的公开价格只有 `480P` 的 ¥0.01/秒和 `768P` 的 ¥0.04/秒，需要独立定价。[FL2V 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2) · [LH 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=f9033ed1-a558-4b0c-8e90-4675eac83a37)
+- **H3 变体**。`minimax-h3-fl2v` 使用相同的公开费率，可在其价格项单独粘贴。`minimax-h3-lh` 的公开价格只有 `480P` 的 ¥0.01/秒和 `768P` 的 ¥0.04/秒，需要独立定价。[FL2V 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2) · [LH 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37)
 - **其他模型**。按各自上游口径和用量字段定价。部分 Seedance 型号按任务计费。视频超分按上游实际用量收费，现阶段可配置明确的按次售价，实际时长结算需要先核实上游返回字段。[XYSNAI 模型目录](https://xysnai.cn/zh/models)
 
 ## 排查接入

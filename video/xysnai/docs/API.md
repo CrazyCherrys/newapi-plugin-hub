@@ -81,8 +81,8 @@ curl --fail --silent --show-error \
 | `model` | 用法 |
 |---|---|
 | `minimax-h3` | 标准版，可使用上面的文生视频示例 |
-| `minimax-h3-lh` | H3 LH 版，可沿用上面的 JSON 结构，将 `model` 改为 `minimax-h3-lh`，尺寸按服务方开放的档位选择 |
-| `minimax-h3-fl2v` | H3 首尾帧版，使用 `minimax-h3-fl2v` 作为模型名，并按服务方提供的首尾帧素材要求提交 |
+| `minimax-h3-lh` | [H3 LH 请求示例](#h3-lh-请求示例)，尺寸按服务方开放的档位选择 |
+| `minimax-h3-fl2v` | [H3 首尾帧版基础请求](#h3-fl2v-基础请求)，素材格式见该示例前的说明 |
 
 | 字段 | 用法 |
 |---|---|
@@ -100,7 +100,7 @@ curl --fail --silent --show-error \
 | 2K | `2K` |
 | 4K | `4K` |
 
-如果服务方开放了参考图，可将创建命令的 JSON 换成下面的请求体。把图片 URL 换成实际可访问的地址。
+如果服务方为标准版 `minimax-h3` 开放了参考图，可用下面的 JSON。把图片 URL 换成实际可访问的地址。
 
 ```json
 {
@@ -110,6 +110,40 @@ curl --fail --silent --show-error \
   "size": "1376x768",
   "images": ["https://cdn.example.com/reference.jpg"]
 }
+```
+
+### H3 LH 请求示例
+
+沿用上文的 New API 地址和令牌。以下示例使用 `1376x768` 生成 5 秒视频。[XYSNAI LH 接口文档](https://xysnai.cn/zh/docs?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37)
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "model": "minimax-h3-lh",
+    "prompt": "一只橘猫望向窗外，镜头缓慢靠近",
+    "seconds": 5,
+    "size": "1376x768"
+  }'
+```
+
+### H3 FL2V 基础请求
+
+XYSNAI 将此型号标为首尾帧模式，但公开示例只包含模型名、提示词、时长和尺寸。`images` 在文档中是通用图片 URL 数组，首尾帧专用字段和数组顺序尚未公布。实际传入首尾帧前，请向服务方确认字段与顺序。下方命令对应官方的无素材基础请求。[XYSNAI FL2V 接口文档](https://xysnai.cn/zh/docs?model_id=4235d267-9fd0-4b78-8d94-0b813c383cb2)
+
+```bash
+curl --fail-with-body --silent --show-error \
+  "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "model": "minimax-h3-fl2v",
+    "prompt": "一只橘猫望向窗外，镜头缓慢靠近",
+    "seconds": 5,
+    "size": "1376x768"
+  }'
 ```
 
 ## 其他模型
