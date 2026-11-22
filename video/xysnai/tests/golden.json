@@ -425,34 +425,34 @@
       }
     },
     {
-      "name": "Failed status has reason",
+      "name": "Failed status hides the upstream reason",
       "hook": "parseTaskResult",
       "args": [
         {},
         {
           "status": "failed",
           "error": {
-            "message": "upstream task failed"
+            "message": "upstream error at https://xysnai.cn/private-path"
           }
         }
       ],
       "expected": {
         "status": "FAILURE",
-        "reason": "upstream task failed"
+        "reason": "Video generation failed"
       }
     },
     {
-      "name": "Unknown status is not fabricated as running",
+      "name": "Unknown status neither fabricates progress nor reveals the raw value",
       "hook": "parseTaskResult",
       "args": [
         {},
         {
-          "status": "unrecognized"
+          "status": "upstream error at https://xysnai.cn/private-path"
         }
       ],
       "expected": {
         "status": "UNKNOWN",
-        "reason": "Unknown XYSNAI task status: unrecognized"
+        "reason": "Unrecognized video task status"
       }
     },
     {
@@ -608,6 +608,38 @@
         "progress": 100,
         "created_at": 1700000000,
         "result_url": "/v1/videos/task_public/content"
+      }
+    },
+    {
+      "name": "Client view hides previously stored upstream failure text",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "render"
+      ],
+      "args": [
+        {},
+        {
+          "task_id": "task_public",
+          "status": "FAILURE",
+          "created_at": 1700000000,
+          "properties": {
+            "origin_model_name": "minimax-h3"
+          },
+          "fail_reason": "upstream error at https://xysnai.cn/private-path"
+        }
+      ],
+      "expected": {
+        "id": "task_public",
+        "object": "video",
+        "model": "minimax-h3",
+        "status": "failed",
+        "progress": 0,
+        "created_at": 1700000000,
+        "error": {
+          "code": "video_generation_failed",
+          "message": "Video generation failed"
+        }
       }
     },
     {

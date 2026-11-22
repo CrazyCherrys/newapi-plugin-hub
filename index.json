@@ -155,8 +155,8 @@
                 "4K"
               ],
               "description": {
-                "en": "XYSNAI size pricing tier",
-                "zh": "XYSNAI 尺寸计费档位"
+                "en": "Video resolution tier",
+                "zh": "视频分辨率计费档位"
               }
             }
           }
@@ -440,8 +440,37 @@
           }
         }
       ],
-      "latest": "1.3.3",
+      "latest": "1.3.4",
       "versions": [
+        {
+          "version": "1.3.4",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js",
+          "sha256": "38a5c3954217d0632af1e13fd2593718da26105735b79dc6e06b84de79819f79",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://xysnai.cn",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.4/CHANGELOG.md",
+            "sha256": "7195079867ff53794d14c2f00e85a4fb718f7bccb9fea4469d38fdb9498ab5ae",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.4/CHANGELOG.zh-CN.md",
+                "sha256": "69abcd574441b059def0dbfcd5875274b54b9a89c873b1f761bac75a441acec6"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/xysnai/README.md",
+            "sha256": "fd6770386dee3f99aae1161cd39b803455cf6a58551e6651359b47712e0faadd",
+            "translations": {
+              "zh-CN": {
+                "path": "video/xysnai/README.zh-CN.md",
+                "sha256": "6a89eb57185c2e6b17a318a569be2a63153a48d753ba6151367a70a9e66863c0"
+              }
+            }
+          }
+        },
         {
           "version": "1.3.3",
           "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.3/plugin.js",
@@ -457,16 +486,6 @@
               "zh-CN": {
                 "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.3/CHANGELOG.zh-CN.md",
                 "sha256": "9f7f445107097b05fdd021531ff9f1edacfd01fe7db99bf5712a58271d547e6e"
-              }
-            }
-          },
-          "readme": {
-            "path": "video/xysnai/README.md",
-            "sha256": "65cd8ee12d1185bff91e224d68d97fd867b9f85dc7f25e61de1f9ab1d350b32c",
-            "translations": {
-              "zh-CN": {
-                "path": "video/xysnai/README.zh-CN.md",
-                "sha256": "c8fa25cd7f374f596f75966cbd5511e3746b1ca2eb8163ff025c5c90d99d6dc8"
               }
             }
           }

@@ -1,18 +1,18 @@
 ---
 changelogVersion: 1
 plugin: 'crazycherrys_xysnai-video'
-version: '1.3.3'
+version: '1.3.4'
 locale: 'en'
 translations:
   zh-CN: CHANGELOG.zh-CN.md
 ---
 # Changelog
 
-## [1.3.3]
+## [1.3.4]
 
 ### Fixed
-- Make the model list and connection metadata readable by New API's static marketplace preview.
-- Publish separate English and Simplified Chinese usage guides so the marketplace can select the matching language.
+- Use a generic public video failure message and keep raw provider error text out of the plugin's standard response.
+- Remove provider links from the client API guide and document gateway filtering for legacy task queries, HTTP errors, and download headers.
 
 ### Migration
-- Upgrade the existing plugin and keep using its channel settings and pricing expressions. The H3 pricing editor retains the five resolution tiers introduced in 1.3.2.
+- Upgrade the existing plugin to carry forward its channel settings and pricing expressions. Apply the Nginx configuration on the public gateway to cover host-managed responses.

@@ -1,10 +1,10 @@
 # 验证记录
 
-日期为 2026-11-22，插件为 DreamStudio Video 1.3.3，标识为 `crazycherrys_xysnai-video`。
+日期为 2026-11-22，插件为 DreamStudio Video 1.3.4，标识为 `crazycherrys_xysnai-video`。
 
 ## 已完成
 
-1. Node.js 模块加载与同步 hook 行为共通过 26 组测试，包含 20 个 New API 官方格式 fixture 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
+1. Node.js 模块加载与同步 hook 行为共通过 26 组测试，包含 21 个 New API 官方格式 fixture 的本地回放，以及 Hub 的模型目录、示例和源码哈希一致性检查。
 2. 元数据：使用 New API `v1.0.0-rc.51` 随附的官方 API v1 JSON Schema 独立校验，通过。
 3. 模型声明：19 个唯一模型，各属于一个 usage profile，分组数量为 3 / 1 / 2 / 12 / 1。
 4. 请求和用量：覆盖全部模型、26 个 H3 尺寸、秒数数字/字符串、必填字段、非法时长拒绝。
@@ -32,14 +32,14 @@ new-api plugin lint plugin.js
 new-api plugin test plugin.js --fixture tests/golden.json
 ```
 
-Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过，官方宿主通过全部 20 个 fixture。
+Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过，官方宿主通过全部 21 个 fixture。
 
 ## 源码摘要
 
 `plugin.js` SHA-256：
 
 ```text
-49a5722e3b4532826d91d24d6e89a45cfc120230967d8face568cf575af4596a
+38a5c3954217d0632af1e13fd2593718da26105735b79dc6e06b84de79819f79
 ```
 
 ## 官方校验规范
@@ -120,3 +120,9 @@ Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过
 - 通过测试 New API 网关向 `minimax-h3-fl2v` 分别提交单张首帧 JPEG 和两张首尾帧 JPEG，使用 `864x480` 和 4 秒。两个任务均完成，均从 `/v1/videos/{id}/content` 下载到 MP4。
 - 解码成片并核对画面。单图的开头与输入图一致。双图使用两个同名 `images` 文件字段，成片开头与第一张相符，结尾与第二张相符。
 - 从 DreamStudio 再次提交双图，先指定尾帧，再指定首帧。Worker 按首帧、尾帧顺序发送 `images`，成片画面顺序正确。成片入库，从 DreamStudio 下载得到的文件大小和 SHA-256 与入库记录一致。
+
+## 1.3.4 对外失败文案
+
+- 用官方 New API rc.51 和模拟上游验证即时失败、轮询失败和从 1.3.3 升级前已创建的失败任务。普通令牌查询标准视频接口时只看到通用失败提示；新任务的失败退款正常。旧任务仍可能在宿主管理的通用查询接口显示历史失败文字。
+- 确认宿主直接转发的非 2xx 提交错误、兼容查询的原始数据和下载头需要另外处理。[Nginx 使用指南](NGINX.md)
+- 在 Nginx 1.28.0 与模拟后端上验证旧接口拦截、HTTP 错误替换和下载响应头过滤。校对了上传及令牌透传、单次提交、`HEAD` 和 `206` 续传。生产网关可按指南加载配置。

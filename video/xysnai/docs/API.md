@@ -1,6 +1,6 @@
 # 通过 New API 调用 DreamStudio Video
 
-DreamStudio Video 通过 New API 提供 XYSNAI 的视频模型。
+使用 DreamStudio Video 创建视频、查询任务和下载视频。
 
 调用地址为 `https://api.haokun.cc`。在 Bash 终端运行下方命令，将令牌占位符替换为你有模型权限的 **New API 令牌**。可用模型及售价以服务方为准，提交视频任务会消耗额度。
 
@@ -15,7 +15,7 @@ export NEW_API_TOKEN='替换为你的 New API 令牌'
 | 查询任务 | `GET /v1/videos/{id}` |
 | 下载视频 | `GET /v1/videos/{id}/content` |
 
-本页列出的 19 个插件模型共用这三个接口。创建时在请求体中填写 `model`，其余字段按所选型号填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
+本页列出的 19 个模型共用这三个接口。创建时在请求体中填写 `model`，其余字段按所选型号填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
 
 ## 创建任务
 
@@ -78,7 +78,7 @@ curl --fail --silent --show-error \
 
 ## MiniMax H3 型号与参数
 
-三个型号都使用 `POST /v1/videos`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。以下默认值和尺寸映射适用于插件 1.3.0 及以上版本。
+三个型号都使用 `POST /v1/videos`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。
 
 | `model` | 用法 |
 |---|---|
@@ -106,7 +106,7 @@ curl --fail --silent --show-error \
 
 ### H3 的 2K 和 4K
 
-使用 `minimax-h3` 或 `minimax-h3-fl2v` 时，如果服务方已开通对应档位并配置价格，把请求里的 `size` 改为大写的 `"2K"` 或 `"4K"`。插件直接转发该值，New API 按对应档位计费。LH 的公开报价只覆盖 480P 和 768P。
+使用 `minimax-h3` 或 `minimax-h3-fl2v` 时，如果服务方已开通对应档位，把请求里的 `size` 改为大写的 `"2K"` 或 `"4K"`。New API 按选用的档位计费。LH 请使用服务方开放的 480P 或 768P 档位。
 
 以下命令沿用开头设置的 New API 地址和令牌，用 `minimax-h3` 创建一段 5 秒的 2K 视频。调用 4K 时，把命令中的 `"size": "2K"` 改成 `"size": "4K"`。
 
@@ -123,21 +123,21 @@ curl --fail-with-body --silent --show-error \
   }'
 ```
 
-`2K` 和 `4K` 表示清晰度。上游公开协议未说明默认画幅，也未列出与 `aspect_ratio` 的组合规则。如需固定画幅，可以从下方完整尺寸表中选择明确的宽高，最高到 1080P 档。
+`2K` 和 `4K` 表示清晰度。如需指定画幅，请从下方尺寸表中选择明确的宽高，最高到 1080P 档。
 
 <details>
 <summary>查看客户端尺寸映射和完整尺寸表</summary>
 
-已有 OpenAI Video 客户端可以继续使用下表中的常用尺寸。插件按实际转发的尺寸、时长和图片数计量。仅传 `aspect_ratio` 时，插件仍会补齐默认的竖屏尺寸，建议按画幅直接填写 `size`。
+已有 OpenAI Video 客户端可以继续使用下表中的常用尺寸。计量使用实际尺寸、时长和图片数。省略 `size` 时使用默认竖屏尺寸。需要指定画幅时，请填写 `size`。
 
-| 客户端 `size` | 转发给 H3 的 `size` | 计费档位 |
+| 请求的 `size` | 实际使用的 `size` | 计费档位 |
 |---|---|---|
 | `1280x720` | `1376x768` | 768P |
 | `720x1280` 或省略 | `768x1376` | 768P |
 | `1792x1024`、`1920x1080` | `1920x1088` | 1080P |
 | `1024x1792`、`1080x1920` | `1088x1920` | 1080P |
 
-下表为 H3 原生尺寸。可用档位以服务方开放的配置为准，LH 的公开报价覆盖 480P 和 768P。
+下表列出 H3 可用的尺寸值，实际开放的档位以服务方配置为准。
 
 | 尺寸类别 | `size` 可填值 |
 |---|---|
@@ -153,7 +153,7 @@ curl --fail-with-body --silent --show-error \
 
 把示例中的图片 URL 换成可公开读取的 HTTP 或 HTTPS 地址。服务方开放了 LH 版参考图时，也可以把下方命令的 `model` 改为 `minimax-h3-lh`。
 
-**JSON**。已有 OpenAI Video 客户端可以使用 `input_reference.image_url`。插件会将 URL 作为一张图片转发。下方命令省略了时长，会按 4 秒和 `1376x768`（768P）提交和计费。
+**JSON**。已有 OpenAI Video 客户端可以使用 `input_reference.image_url`，该 URL 按一张图片计量。下方命令省略了时长，会按 4 秒和 `1376x768`（768P）提交和计费。
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -197,7 +197,7 @@ curl --fail-with-body --silent --show-error \
 
 ### H3 LH 请求示例
 
-沿用上文的 New API 地址和令牌。以下示例使用 `1376x768` 生成 5 秒视频。[XYSNAI LH 接口文档](https://xysnai.cn/zh/docs?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37)
+沿用上文的 New API 地址和令牌。以下示例使用 `1376x768` 生成 5 秒视频。
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -245,7 +245,7 @@ curl --fail-with-body --silent --show-error \
   --form 'images=@./last.jpg;type=image/jpeg'
 ```
 
-创建后使用返回的 `id` 查询，任务完成后从 `/v1/videos/{id}/content` 下载。单首帧和首尾双帧均已在测试网关成功生成并解码核对。[查询任务](#查询任务) · [下载视频](#下载视频) · [FL2V 验证记录](VALIDATION.md#fl2v-multipart-真实生成)
+创建后使用返回的 `id` 查询，任务完成后从 `/v1/videos/{id}/content` 下载。[查询任务](#查询任务) · [下载视频](#下载视频)
 
 ## 其他模型
 

@@ -54,6 +54,7 @@ const H3_COMPAT_SIZES = {
 };
 const REFERENCE_OBJECT_FIELD = /^input_reference\[[^\]]+\]/;
 const H3_ASPECT_RATIOS = ["1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9"];
+const VIDEO_FAILURE_MESSAGE = "Video generation failed";
 const ARRAY_FIELDS = ["images", "reference_images", "reference_image_urls",
   "reference_videos", "reference_audios"];
 const MEDIA_FIELDS = ARRAY_FIELDS.concat(["input_reference", "first_image",
@@ -73,7 +74,7 @@ const SECONDS = { type: "number", unit: "second", description: { en: "Video gene
 const AUDIO_MODE = { enum: ["unspecified", "on", "off"], description: { en: "Generate audio option", zh: "生成音频选项" } };
 const H3_USAGE = Object.assign({}, COMMON_USAGE, {
   seconds: SECONDS,
-  resolution: { enum: H3_TIERS, description: { en: "XYSNAI size pricing tier", zh: "XYSNAI 尺寸计费档位" } }
+  resolution: { enum: H3_TIERS, description: { en: "Video resolution tier", zh: "视频分辨率计费档位" } }
 });
 const WAN_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, resolution: { enum: ["480P", "720P", "1080P"] }, audio_mode: AUDIO_MODE });
 const SD_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, resolution: { enum: ["480p", "720p", "1080p", "2k", "4k"] }, audio_mode: AUDIO_MODE });
@@ -97,7 +98,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "DreamStudio Video",
   description: { en: "Video generation and upscaling via XYSNAI", zh: "通过 XYSNAI 生成视频和超分" },
-  version: "1.3.3",
+  version: "1.3.4",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -126,23 +127,23 @@ function copy(value) { return JSON.parse(JSON.stringify(value)); }
 function fieldName(value) { return String(value).replace(/\[\]$/, ""); }
 function upstreamModel(ctx) {
   const model = String(ctx.upstreamModel || ctx.model || "");
-  if (UPSTREAM_MODELS.indexOf(model) < 0) throw new Error("Unsupported XYSNAI model: " + model);
+  if (UPSTREAM_MODELS.indexOf(model) < 0) throw new Error("Unsupported video model");
   const source = String(ctx.model || "");
   // Cross-family remapping could select the wrong pricing profile.
   if (UPSTREAM_MODELS.indexOf(source) >= 0 && family(source) !== family(model)) {
-    throw new Error("Cross-family model mapping is not supported by xysnai-video");
+    throw new Error("Cross-family video model mapping is not supported");
   }
   return model;
 }
 function base(ctx) {
   // The marketplace parser treats references to the manifest as potential mutations.
   const value = String(ctx.baseUrl || "https://xysnai.cn").replace(/\/+$/, "");
-  if (/\/v1$/.test(value)) throw new Error("Base URL must not end in /v1; use https://xysnai.cn");
+  if (/\/v1$/.test(value)) throw new Error("Video channel base URL must not end in /v1");
   return value;
 }
 function auth(ctx) {
   const key = String(ctx.apiKey || "").trim();
-  if (!key) throw new Error("XYSNAI channel API key is missing");
+  if (!key) throw new Error("Video channel API key is missing");
   return { Authorization: "Bearer " + key };
 }
 function number(value, name) {
@@ -311,7 +312,7 @@ export const protocols = {
   openai_video: {
     decodeRequest: function (ctx) {
       if (/remix/i.test(String(ctx.operation || "")) || /\/remix\/?$/.test(String(ctx.path || ""))) {
-        throw new Error("XYSNAI remix is not documented; submit a normal video request");
+        throw new Error("Video remix is not supported");
       }
       const parsed = readBody(ctx);
       const model = upstreamModel(ctx);
@@ -331,10 +332,11 @@ export const protocols = {
     render: function (ctx, task) {
       const states = { NOT_START: "queued", SUBMITTED: "queued", QUEUED: "queued", IN_PROGRESS: "in_progress", SUCCESS: "completed", FAILURE: "failed" };
       const data = isObject(task.data) ? task.data : {};
+      const knownModel = UPSTREAM_MODELS.indexOf(data.model) >= 0 ? data.model : "";
       const output = {
         id: task.task_id,
         object: "video",
-        model: (task.properties || {}).origin_model_name || data.model || "",
+        model: (task.properties || {}).origin_model_name || knownModel,
         status: own(states, task.status) ? states[task.status] : "unknown",
         progress: progress(task.progress === undefined ? data.progress : task.progress),
         created_at: Number(task.created_at || data.created_at || 0)
@@ -345,7 +347,7 @@ export const protocols = {
         const completedAt = Number(task.finished_at || task.updated_at || 0);
         if (completedAt > 0) output.completed_at = completedAt;
       }
-      if (task.status === "FAILURE") output.error = { code: "video_generation_failed", message: task.fail_reason || failureReason(data) };
+      if (task.status === "FAILURE") output.error = { code: "video_generation_failed", message: VIDEO_FAILURE_MESSAGE };
       // Deliberate allowlist: no upstream balance/cost/billing_amount or raw result_url.
       return output;
     }
@@ -354,7 +356,7 @@ export const protocols = {
 
 function request(ctx) {
   const internal = ctx.requestBody;
-  if (!isObject(internal) || !isObject(internal.payload)) throw new Error("xysnai-video request must pass through its protocol decoder");
+  if (!isObject(internal) || !isObject(internal.payload)) throw new Error("Video request must pass through its protocol decoder");
   const req = copy(internal.payload);
   validate(req, ctx.files || [], upstreamModel(ctx));
   return req;
@@ -392,14 +394,14 @@ export function buildSubmitRequest(ctx) {
 
 export function parseSubmitResponse(ctx, response) {
   const body = response && response.body;
-  if (!isObject(body) || typeof body.id !== "string" || !body.id.trim()) throw new Error("XYSNAI response is missing a video task id");
+  if (!isObject(body) || typeof body.id !== "string" || !body.id.trim()) throw new Error("Video submission response is missing a task ID");
   const result = { taskId: body.id, taskData: body, state: { upstreamModel: upstreamModel(ctx) } };
   if (body.status === "completed" || body.status === "failed") result.immediate = parseTaskResult({}, body);
   return result;
 }
 
 export function buildQueryRequest(ctx) {
-  if (typeof ctx.taskId !== "string" || !ctx.taskId) throw new Error("XYSNAI upstream task id is missing");
+  if (typeof ctx.taskId !== "string" || !ctx.taskId) throw new Error("Video task ID is missing");
   return { url: base(ctx) + "/v1/videos/" + encodeURIComponent(ctx.taskId), method: "GET", headers: auth(ctx) };
 }
 function progress(value) {
@@ -407,20 +409,15 @@ function progress(value) {
   const result = Number(String(value).replace(/%$/, ""));
   return Number.isFinite(result) ? Math.min(100, Math.max(0, result)) : 0;
 }
-function failureReason(body) {
-  if (isObject(body.error) && typeof body.error.message === "string") return body.error.message;
-  if (typeof body.error === "string" && body.error) return body.error;
-  return "XYSNAI video task failed";
-}
 export function parseTaskResult(ctx, body) {
-  if (!isObject(body)) return { status: "UNKNOWN", reason: "XYSNAI query response is not an object" };
+  if (!isObject(body)) return { status: "UNKNOWN", reason: "Invalid video task response" };
   const states = { queued: "QUEUED", in_progress: "IN_PROGRESS", completed: "SUCCESS", failed: "FAILURE" };
   const status = own(states, body.status) ? states[body.status] : undefined;
-  if (!status) return { status: "UNKNOWN", reason: "Unknown XYSNAI task status: " + String(body.status || "") };
+  if (!status) return { status: "UNKNOWN", reason: "Unrecognized video task status" };
   const result = { status };
   if (body.progress !== undefined && body.progress !== null) result.progress = progress(body.progress) + "%";
   if (status === "SUCCESS") result.progress = "100%";
-  if (status === "FAILURE") result.reason = failureReason(body);
+  if (status === "FAILURE") result.reason = VIDEO_FAILURE_MESSAGE;
   return result;
 }
 
@@ -471,7 +468,7 @@ export function listArtifacts(task) {
 }
 export function buildContentRequest(ctx) {
   if (ctx.artifactKey !== "video") throw new Error("artifact_not_found");
-  if (typeof ctx.upstreamTaskId !== "string" || !ctx.upstreamTaskId) throw new Error("XYSNAI upstream task id is missing");
+  if (typeof ctx.upstreamTaskId !== "string" || !ctx.upstreamTaskId) throw new Error("Video task ID is missing");
   const client = ctx.clientRequest || { method: "GET", headers: {} };
   if (client.method !== "GET" && client.method !== "HEAD") throw new Error("Unsupported video content method");
   const headers = auth(ctx);

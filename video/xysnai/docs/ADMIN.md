@@ -4,14 +4,18 @@
 
 ## 安装并配置渠道
 
-已有实例可刷新市场并升级到 DreamStudio Video **1.3.3**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
+已有实例可刷新市场并升级到 DreamStudio Video **1.3.4**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
 
-1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.3**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.3/plugin.js)
+1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.4**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js)
 2. 新建 **Task Plugin（61）** 渠道，选择 `crazycherrys_xysnai-video`。上游 Base URL 填 `https://xysnai.cn`，API Key 填 XYSNAI 平台密钥。插件会在上游地址后追加 `/v1/videos`。
 3. 先开通 `minimax-h3`，选择调用令牌有权限访问的分组，模型映射留空。按需要再添加其他模型。[插件声明的模型目录](../model-catalog.json)
 4. 保存模型价格后，用一枚 New API 测试令牌走一遍创建、查询和下载，核对相应的扣费日志。用真实渠道提交会消耗上游额度。[用户调用步骤](API.md)
 
 rc.51 安装时报 `MiniMax-H3` 与 `minimax-h3` 冲突时，先检查内置 Hailuo 的关联渠道与进行中的任务。确定可以停用 `hailuo` 后，再安装 DreamStudio Video。仍在使用旧模型前缀的实例需要将渠道、客户端、令牌限制及价格键改用无前缀模型名。
+
+## 对外视频网关
+
+1.3.4 将标准视频接口里的任务失败文案统一为 `Video generation failed`。旧查询路由、提交时宿主直接返回的 HTTP 错误和下载响应头由网关处理。对外域名使用 Nginx 时，可加载配置并按指南检查现有控制台、价目表和通用任务接口的访问需求。[Nginx 使用指南](NGINX.md) · [配置文件](nginx-video-privacy.conf)
 
 ## 配置 MiniMax H3 价格
 

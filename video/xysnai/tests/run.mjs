@@ -63,7 +63,7 @@ test('Hub catalog, published source checksum and request examples match the plug
 test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
   assert.equal(plugin.meta.name, 'DreamStudio Video');
-  assert.equal(plugin.meta.version, '1.3.3');
+  assert.equal(plugin.meta.version, '1.3.4');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
@@ -82,9 +82,9 @@ test('public models and pricing profiles use upstream names without a provider p
     assert.ok(profile.models.every(model => !model.includes('/')));
   }
   const payload = { prompt: 'cat', seconds: 5, size: '1376x768' };
-  assert.throws(() => decode('xysnai/minimax-h3', payload), /Unsupported XYSNAI model/);
+  assert.throws(() => decode('xysnai/minimax-h3', payload), /Unsupported video model/);
   const ctx = driver('minimax-h3', payload);
-  assert.throws(() => plugin.buildSubmitRequest({ ...ctx, upstreamModel: 'xysnai/minimax-h3' }), /Unsupported XYSNAI model/);
+  assert.throws(() => plugin.buildSubmitRequest({ ...ctx, upstreamModel: 'xysnai/minimax-h3' }), /Unsupported video model/);
   const submit = plugin.buildSubmitRequest(ctx);
   assert.equal(submit.body.model, 'minimax-h3');
   assert.equal(submit.rewriteModel, 'minimax-h3');
@@ -355,12 +355,20 @@ test('submission accepts 202 task shape and query/content use upstream rather th
 test('documented states, failures, immediate completion, and unknown state handling', () => {
   const states = { queued: 'QUEUED', in_progress: 'IN_PROGRESS', completed: 'SUCCESS', failed: 'FAILURE' };
   for (const [input, expected] of Object.entries(states)) assert.equal(plugin.parseTaskResult({}, { status: input }).status, expected);
-  assert.equal(plugin.parseTaskResult({}, { status: 'surprise' }).status, 'UNKNOWN');
+  const vendorError = 'Unable to reach https://xysnai.cn/private-path';
+  assert.deepEqual(plugin.parseTaskResult({}, { status: vendorError }), { status: 'UNKNOWN', reason: 'Unrecognized video task status' });
   assert.equal(plugin.parseTaskResult({}, { status: '__proto__' }).status, 'UNKNOWN');
   assert.equal(plugin.parseTaskResult({}, null).status, 'UNKNOWN');
-  assert.equal(plugin.parseTaskResult({}, { status: 'failed', error: { message: 'upstream failed' } }).reason, 'upstream failed');
+  for (const error of [vendorError, { message: vendorError }]) {
+    assert.deepEqual(plugin.parseTaskResult({}, { status: 'failed', error }), {
+      status: 'FAILURE', reason: 'Video generation failed'
+    });
+  }
   const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' });
   assert.equal(plugin.parseSubmitResponse(ctx, { body: { id: 'done', status: 'completed' } }).immediate.status, 'SUCCESS');
+  assert.deepEqual(plugin.parseSubmitResponse(ctx, { body: { id: 'failed', status: 'failed', error: vendorError } }).immediate, {
+    status: 'FAILURE', reason: 'Video generation failed'
+  });
 });
 test('client renderer emits public ID and gateway content path without upstream financial data', () => {
   const data = { id: 'upstream-id', model: 'minimax-h3', status: 'completed', progress: 100, cost: '0.4',
@@ -372,6 +380,12 @@ test('client renderer emits public ID and gateway content path without upstream 
   assert.equal(output.result_url, '/v1/videos/public-id/content');
   for (const key of ['cost', 'balance', 'billing_amount', 'api_key']) assert.equal(output[key], undefined);
   assert.equal(data.id, 'upstream-id');
+  const vendorError = 'Unable to reach https://xysnai.cn/private-path';
+  const failed = plugin.protocols.openai_video.render({}, { task_id: 'public-id', status: 'FAILURE',
+    fail_reason: vendorError, data: { error: { message: vendorError }, model: vendorError } });
+  assert.deepEqual(failed.error, { code: 'video_generation_failed', message: 'Video generation failed' });
+  assert.equal(failed.model, '');
+  assert.ok(!JSON.stringify(failed).includes('xysnai.cn'));
 });
 test('content descriptor preserves HEAD/Range but never forwards client credentials', () => {
   const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' });
@@ -400,10 +414,11 @@ test('upscale needs one source and never fabricates output or billing seconds', 
 });
 test('rejects malformed base URL and missing channel key locally', () => {
   const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' });
-  assert.throws(() => plugin.buildSubmitRequest({ ...ctx, baseUrl: 'https://xysnai.cn/v1' }), /Base URL/);
+  assert.throws(() => plugin.buildSubmitRequest({ ...ctx, baseUrl: 'https://xysnai.cn/v1' }),
+    { message: 'Video channel base URL must not end in /v1' });
   assert.throws(() => plugin.buildSubmitRequest({ ...ctx, apiKey: '' }), /API key/);
   assert.throws(() => decode('minimax-h3', { prompt: 'cat', seconds: 5, size: '1376x768' },
-    { operation: 'submit', path: '/v1/videos/public-id/remix' }), /remix is not documented/);
+    { operation: 'submit', path: '/v1/videos/public-id/remix' }), /remix is not supported/);
 });
 const golden = JSON.parse(await fs.readFile(new URL('./golden.json', import.meta.url), 'utf8'));
 test('official host-format golden fixtures agree with the independent expected results', () => {

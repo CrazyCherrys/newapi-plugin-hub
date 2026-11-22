@@ -83,12 +83,14 @@ const fixture = {
       expected: { status: 'SUCCESS', progress: '100%' }
     },
     {
-      name: 'Failed status has reason', hook: 'parseTaskResult', args: [{}, { status: 'failed', error: { message: 'upstream task failed' } }],
-      expected: { status: 'FAILURE', reason: 'upstream task failed' }
+      name: 'Failed status hides the upstream reason', hook: 'parseTaskResult',
+      args: [{}, { status: 'failed', error: { message: 'upstream error at https://xysnai.cn/private-path' } }],
+      expected: { status: 'FAILURE', reason: 'Video generation failed' }
     },
     {
-      name: 'Unknown status is not fabricated as running', hook: 'parseTaskResult', args: [{}, { status: 'unrecognized' }],
-      expected: { status: 'UNKNOWN', reason: 'Unknown XYSNAI task status: unrecognized' }
+      name: 'Unknown status neither fabricates progress nor reveals the raw value', hook: 'parseTaskResult',
+      args: [{}, { status: 'upstream error at https://xysnai.cn/private-path' }],
+      expected: { status: 'UNKNOWN', reason: 'Unrecognized video task status' }
     },
     {
       name: 'H3 usage matches sent duration and size', hook: 'extractUsage', args: [context],
@@ -116,6 +118,14 @@ const fixture = {
         data: { id: 'task_upstream', model: 'minimax-h3', progress: 100, cost: '0.4', balance: '0.6', result_url: 'http://upstream/secret' } }],
       expected: { id: 'task_public', object: 'video', model: 'minimax-h3', status: 'completed', progress: 100,
         created_at: 1700000000, result_url: '/v1/videos/task_public/content' }
+    },
+    {
+      name: 'Client view hides previously stored upstream failure text', hook: 'protocols', path: ['openai_video', 'render'],
+      args: [{}, { task_id: 'task_public', status: 'FAILURE', created_at: 1700000000,
+        properties: { origin_model_name: 'minimax-h3' },
+        fail_reason: 'upstream error at https://xysnai.cn/private-path' }],
+      expected: { id: 'task_public', object: 'video', model: 'minimax-h3', status: 'failed', progress: 0,
+        created_at: 1700000000, error: { code: 'video_generation_failed', message: 'Video generation failed' } }
     },
     {
       name: 'Completed task has one MP4 artifact', hook: 'listArtifacts', args: [{ status: 'SUCCESS' }],
