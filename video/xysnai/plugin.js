@@ -58,7 +58,6 @@ const SECONDS = { type: "number", unit: "second", description: { en: "Video gene
 const AUDIO_MODE = { enum: ["unspecified", "on", "off"], description: { en: "Generate audio option", zh: "生成音频选项" } };
 const H3_USAGE = Object.assign({}, COMMON_USAGE, {
   seconds: SECONDS,
-  size: { enum: H3_SIZES },
   resolution: { enum: H3_TIERS, description: { en: "XYSNAI size pricing tier", zh: "XYSNAI 尺寸计费档位" } }
 });
 const WAN_USAGE = Object.assign({}, COMMON_USAGE, { seconds: SECONDS, resolution: { enum: ["480P", "720P", "1080P"] }, audio_mode: AUDIO_MODE });
@@ -87,7 +86,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "DreamStudio Video",
   description: { en: "Video generation and upscaling via XYSNAI", zh: "通过 XYSNAI 生成视频和超分" },
-  version: "1.3.1",
+  version: "1.3.2",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -426,6 +425,8 @@ export function extractUsage(ctx) {
   facts.input_references = countField(req, files, "input_reference");
   if (kind !== "upscale") facts.seconds = req.seconds;
   if (kind === "h3") {
+    // Existing size-based prices can still read this fact on New API hosts
+    // that allow legacy fields. Only resolution is a pricing editor dimension.
     facts.size = req.size;
     facts.resolution = H3_TIERS.find(function (tier) { return H3_SIZES_BY_TIER[tier].indexOf(req.size) >= 0; });
   }

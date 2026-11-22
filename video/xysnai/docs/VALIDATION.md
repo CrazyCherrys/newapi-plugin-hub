@@ -1,6 +1,6 @@
 # 验证记录
 
-日期为 2026-11-22，插件为 DreamStudio Video 1.3.1，标识为 `crazycherrys_xysnai-video`。
+日期为 2026-11-22，插件为 DreamStudio Video 1.3.2，标识为 `crazycherrys_xysnai-video`。
 
 ## 已完成
 
@@ -39,7 +39,7 @@ Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过
 `plugin.js` SHA-256：
 
 ```text
-77aa0814e7582172b8cbe4eff5b1ccdd12740c344b49baae6ac07ecf474a1e01
+e90db1b3653958fdf16447a852ac7d9a34ea17aa1ec8a06bc433f66656fdfeb8
 ```
 
 ## 官方校验规范
@@ -101,3 +101,10 @@ Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过
 
 - 在隔离的官方 New API rc.51 实例中安装 1.3.0 并绑定渠道和模型价格，再上传并启用 1.3.1。插件详情和渠道选择列表均显示 DreamStudio Video，原渠道及其插件绑定保持有效。
 - 升级后沿用已有模型价格创建两个模拟任务，各预扣 50,000 测试 quota。成功任务最终扣除 50,000 quota，失败任务全额退款。计费日志显示 DreamStudio Video 1.3.1 和原插件标识。
+
+## 1.3.2 H3 定价表
+
+- 三个 H3 型号均保留 26 个请求尺寸和原档位映射。rc.51 的模型价格接口只向定价编辑器声明五个 `resolution` 选项，计费表组合从 130 个降为 5 个。
+- 在隔离的官方 New API rc.51 中从 1.3.1 升级，现有 `u("resolution")` 公式继续生效。模拟上游收到原尺寸 `1376x768`。按文档价格，以 768P、5 秒和 2 张参考图计量，预扣 29,792 quota，成功结算 29,792 quota，失败全额退款。
+- rc.51 的单插件模型仍可执行已保存的 `u("size")` 公式，计费日志保留实际尺寸。后台提示公式不兼容，可原样保留。修改或新建引用 `size` 的公式会被校验拒绝。
+- 模拟另一个插件共享同名模型时，原 `u("size")` 公式触发 `model_price_error`，请求在扣费和转发之前终止。迁移到 `u("resolution")` 后恢复按 768P 预扣。

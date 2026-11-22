@@ -36,6 +36,10 @@ function profile(model) {
 function assertUsage(model, facts) {
   const schema = profile(model);
   for (const [name, value] of Object.entries(facts)) {
+    if (name === 'size' && model.startsWith('minimax-h3')) {
+      assert.equal(typeof value, 'string');
+      continue;
+    }
     assert.ok(Object.hasOwn(schema, name), name + ' missing from schema for ' + model);
     const rule = schema[name];
     if (rule.enum) assert.ok(rule.enum.includes(value), 'Bad enum ' + name);
@@ -59,7 +63,7 @@ test('Hub catalog, published source checksum and request examples match the plug
 test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
   assert.equal(plugin.meta.name, 'DreamStudio Video');
-  assert.equal(plugin.meta.version, '1.3.1');
+  assert.equal(plugin.meta.version, '1.3.2');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);
@@ -106,15 +110,30 @@ test('H3 accepts numeric and string seconds, sends a number, preserves arrays/fa
     assertUsage(ctx.model, usage);
   }
 });
-test('all 26 documented H3 sizes pass request and usage validation', () => {
-  const sizes = profile('minimax-h3').size.enum;
-  assert.equal(sizes.length, 26);
-  for (const size of sizes) {
-    const ctx = driver('minimax-h3', { prompt: 'cat', seconds: 5, size });
-    assert.equal(plugin.buildSubmitRequest(ctx).body.size, size);
-    const usage = plugin.extractUsage(ctx);
-    assertUsage(ctx.model, usage);
-    assert.ok(usage.resolution, size + ' is missing its pricing tier');
+test('H3 prices report five editor tiers and retain all 26 request sizes', () => {
+  const sizesByTier = {
+    '480P': ['864x480', '480x864', '640x640', '544x800', '800x544', '576x736', '736x576', '992x416'],
+    '768P': ['1376x768', '768x1376', '1024x1024', '832x1248', '1248x832', '896x1184', '1184x896', '1568x672'],
+    '1080P': ['1920x1088', '1088x1920', '1440x1440', '1184x1760', '1760x1184', '1248x1664', '1664x1248', '2208x960'],
+    '2K': ['2K'],
+    '4K': ['4K']
+  };
+  for (const model of ['minimax-h3', 'minimax-h3-fl2v', 'minimax-h3-lh']) {
+    const schema = profile(model);
+    const editorEnums = Object.keys(schema).filter(name => schema[name].enum);
+    assert.deepEqual(editorEnums, ['resolution']);
+    assert.equal(schema.size, undefined);
+    assert.deepEqual(schema.resolution.enum, Object.keys(sizesByTier));
+    for (const [tier, sizes] of Object.entries(sizesByTier)) {
+      for (const size of sizes) {
+        const ctx = driver(model, { prompt: 'cat', seconds: 5, size });
+        const usage = plugin.extractUsage({ ...ctx, usagePurpose: 'facts' });
+        assert.equal(plugin.buildSubmitRequest(ctx).body.size, size);
+        assert.equal(usage.size, size);
+        assert.equal(usage.resolution, tier);
+        assertUsage(model, usage);
+      }
+    }
   }
   assert.throws(() => driver('minimax-h3', { prompt: 'cat', seconds: 5, size: '768P' }), /size/);
 });

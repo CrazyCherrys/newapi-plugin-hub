@@ -60,7 +60,10 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     }
     assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
     assert.ok(entry.models.every(model => !model.includes('/')));
-    assert.equal(entry.usageProfiles.find(p => p.models.includes('minimax-h3')).schema.size.enum.length, 26);
+    const h3Schema = entry.usageProfiles.find(p => p.models.includes('minimax-h3')).schema;
+    const h3EnumFields = Object.keys(h3Schema).filter(key => h3Schema[key].enum);
+    assert.deepEqual(h3EnumFields, ['resolution']);
+    assert.deepEqual(h3Schema.resolution.enum, ['480P', '768P', '1080P', '2K', '4K']);
     assert.ok(entry.usageProfiles.find(p => p.models.includes('Video-upscale2.6')).schema.billing_seconds);
     const sourcePath = path.join(temp, cfg.plugins[0].source, 'plugin.js');
     const source = await fs.readFile(sourcePath, 'utf8');

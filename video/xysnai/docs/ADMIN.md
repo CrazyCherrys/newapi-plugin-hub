@@ -4,9 +4,9 @@
 
 ## 安装并配置渠道
 
-DreamStudio Video **1.3.1** 是原 XYSNAI Video 的升级版本。已有实例可刷新市场并升级，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道、模型和计费配置。[验证记录](VALIDATION.md)
+已有实例可刷新市场并升级到 DreamStudio Video **1.3.2**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
 
-1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.1**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.1/plugin.js)
+1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.2**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.2/plugin.js)
 2. 新建 **Task Plugin（61）** 渠道，选择 `crazycherrys_xysnai-video`。上游 Base URL 填 `https://xysnai.cn`，API Key 填 XYSNAI 平台密钥。插件会在上游地址后追加 `/v1/videos`。
 3. 先开通 `minimax-h3`，选择调用令牌有权限访问的分组，模型映射留空。按需要再添加其他模型。[插件声明的模型目录](../model-catalog.json)
 4. 保存模型价格后，用一枚 New API 测试令牌走一遍创建、查询和下载，核对相应的扣费日志。用真实渠道提交会消耗上游额度。[用户调用步骤](API.md)
@@ -16,6 +16,10 @@ rc.51 安装时报 `MiniMax-H3` 与 `minimax-h3` 冲突时，先检查内置 Hai
 ## 配置 MiniMax H3 价格
 
 插件自 1.3.0 起按实际转发的时长、分辨率档位和图片数计量。`1280x720` 会转为 `1376x768` 并归入 `768P`，省略时长会按 4 秒计费，URL 图片对象会按一张 `images` 计量。[客户端尺寸映射](API.md#minimax-h3-型号与参数)
+
+从 1.3.2 起，三个 H3 型号的可视化定价只列 480P、768P、1080P、2K、4K 五档。同一档位下的宽高共用档位价格，视频请求继续通过 `size` 选择尺寸。下方使用 `u("resolution")` 的价格可直接沿用。
+
+自定义价格如果使用了 `u("size")`，新增或编辑时需改按 `u("resolution")` 定价。rc.51 中仅有一个插件提供模型时，已保存的旧公式仍可读取真实尺寸，后台会提示公式不兼容。多个插件共享同名模型时，应在升级前迁移这类旧公式。同档内需要区分宽高收费的规则，应先确认合并档位后的售价。[New API 用量分组说明](https://docs.newapi.pro/zh/docs/plugins/billing#按模型区分用量配置)
 
 ### 在 New API rc.51 保存价格
 
