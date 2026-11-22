@@ -1,6 +1,6 @@
 # 验证记录
 
-日期为 2026-11-22，插件为 `crazycherrys_xysnai-video` 1.3.0。
+日期为 2026-11-22，插件为 DreamStudio Video 1.3.1，标识为 `crazycherrys_xysnai-video`。
 
 ## 已完成
 
@@ -39,7 +39,7 @@ Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过
 `plugin.js` SHA-256：
 
 ```text
-9479f88e0dad07764923c2eedbc894a8fc1df51cb31b4f012a3d318c2c6607e6
+77aa0814e7582172b8cbe4eff5b1ccdd12740c344b49baae6ac07ecf474a1e01
 ```
 
 ## 官方校验规范
@@ -96,3 +96,8 @@ Node 测试、官方 New API rc.51 的 `plugin lint` 和 `plugin test` 均通过
 - 在官方 New API rc.51 中分别用 JSON 图片对象和 multipart 的 `input_reference[image_url]` 创建任务。两种请求均省略时长并请求 `1280x720`，模拟上游均收到 `1376x768`、4 秒和 1 张 `images` 图片。New API 以同一尺寸、时长和图片数计算用量，分辨率档位为 `768P`。
 - 测试费率为每秒 USD 0.02、每张图片 USD 0.01。两种请求各预扣 45,000 quota，成功后最终扣除 45,000 quota，失败后退款至 0。成功任务的下载字节与模拟上游一致。
 - 本次宿主验证使用隔离的测试库和模拟上游。用户宿主和 XYSNAI 真实生成仍未联测。
+
+## 1.3.1 改名与升级
+
+- 在隔离的官方 New API rc.51 实例中安装 1.3.0 并绑定渠道和模型价格，再上传并启用 1.3.1。插件详情和渠道选择列表均显示 DreamStudio Video，原渠道及其插件绑定保持有效。
+- 升级后沿用已有模型价格创建两个模拟任务，各预扣 50,000 测试 quota。成功任务最终扣除 50,000 quota，失败任务全额退款。计费日志显示 DreamStudio Video 1.3.1 和原插件标识。

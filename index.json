@@ -4,10 +4,10 @@
   "plugins": [
     {
       "key": "crazycherrys_xysnai-video",
-      "name": "XYSNAI Video",
+      "name": "DreamStudio Video",
       "description": {
-        "en": "XYSNAI unified video tasks",
-        "zh": "XYSNAI 多模型视频任务适配"
+        "en": "Video generation and upscaling via XYSNAI",
+        "zh": "通过 XYSNAI 生成视频和超分"
       },
       "website": "https://xysnai.cn/zh/docs",
       "author": {
@@ -16,7 +16,7 @@
       },
       "iconFile": {
         "path": "plugins/tasks/crazycherrys_xysnai-video/icon.svg",
-        "sha256": "3eb4b38b184b53f54ba4af35f4136d2a7e9e22890e96f11b9559ef86ee2c5218"
+        "sha256": "25d487ad8c1bb88f1b7ef5665c446161aec1ca4a360d15470e249a96b839a9b1"
       },
       "routes": [],
       "task": true,
@@ -470,8 +470,31 @@
           }
         }
       ],
-      "latest": "1.3.0",
+      "latest": "1.3.1",
       "versions": [
+        {
+          "version": "1.3.1",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.1/plugin.js",
+          "sha256": "77aa0814e7582172b8cbe4eff5b1ccdd12740c344b49baae6ac07ecf474a1e01",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://xysnai.cn",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.1/CHANGELOG.md",
+            "sha256": "12a820e2e05f1bdc9ab06108d387833fd2a5772bc3d2a694d7b0b49caae59948",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.1/CHANGELOG.zh-CN.md",
+                "sha256": "3629a8d6efea6b88386f2acd6b4b5324efda35b011970720ad5af89fe63d9e64"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/xysnai/README.md",
+            "sha256": "5c727d8c0518b31426d55ecedc6cfb73a56eececa4d205fd154bdefb9005c246"
+          }
+        },
         {
           "version": "1.3.0",
           "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.0/plugin.js",
@@ -489,10 +512,6 @@
                 "sha256": "9a8c3be4ed7d9ceb91580d75da1f5bff96b5c2caf47473caf19e8812ae00b071"
               }
             }
-          },
-          "readme": {
-            "path": "video/xysnai/README.md",
-            "sha256": "bb47d7b70e8e6545ad8b77ca8332185dcb58ded4c55014e1e7d535dd0d0f8855"
           }
         },
         {

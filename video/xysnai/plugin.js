@@ -1,5 +1,5 @@
 /*
- * XYSNAI Video — New API Task Plugin API v1
+ * DreamStudio Video — New API Task Plugin API v1
  * Protocol snapshot: XYSNAI public video docs, 2026-11-22.
  * Configure a type-61 channel, Base URL https://xysnai.cn, and its API key.
  * Public model names match the upstream model names directly.
@@ -85,9 +85,9 @@ function publicModels(kind) {
 export const meta = {
   apiVersion: 1,
   key: "crazycherrys_xysnai-video",
-  name: "XYSNAI Video",
-  description: { en: "XYSNAI unified video tasks", zh: "XYSNAI 多模型视频任务适配" },
-  version: "1.3.0",
+  name: "DreamStudio Video",
+  description: { en: "Video generation and upscaling via XYSNAI", zh: "通过 XYSNAI 生成视频和超分" },
+  version: "1.3.1",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",

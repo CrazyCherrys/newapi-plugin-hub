@@ -1,4 +1,6 @@
-# 通过 New API 调用 XYSNAI 视频接口
+# 通过 New API 调用 DreamStudio Video
+
+DreamStudio Video 通过 New API 提供 XYSNAI 的视频模型。
 
 调用地址为 `https://api.haokun.cc`。在 Bash 终端运行下方命令，将令牌占位符替换为你有模型权限的 **New API 令牌**。可用模型及售价以服务方为准，提交视频任务会消耗额度。
 

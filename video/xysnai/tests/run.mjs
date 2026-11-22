@@ -58,7 +58,8 @@ test('Hub catalog, published source checksum and request examples match the plug
 });
 test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
-  assert.equal(plugin.meta.version, '1.3.0');
+  assert.equal(plugin.meta.name, 'DreamStudio Video');
+  assert.equal(plugin.meta.version, '1.3.1');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
   assert.equal(plugin.meta.models.length, 19);

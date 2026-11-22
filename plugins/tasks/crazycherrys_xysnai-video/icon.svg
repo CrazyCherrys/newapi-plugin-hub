@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title">
-  <title id="title">XYSNAI Video adapter</title>
+  <title id="title">DreamStudio Video</title>
   <rect width="96" height="96" rx="22" fill="#172b4d"/>
-  <path d="M22 22h12l11 16 11-16h12L51 47l17 25H56L45 56 34 72H22l17-25z" fill="#60e5ce"/>
+  <path d="M22 22h16c17 0 28 10 28 25S55 72 38 72H22zM34 33v28h4c11 0 16-5 16-14S49 33 38 33z" fill="#60e5ce" fill-rule="evenodd"/>
   <path d="m69 36 16 12-16 12z" fill="#fff"/>
 </svg>
