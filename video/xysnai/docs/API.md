@@ -13,9 +13,11 @@ export NEW_API_TOKEN='替换为你的 New API 令牌'
 | 查询任务 | `GET /v1/videos/{id}` |
 | 下载视频 | `GET /v1/videos/{id}/content` |
 
+本页列出的 19 个插件模型共用这三个接口。创建时通过 JSON 的 `model` 选择型号，其余字段按所选模型填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
+
 ## 创建任务
 
-用 `minimax-h3` 生成一段 5 秒视频。请求体使用 JSON。
+下方以标准版 `minimax-h3` 为例，生成一段 5 秒视频。[H3 型号与参数](#minimax-h3-型号与参数) · [其他模型](#其他模型)
 
 ```bash
 curl --fail-with-body --silent --show-error \
@@ -72,11 +74,19 @@ curl --fail --silent --show-error \
   --output result.mp4
 ```
 
-## MiniMax H3 请求参数
+## MiniMax H3 型号与参数
+
+三个型号都使用 `POST /v1/videos`，都需要 `prompt`、`seconds` 和 `size`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。
+
+| `model` | 用法 |
+|---|---|
+| `minimax-h3` | 标准版，可使用上面的文生视频示例 |
+| `minimax-h3-lh` | H3 LH 版，可沿用上面的 JSON 结构，将 `model` 改为 `minimax-h3-lh`，尺寸按服务方开放的档位选择 |
+| `minimax-h3-fl2v` | H3 首尾帧版，使用 `minimax-h3-fl2v` 作为模型名，并按服务方提供的首尾帧素材要求提交 |
 
 | 字段 | 用法 |
 |---|---|
-| `model` | 必填，填写服务方已开放的模型名，例如 `minimax-h3` |
+| `model` | 必填，选择上表中已开通的型号 |
 | `prompt` | 必填，用文字描述画面和动作 |
 | `seconds` | 必填，`4` 至 `15` 的整数 |
 | `size` | 必填，输出尺寸，例如 `1376x768`。使用下表中的值 |
@@ -110,7 +120,9 @@ curl --fail --silent --show-error \
 |---|---|---|
 | `wan3.0-video` | `seconds` 为 2 至 30，`resolution` 使用 `480P`、`720P` 或 `1080P` | [Wan](../examples/wan.json) |
 | `sd-2.0`、`sd-2.5` | `seconds` 为 4 至 30，`resolution` 使用小写，例如 `720p` | [Seedance SD](../examples/sd.json) |
-| `mg-…`、`ov-…` 和特价 Seedance | 填写服务方列出的完整模型名，提供 `aspect_ratio`，例如 `16:9` | [Seedance](../examples/mg.json) |
+| `mg-seedance-2.0-720p`、`mg-seedance-2.5-480p`、`mg-seedance-2.5-720p`、`mg-seedance-2.5-4k` | `seconds` 为 4 至 30，提供 `aspect_ratio`，例如 `16:9` | [Seedance](../examples/mg.json) |
+| `ov-seedance-2.5-480p-nv`、`ov-seedance-2.5-720p-nv`、`ov-seedance-2.5-1080p-nv` | 沿用 Seedance 请求结构并填写相应的完整模型名 | [Seedance](../examples/mg.json) |
+| `特价V2seedance-2.5-720p-30s`、`特价seedance-2.5-480p-30s`、`特价seedance-2.5-nv-1080p-30s`、`特价seedance-2.5-nv-480p`、`特价seedance-2.5-nv-720p-30s` | 沿用 Seedance 请求结构并填写相应的完整模型名 | [Seedance](../examples/mg.json) |
 | `Video-upscale2.6` | 使用 `reference_video` 提供输入视频 URL，省略 `seconds` | [视频超分](../examples/upscale.json) |
 
 ## 常见问题
