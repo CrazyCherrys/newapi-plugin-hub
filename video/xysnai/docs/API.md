@@ -1,9 +1,9 @@
 # 通过 New API 调用 XYSNAI 视频接口
 
-使用服务方提供的 **New API 地址**和有模型权限的 **New API 令牌**。下方命令可在任意目录的 Bash 终端运行。把示例域名和令牌替换为实际值。基础地址省略末尾的 `/` 和 `/v1`，命令会补上接口路径。可用模型及售价以服务方为准，提交视频任务会消耗额度。
+调用地址为 `https://api.haokun.cc`。在 Bash 终端运行下方命令，将令牌占位符替换为你有模型权限的 **New API 令牌**。可用模型及售价以服务方为准，提交视频任务会消耗额度。
 
 ```bash
-export NEW_API_BASE_URL='https://your-newapi.example.com'
+export NEW_API_BASE_URL='https://api.haokun.cc'
 export NEW_API_TOKEN='替换为你的 New API 令牌'
 ```
 
