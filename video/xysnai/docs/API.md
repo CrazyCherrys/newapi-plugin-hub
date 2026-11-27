@@ -93,6 +93,37 @@ curl --fail --silent --show-error \
 
 先选模式，再显示可用时长、尺寸和服务方报价。例如同为 8 秒，固定横屏、通用生成和武庚纪都有对应型号；同为 2K，标准档、FL2V 和武庚纪又有不同的素材字段。只有在「固定横屏」模式内，时长才能唯一确定型号。已选时长不在该模式的列表中时，提示用户重选。提交前展示所选型号的实际输出规格和价格，15S 和 30S 应分别取价。
 
+### 六款模型的素材与生成模式参数
+
+这张表列出创建请求的可选字段。JSON 中的参考素材数组填写公开可读取的 URL 字符串，即使只有一项也用数组。没有素材时省略对应字段。上传本地文件时用 `multipart/form-data`，每份文件占一个名额，字段名与表中一致。
+
+| `model` | 参考图片 | 参考视频 | 参考音频 | 生成模式 |
+|---|---|---|---|---|
+| `MiniMax-H3-15S` | `reference_images`，最多 9 张 | `reference_videos`，最多 3 段 | `reference_audios`，最多 3 段 | 接口未声明 |
+| `MiniMax-H3-30S` | `reference_images`，最多 9 张 | `reference_videos`，最多 3 段 | `reference_audios`，最多 3 段 | 接口未声明 |
+| `MiniMax-H3-2K-武庚纪` | `reference_images`，最多 9 张 | `reference_videos`，最多 3 段 | `reference_audios`，最多 3 段 | `generation_mode`，可选字符串 |
+| `minimax-h3` | `images`，1–9 张 | `reference_videos`，1–3 段 | `reference_audios`，1–3 段 | `mode`，可选字符串 |
+| `minimax-h3-lh` | `images`，1–9 张 | `reference_videos`，1–3 段 | `reference_audios`，1–3 段 | `mode`，可选字符串 |
+| `minimax-h3-fl2v` | `images`，实测为 1–2 张有序帧图 | `reference_videos`，接口列出 1–3 段 | `reference_audios`，接口列出 1–3 段 | `mode`，可选字符串 |
+
+- **武庚纪**的 `generation_mode` 有五个公开取值：`reference`、`multimodal`、`text`、`image_video`、`image_audio`。指定首尾帧另用 `first_frame`、`last_frame`，每个字段传一个图片 URL 字符串或一份图片文件。接口未逐项说明每种模式允许的素材组合。
+- **标准版、LH 和 FL2V** 的 `mode` 只声明了字符串类型，公开文档没有给出枚举或与 `generation_mode` 的映射。单份视频或音频还可分别用 `reference_video`、`reference_audio` 传一个 URL 字符串。
+- **FL2V** 已通过实际生成确认：第一份 `images` 文件指定首帧，第二份指定可选尾帧。公开参数表沿用了最多 9 张图的通用定义，目前实测覆盖单帧和双帧。参考视频、音频与帧图组合的生成效果尚未实测。[首尾帧请求示例](#h3-fl2v-首尾帧请求示例) · [验证记录](VALIDATION.md#fl2v-multipart-真实生成)
+
+以下武庚纪请求体展示四个字段的 JSON 写法，可提交到 `POST /v1/videos`。将示例 URL 换成可访问的素材地址。这组参数已在插件本地核对转发，真实生成效果待联测。
+
+```json
+{
+  "model": "MiniMax-H3-2K-武庚纪",
+  "prompt": "沿用参考图的人物造型，参考视频的运镜和音频的节奏",
+  "seconds": 8,
+  "generation_mode": "multimodal",
+  "reference_images": ["https://cdn.example.com/character.jpg"],
+  "reference_videos": ["https://cdn.example.com/motion.mp4"],
+  "reference_audios": ["https://cdn.example.com/rhythm.mp3"]
+}
+```
+
 ### 15S、30S 和 2K 武庚纪
 
 | `model` | `seconds` | 画面与可选参数 |
@@ -105,15 +136,7 @@ curl --fail --silent --show-error \
 
 创建时填写完整的 `model` 和非空字符串 `prompt`（最多 20,000 字符）。三款都支持只用提示词生成视频；素材字段均可省略。纯文本的最小 JSON 请求体见 [15S](../examples/minimax-15s.json)、[30S](../examples/minimax-30s.json) 和 [2K 武庚纪](../examples/minimax-2k.json)。
 
-| 输入能力 | 15S | 30S | 2K 武庚纪 | JSON 字段及类型 |
-|---|---|---|---|---|
-| 单图或多图参考 | 最多 9 张 | 最多 9 张 | 最多 9 张 | `reference_images`，图片 URL 数组 |
-| 参考视频 | 最多 3 段 | 最多 3 段 | 最多 3 段 | `reference_videos`，视频 URL 数组 |
-| 参考音频 | 最多 3 段 | 最多 3 段 | 最多 3 段 | `reference_audios`，音频 URL 数组 |
-| 指定首帧 | 接口未声明 | 接口未声明 | 1 张 | `first_frame`，单个图片 URL 字符串 |
-| 指定尾帧 | 接口未声明 | 接口未声明 | 1 张 | `last_frame`，单个图片 URL 字符串 |
-
-单张参考图也要放入数组。15S 和 30S 的接口只定义参考图，首张参考图没有固定为视频第一帧的约定。参考视频字段用于给生成任务提供素材，公开接口没有约定视频剪辑或续写操作。武庚纪另有可选字符串 `generation_mode`，取值为 `reference`、`multimodal`、`text`、`image_video` 或 `image_audio`。接口未逐项说明每种模式允许的素材组合。
+各字段的类型和数量见[六款模型的素材与生成模式参数](#六款模型的素材与生成模式参数)。15S 和 30S 的公开接口没有固定首帧、尾帧字段。三款的参考视频字段均用于提供生成素材，公开接口没有约定视频剪辑或续写操作。
 
 #### 用 URL 提交参考图（15S）
 
