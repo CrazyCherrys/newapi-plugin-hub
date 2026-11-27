@@ -14,6 +14,7 @@ jobs:
           node-version: '24'
       - run: npm test
       - run: node --check video/xysnai/plugin.js
+      - run: node --check video/metaso/plugin.js
       - run: sha256sum --check SHA256SUMS.txt
         working-directory: video/xysnai
       - run: npm run check

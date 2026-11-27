@@ -45,30 +45,38 @@ test('release is reproducible, detects tampering, and hashes downloadable bytes'
     const first = await buildIndex(temp);
     await release(temp);
     assert.equal(await buildIndex(temp), first);
-    const entry = JSON.parse(first).plugins[0];
-    assert.equal(hash(await fs.readFile(path.join(temp, entry.versions[0].path))), entry.versions[0].sha256);
-    assert.equal(hash(await fs.readFile(path.join(temp, entry.iconFile.path))), entry.iconFile.sha256);
-    const meta = await metadata(await fs.readFile(path.join(temp, entry.versions[0].path), 'utf8'));
-    assert.deepEqual(entry.author, communityAuthor(meta));
-    assert.deepEqual(entry.usageProfiles, meta.usageProfiles);
-    assert.equal(entry.task, true);
-    assert.equal(entry.versions[0].baseUrl, meta.baseUrl);
-    assert.equal(entry.versions[0].auth, meta.auth);
-    const readme = entry.versions[0].readme;
-    const chineseReadme = readme.translations['zh-CN'];
-    assert.equal(chineseReadme.path, 'video/xysnai/README.zh-CN.md');
-    for (const doc of [readme, chineseReadme, entry.versions[0].changelog,
-      entry.versions[0].changelog.translations['zh-CN']]) {
-      assert.equal(hash(await fs.readFile(path.join(temp, doc.path))), doc.sha256);
+    const entries = JSON.parse(first).plugins;
+    assert.deepEqual(entries.map(entry => entry.key).sort(), cfg.plugins.map(item => item.key).sort());
+    for (const item of cfg.plugins) {
+      const entry = entries.find(plugin => plugin.key === item.key);
+      const version = entry.versions[0];
+      assert.equal(hash(await fs.readFile(path.join(temp, version.path))), version.sha256);
+      assert.equal(hash(await fs.readFile(path.join(temp, entry.iconFile.path))), entry.iconFile.sha256);
+      const meta = await metadata(await fs.readFile(path.join(temp, version.path), 'utf8'));
+      assert.deepEqual(entry.author, communityAuthor(meta));
+      assert.deepEqual(entry.usageProfiles, meta.usageProfiles);
+      assert.equal(entry.task, true);
+      assert.equal(version.baseUrl, meta.baseUrl);
+      assert.equal(version.auth, meta.auth);
+      const chineseReadme = version.readme.translations['zh-CN'];
+      assert.equal(chineseReadme.path, `${item.source}/README.zh-CN.md`);
+      for (const doc of [version.readme, chineseReadme, version.changelog, version.changelog.translations['zh-CN']]) {
+        assert.equal(hash(await fs.readFile(path.join(temp, doc.path))), doc.sha256);
+      }
+      assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
+      assert.ok(entry.models.every(model => !model.includes('/')));
     }
-    assert.deepEqual(entry.usageProfiles.flatMap(p => p.models).sort(), entry.models.toSorted());
-    assert.ok(entry.models.every(model => !model.includes('/')));
+    const entry = entries.find(plugin => plugin.key === 'crazycherrys_xysnai-video');
+    const metaso = entries.find(plugin => plugin.key === 'crazycherrys_metaso-h3');
+    assert.deepEqual(metaso.models, ['metaso-minimax-h3']);
+    assert.deepEqual(metaso.usageProfiles[0].schema.resolution.enum, ['768P', '2K']);
+    assert.ok(metaso.models.every(model => !entry.models.includes(model)));
     const h3Schema = entry.usageProfiles.find(p => p.models.includes('minimax-h3')).schema;
     const h3EnumFields = Object.keys(h3Schema).filter(key => h3Schema[key].enum);
     assert.deepEqual(h3EnumFields, ['resolution']);
     assert.deepEqual(h3Schema.resolution.enum, ['480P', '768P', '1080P', '2K', '4K']);
     assert.ok(entry.usageProfiles.find(p => p.models.includes('Video-upscale2.6')).schema.billing_seconds);
-    const sourcePath = path.join(temp, cfg.plugins[0].source, 'plugin.js');
+    const sourcePath = path.join(temp, cfg.plugins.find(item => item.key === entry.key).source, 'plugin.js');
     const source = await fs.readFile(sourcePath, 'utf8');
     await fs.writeFile(sourcePath, source.replace('key: "crazycherrys_xysnai-video"', 'key: "xysnai-video"'));
     await assert.rejects(release(temp), /Community plugin key/);

@@ -3,6 +3,166 @@
   "name": "New API Plugin Hub",
   "plugins": [
     {
+      "key": "crazycherrys_metaso-h3",
+      "name": "MetaSo H3 Video",
+      "description": {
+        "en": "MiniMax H3 video generation with image and audio references",
+        "zh": "MiniMax H3 视频生成，支持图片和音频参考素材"
+      },
+      "website": "https://metaso.cn/minimax-h3/new-api-guide",
+      "author": {
+        "login": "CrazyCherrys",
+        "url": "https://github.com/CrazyCherrys"
+      },
+      "iconFile": {
+        "path": "plugins/tasks/crazycherrys_metaso-h3/icon.svg",
+        "sha256": "059fe83be8d937f40de317a36ca1410a7e9eb14029694aa73c403f413f1ee6ae"
+      },
+      "routes": [],
+      "task": true,
+      "provider": false,
+      "transform": false,
+      "protocols": [
+        {
+          "name": "openai_video"
+        }
+      ],
+      "models": [
+        "metaso-minimax-h3"
+      ],
+      "usageSchema": {
+        "seconds": {
+          "type": "number",
+          "unit": "second",
+          "description": {
+            "en": "Output video duration",
+            "zh": "输出视频时长"
+          }
+        },
+        "resolution": {
+          "enum": [
+            "768P",
+            "2K"
+          ],
+          "description": {
+            "en": "Output resolution",
+            "zh": "输出分辨率"
+          }
+        },
+        "image_count_after_free": {
+          "type": "number",
+          "unit": "count",
+          "description": {
+            "en": "Reference images after the first five",
+            "zh": "超过前五张的输入图片"
+          }
+        }
+      },
+      "usageExamples": [
+        {
+          "label": "768P 4s",
+          "facts": {
+            "seconds": 4,
+            "resolution": "768P",
+            "image_count_after_free": 0
+          }
+        },
+        {
+          "label": "2K 8s",
+          "facts": {
+            "seconds": 8,
+            "resolution": "2K",
+            "image_count_after_free": 2
+          }
+        }
+      ],
+      "usageProfiles": [
+        {
+          "models": [
+            "metaso-minimax-h3"
+          ],
+          "schema": {
+            "seconds": {
+              "type": "number",
+              "unit": "second",
+              "description": {
+                "en": "Output video duration",
+                "zh": "输出视频时长"
+              }
+            },
+            "resolution": {
+              "enum": [
+                "768P",
+                "2K"
+              ],
+              "description": {
+                "en": "Output resolution",
+                "zh": "输出分辨率"
+              }
+            },
+            "image_count_after_free": {
+              "type": "number",
+              "unit": "count",
+              "description": {
+                "en": "Reference images after the first five",
+                "zh": "超过前五张的输入图片"
+              }
+            }
+          },
+          "examples": [
+            {
+              "label": "768P 4s",
+              "facts": {
+                "seconds": 4,
+                "resolution": "768P",
+                "image_count_after_free": 0
+              }
+            },
+            {
+              "label": "2K 8s",
+              "facts": {
+                "seconds": 8,
+                "resolution": "2K",
+                "image_count_after_free": 2
+              }
+            }
+          ]
+        }
+      ],
+      "latest": "1.0.0",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "path": "plugins/tasks/crazycherrys_metaso-h3/1.0.0/plugin.js",
+          "sha256": "3db6264ee6d77322551bbc68d1081c1c9a4d3d194d243d15236c51b56d18db9b",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://metaso.cn/api",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_metaso-h3/1.0.0/CHANGELOG.md",
+            "sha256": "40a1c4eed0edba75f34dba265fcaa4fa0a1bbbaee38d91bf2767f22139a5d6dc",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_metaso-h3/1.0.0/CHANGELOG.zh-CN.md",
+                "sha256": "12ac3ac8ad64474cb7f48865f267c2298684661473ff54aa26f45f88f252abac"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/metaso/README.md",
+            "sha256": "dac7fffa3d7e07b20a0b5856629e88b904cbf779f81afd3cd58c96b5071cdc58",
+            "translations": {
+              "zh-CN": {
+                "path": "video/metaso/README.zh-CN.md",
+                "sha256": "bcad1ec2651da8e1485d2369f2dc21765cc84a5a70bce3123c0048fa5326e6ed"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "key": "crazycherrys_xysnai-video",
       "name": "DreamStudio Video",
       "description": {

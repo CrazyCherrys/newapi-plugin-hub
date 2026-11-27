@@ -1,0 +1,267 @@
+{
+  "unixNow": 1700000000,
+  "cases": [
+    {
+      "name": "OpenAI JSON uses provider duration and portrait defaults",
+      "hook": "protocols",
+      "path": ["openai_video", "decodeRequest"],
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "upstreamModel": "metaso-minimax-h3",
+        "protocol": "openai_video",
+        "operation": "create",
+        "method": "POST",
+        "path": "/v1/videos",
+        "body": { "kind": "json", "value": { "model": "metaso-minimax-h3", "prompt": "A cat walks through the rain" } }
+      }],
+      "expected": {
+        "kind": "submit",
+        "model": "metaso-minimax-h3",
+        "action": "text_to_video",
+        "requestBody": {
+          "duration": 4,
+          "resolution": "768P",
+          "ratio": "9:16",
+          "content": [{ "type": "text", "text": "A cat walks through the rain" }]
+        }
+      }
+    },
+    {
+      "name": "OpenAI JSON keeps metadata order and converts a string duration",
+      "hook": "protocols",
+      "path": ["openai_video", "decodeRequest"],
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "upstreamModel": "metaso-minimax-h3",
+        "protocol": "openai_video",
+        "operation": "create",
+        "method": "POST",
+        "path": "/v1/videos",
+        "body": {
+          "kind": "json",
+          "value": {
+            "model": "metaso-minimax-h3",
+            "prompt": "Use the text inside metadata",
+            "seconds": "5",
+            "size": "1792x1024",
+            "metadata": {
+              "metaso_content": [
+                { "type": "image_url", "role": "reference_image", "image_url": { "url": "https://cdn.example.com/reference.jpg" } },
+                { "type": "text", "text": "Follow the audio beat" },
+                { "type": "audio_url", "role": "reference_audio", "audio_url": { "url": "mm_file://123456789" } }
+              ]
+            }
+          }
+        }
+      }],
+      "expected": {
+        "kind": "submit",
+        "model": "metaso-minimax-h3",
+        "action": "multimodal_to_video",
+        "requestBody": {
+          "duration": 5,
+          "resolution": "2K",
+          "ratio": "16:9",
+          "content": [
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "https://cdn.example.com/reference.jpg" } },
+            { "type": "text", "text": "Follow the audio beat" },
+            { "type": "audio_url", "role": "reference_audio", "audio_url": { "url": "mm_file://123456789" } }
+          ]
+        }
+      }
+    },
+    {
+      "name": "OpenAI multipart normalizes an uploaded reference image",
+      "hook": "protocols",
+      "path": ["openai_video", "decodeRequest"],
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "operation": "create",
+        "body": {
+          "kind": "multipart",
+          "fields": { "prompt": ["Animate this still"], "seconds": ["6"], "size": ["1280x720"] },
+          "files": [{ "field": "input_reference", "ref": "file-0", "size": 4, "mimeType": "image/png" }]
+        }
+      }],
+      "expected": {
+        "kind": "submit",
+        "model": "metaso-minimax-h3",
+        "action": "image_to_video",
+        "requestBody": {
+          "duration": 6,
+          "resolution": "768P",
+          "ratio": "16:9",
+          "content": [
+            { "type": "text", "text": "Animate this still" },
+            {
+              "type": "image_url",
+              "role": "reference_image",
+              "image_url": { "url": { "__fileRef": "file-0", "encoding": "dataUrl", "mimeType": "image/png", "maxBytes": 31457280 } }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Native submission uses the MiniMax model and disables reasoning overhead",
+      "hook": "buildSubmitRequest",
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "action": "image_to_video",
+        "baseUrl": "https://metaso.cn/api/",
+        "apiKey": "fixture-key",
+        "requestBody": {
+          "duration": 8,
+          "resolution": "2K",
+          "ratio": "16:9",
+          "content": [
+            { "type": "text", "text": "Animate this still" },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://123" } }
+          ],
+          "context_ir_enabled": true,
+          "billing_policy": "custom"
+        }
+      }],
+      "expected": {
+        "url": "https://metaso.cn/api/minimax/v2/video_generation",
+        "method": "POST",
+        "headers": { "Authorization": "Bearer fixture-key", "Accept": "application/json", "Content-Type": "application/json" },
+        "body": {
+          "model": "MiniMax-H3",
+          "duration": 8,
+          "resolution": "2K",
+          "ratio": "16:9",
+          "content": [
+            { "type": "text", "text": "Animate this still" },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://123" } }
+          ],
+          "context_ir_enabled": false
+        },
+        "action": "image_to_video"
+      }
+    },
+    {
+      "name": "Queued native response preserves a string ID without retaining the upstream payload",
+      "hook": "parseSubmitResponse",
+      "args": [{}, { "body": { "task_id": "18446744073709551615", "task": { "status": "submitted", "internal": "fixture-only" } } }],
+      "expected": { "taskId": "18446744073709551615", "taskData": {} }
+    },
+    {
+      "name": "Reference images beyond the first five contribute to usage pricing",
+      "hook": "extractUsage",
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "action": "image_to_video",
+        "requestBody": {
+          "duration": 8,
+          "resolution": "2K",
+          "ratio": "16:9",
+          "content": [
+            { "type": "text", "text": "Animate these pictures" },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://1" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://2" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://3" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://4" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://5" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://6" } },
+            { "type": "image_url", "role": "reference_image", "image_url": { "url": "mm_file://7" } }
+          ]
+        }
+      }],
+      "expected": { "seconds": 8, "resolution": "2K", "image_count_after_free": 2 }
+    },
+    {
+      "name": "Legacy multiplier hook leaves pricing to usage expressions",
+      "hook": "extractUsage",
+      "args": [{ "model": "metaso-minimax-h3", "usagePurpose": "billing_ratios" }],
+      "expected": null
+    },
+    {
+      "name": "Native poll escapes the upstream task ID",
+      "hook": "buildQueryRequest",
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "baseUrl": "https://metaso.cn/api",
+        "apiKey": "fixture-key",
+        "taskId": "fake/id?query"
+      }],
+      "expected": {
+        "url": "https://metaso.cn/api/minimax/v2/query/video_generation/fake%2Fid%3Fquery",
+        "method": "GET",
+        "headers": { "Authorization": "Bearer fixture-key", "Accept": "application/json" }
+      }
+    },
+    {
+      "name": "Native failure suppresses provider diagnostics",
+      "hook": "parseTaskResult",
+      "args": [{}, { "task": { "status": "cancelled", "error": { "message": "Provider-only diagnostics" } } }],
+      "expected": { "status": "FAILURE", "progress": "100%", "reason": "Video generation failed" }
+    },
+    {
+      "name": "Completion updates only the two provider-reported usage facts",
+      "hook": "extractUsageOnComplete",
+      "args": [{}, { "status": "SUCCESS" }, {
+        "task": { "status": "succeeded", "duration": 7, "resolution": "2K", "usage": { "image_count_after_free": 99 } }
+      }],
+      "expected": { "seconds": 7, "resolution": "2K" }
+    },
+    {
+      "name": "Failed task does not override usage",
+      "hook": "extractUsageOnComplete",
+      "args": [{}, { "status": "FAILURE" }, {
+        "task": { "status": "failed", "duration": 7, "resolution": "2K" }
+      }],
+      "expected": {}
+    },
+    {
+      "name": "Public complete response exposes the gateway result route only",
+      "hook": "protocols",
+      "path": ["openai_video", "render"],
+      "args": [{}, {
+        "task_id": "video-fixture",
+        "status": "SUCCESS",
+        "progress": "99%",
+        "created_at": 1700000000,
+        "finished_at": 1700000011,
+        "data": { "task": { "content": { "url": "https://cdn.example.com/private-fixture.mp4" } } }
+      }],
+      "expected": {
+        "id": "video-fixture",
+        "object": "video",
+        "model": "metaso-minimax-h3",
+        "status": "completed",
+        "progress": 100,
+        "created_at": 1700000000,
+        "result_url": "/v1/videos/video-fixture/content",
+        "completed_at": 1700000011
+      }
+    },
+    {
+      "name": "Credentialless download descriptor does not forward authorization or arbitrary headers",
+      "hook": "buildContentRequest",
+      "args": [{
+        "artifactKey": "video",
+        "apiKey": "fixture-key",
+        "clientRequest": { "method": "HEAD", "headers": { "Authorization": "Bearer client-fixture", "Range": "bytes=0-4" } },
+        "data": { "task": { "content": { "url": "https://cdn.example.com/result.mp4" } } }
+      }],
+      "expected": { "url": "https://cdn.example.com/result.mp4", "method": "HEAD", "credentialless": true }
+    },
+    {
+      "name": "Reference video is rejected even when the request supplies its own duration",
+      "hook": "protocols",
+      "path": ["openai_video", "decodeRequest"],
+      "args": [{
+        "model": "metaso-minimax-h3",
+        "operation": "create",
+        "body": { "kind": "json", "value": {
+          "prompt": "Follow this shot",
+          "metadata": { "metaso_content": [
+            { "type": "video_url", "role": "reference_video", "video_url": { "url": "https://cdn.example.com/ref.mp4" }, "durationSeconds": 3 }
+          ] }
+        } }
+      }],
+      "expectedError": "requires host-side duration measurement"
+    }
+  ]
+}

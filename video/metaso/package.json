@@ -1,0 +1,9 @@
+{
+  "name": "newapi-metaso-h3",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node --test tests/run.mjs"
+  }
+}

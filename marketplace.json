@@ -1,6 +1,7 @@
 {
   "name": "New API Plugin Hub",
   "plugins": [
+    { "key": "crazycherrys_metaso-h3", "source": "video/metaso" },
     { "key": "crazycherrys_xysnai-video", "source": "video/xysnai" }
   ],
   "retiredPlugins": ["leonardo-video"]

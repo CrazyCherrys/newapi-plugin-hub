@@ -2,10 +2,12 @@
 
 # New API Plugin Hub
 
-New API 第三方插件市场源。当前提供 DreamStudio Video 1.3.4，通过 XYSNAI 接入 MiniMax H3、Wan、Seedance 和视频超分模型。
+New API 第三方插件市场源。
 
-- [用户调用文档](video/xysnai/docs/API.md)适合发给调用者，包含用 New API 令牌创建视频、查询任务和下载文件的示例。
-- [管理员部署与计费](video/xysnai/docs/ADMIN.md)包含插件安装、渠道配置和可直接粘贴的 H3 五档计费表达式。
+| 插件 | 模型 | 文档 |
+|---|---|---|
+| DreamStudio Video 1.3.4 | MiniMax H3、Wan、Seedance、视频超分 | [用户调用](video/xysnai/docs/API.md) · [部署与计费](video/xysnai/docs/ADMIN.md) · [更新日志](plugins/tasks/crazycherrys_xysnai-video/1.3.4/CHANGELOG.zh-CN.md) · [验证记录](video/xysnai/docs/VALIDATION.md) |
+| MetaSo H3 Video 1.0.0 | `metaso-minimax-h3`，支持 768P 和 2K | [用户调用](video/metaso/docs/API.md) · [部署与计费](video/metaso/docs/ADMIN.md) |
 
 ## 添加市场源
 
@@ -15,7 +17,7 @@ New API 第三方插件市场源。当前提供 DreamStudio Video 1.3.4，通过
 https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/index.json
 ```
 
-保存并刷新市场，选择 **DreamStudio Video 1.3.4** 安装或升级。也可以[下载固定版本 plugin.js](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js)后手动上传。首次安装后按管理员指南启用插件并设置类型 61 渠道和模型价格。[更新日志](plugins/tasks/crazycherrys_xysnai-video/1.3.4/CHANGELOG.zh-CN.md)
+保存并刷新市场，选择需要的插件安装或升级。也可以下载固定版本的插件后手动上传。首次安装后按对应的管理员指南启用插件并设置类型 61 渠道和模型价格。 [DreamStudio Video 下载](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js) · [MetaSo H3 Video 下载](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_metaso-h3/1.0.0/plugin.js)
 
 ## 开发与发布
 
@@ -27,4 +29,4 @@ npm run release
 npm run check
 ```
 
-插件源码在 `video/xysnai/`，固定发布文件在 `plugins/tasks/`。发布工具生成市场索引。仅更新市场 README 后，可用 `npm run index` 刷新文档哈希。[贡献指南](CONTRIBUTING.md) · [验证记录](video/xysnai/docs/VALIDATION.md)
+插件源码在 `video/`，固定发布文件在 `plugins/tasks/`。发布工具生成市场索引。仅更新市场 README 后，可用 `npm run index` 刷新文档哈希。 [贡献指南](CONTRIBUTING.md)
