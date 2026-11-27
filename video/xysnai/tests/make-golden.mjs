@@ -140,4 +140,21 @@ const fixture = {
     }
   ]
 };
+for (const [model, fields, seconds, usage] of [
+  ['MiniMax-H3-15S', { seconds: '12' }, 12, { requests: 1 }],
+  ['MiniMax-H3-30S', {}, 30, { requests: 1 }],
+  ['MiniMax-H3-2K-武庚纪', { seconds: 28, resolution: '2k', first_frame: compatImage }, 28, { seconds: 28 }]
+]) {
+  const value = { model, prompt: 'cat', ...fields };
+  const action = fields.first_frame ? 'reference_to_video' : 'text_to_video';
+  const requestBody = { payload: { ...value, seconds }, formFields: null };
+  fixture.cases.push({
+    name: model + ' create', hook: 'protocols', path: ['openai_video', 'decodeRequest'],
+    args: [{ model, operation: 'create', body: { kind: 'json', value } }],
+    expected: { kind: 'submit', model, action, requestBody }
+  }, {
+    name: model + ' pricing', hook: 'extractUsage',
+    args: [{ ...context, model, upstreamModel: model, requestBody, action }], expected: usage
+  });
+}
 await fs.writeFile(new URL('./golden.json', import.meta.url), JSON.stringify(fixture, null, 2) + '\n');

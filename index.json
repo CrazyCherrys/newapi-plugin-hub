@@ -192,6 +192,9 @@
         "minimax-h3",
         "minimax-h3-fl2v",
         "minimax-h3-lh",
+        "MiniMax-H3-15S",
+        "MiniMax-H3-30S",
+        "MiniMax-H3-2K-武庚纪",
         "mg-seedance-2.0-720p",
         "mg-seedance-2.5-480p",
         "mg-seedance-2.5-4k",
@@ -317,6 +320,37 @@
               "description": {
                 "en": "Video resolution tier",
                 "zh": "视频分辨率计费档位"
+              }
+            }
+          }
+        },
+        {
+          "models": [
+            "MiniMax-H3-15S",
+            "MiniMax-H3-30S"
+          ],
+          "schema": {
+            "requests": {
+              "type": "number",
+              "unit": "count",
+              "description": {
+                "en": "Task unit price",
+                "zh": "任务单价"
+              }
+            }
+          }
+        },
+        {
+          "models": [
+            "MiniMax-H3-2K-武庚纪"
+          ],
+          "schema": {
+            "seconds": {
+              "type": "number",
+              "unit": "second",
+              "description": {
+                "en": "Video generation unit price",
+                "zh": "视频生成单价"
               }
             }
           }
@@ -600,8 +634,37 @@
           }
         }
       ],
-      "latest": "1.3.4",
+      "latest": "1.4.0",
       "versions": [
+        {
+          "version": "1.4.0",
+          "path": "plugins/tasks/crazycherrys_xysnai-video/1.4.0/plugin.js",
+          "sha256": "801c936b4c6ede1a9bc53914c9ed9510c2258b45e935bae050ebca30cbb8df15",
+          "minApiVersion": 1,
+          "kind": "task",
+          "baseUrl": "https://xysnai.cn",
+          "auth": "api_key",
+          "changelog": {
+            "path": "plugins/tasks/crazycherrys_xysnai-video/1.4.0/CHANGELOG.md",
+            "sha256": "0cfa51b82a51ef63fe20d51d54afab25764983907c702bfd3c550c13c065945b",
+            "translations": {
+              "zh-CN": {
+                "path": "plugins/tasks/crazycherrys_xysnai-video/1.4.0/CHANGELOG.zh-CN.md",
+                "sha256": "74c9aef0d9275ccbd05443ec87685a1d8d4fa9272358ac8724682a8e7a12d148"
+              }
+            }
+          },
+          "readme": {
+            "path": "video/xysnai/README.md",
+            "sha256": "b26610c289db013793a2acf537f8f0554c048f8328d34ed0ac68b343f1bfc307",
+            "translations": {
+              "zh-CN": {
+                "path": "video/xysnai/README.zh-CN.md",
+                "sha256": "fcaf32a90dbd1e7900d003f8e3a1b772e155679b69be063935c6538b2c8e2354"
+              }
+            }
+          }
+        },
         {
           "version": "1.3.4",
           "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js",
@@ -617,16 +680,6 @@
               "zh-CN": {
                 "path": "plugins/tasks/crazycherrys_xysnai-video/1.3.4/CHANGELOG.zh-CN.md",
                 "sha256": "69abcd574441b059def0dbfcd5875274b54b9a89c873b1f761bac75a441acec6"
-              }
-            }
-          },
-          "readme": {
-            "path": "video/xysnai/README.md",
-            "sha256": "fd6770386dee3f99aae1161cd39b803455cf6a58551e6651359b47712e0faadd",
-            "translations": {
-              "zh-CN": {
-                "path": "video/xysnai/README.zh-CN.md",
-                "sha256": "6a89eb57185c2e6b17a318a569be2a63153a48d753ba6151367a70a9e66863c0"
               }
             }
           }

@@ -15,7 +15,7 @@ export NEW_API_TOKEN='替换为你的 New API 令牌'
 | 查询任务 | `GET /v1/videos/{id}` |
 | 下载视频 | `GET /v1/videos/{id}/content` |
 
-本页列出的 19 个模型共用这三个接口。创建时在请求体中填写 `model`，其余字段按所选型号填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
+本页列出的 22 个模型共用这三个接口。创建时在请求体中填写 `model`，其余字段按所选型号填写。你的令牌能调用哪些模型，以服务方实际开通的列表为准。
 
 ## 创建任务
 
@@ -78,7 +78,28 @@ curl --fail --silent --show-error \
 
 ## MiniMax H3 型号与参数
 
-三个型号都使用 `POST /v1/videos`。切换型号时，在 `model` 中填写对应的完整名称，再按该型号的要求准备素材。
+六个型号共用上面的创建、查询和下载接口。请求体中的模型名区分大小写。
+
+### 15S、30S 和 2K 武庚纪
+
+| `model` | `seconds` | 画面与可选参数 |
+|---|---|---|
+| `MiniMax-H3-15S` | 必填，4、6、8、12 或 15 | 固定 1344×768，`aspect_ratio` 可填 `16:9` |
+| `MiniMax-H3-30S` | 固定 30，可省略 | 固定 1184×672，`aspect_ratio` 可填 `16:9` |
+| `MiniMax-H3-2K-武庚纪` | 必填，5 至 28 的整数 | `resolution` 可填小写 `2k`，`aspect_ratio` 可选 `9:16`、`16:9`、`1:1` |
+
+三款都要求提供 `prompt`，最长 20,000 字符。可选的 `reference_images`、`reference_videos`、`reference_audios` 分别最多 9、3、3 项。JSON 用 URL 数组，上传文件用同名的 multipart 文件字段。武庚纪可用 `first_frame` 和 `last_frame` 各传一张图，`generation_mode` 可选 `reference`、`multimodal`、`text`、`image_video` 或 `image_audio`。
+
+沿用上方的网关地址和令牌，以下 Bash 命令创建一条 5 秒的 2K 任务，会消耗额度。返回的 `id` 用于上方的查询与下载步骤。另两款的最小请求体见 [15S 示例](../examples/minimax-15s.json) 和 [30S 示例](../examples/minimax-30s.json)。
+
+```bash
+curl --fail-with-body -sS "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"MiniMax-H3-2K-武庚纪","prompt":"镜头缓缓推向山顶","seconds":5,"resolution":"2k","aspect_ratio":"16:9"}'
+```
+
+### 标准版、LH 与 FL2V
 
 | `model` | 用法 |
 |---|---|
@@ -96,7 +117,7 @@ curl --fail --silent --show-error \
 
 ### H3 常用画幅
 
-三款 H3 都可以直接填写表中的 `size`，省略 `aspect_ratio`。这三个尺寸都归到 768P 档，单价以各模型在 New API 上配置的价格为准。
+标准版、LH 和 FL2V 都可以直接填写表中的 `size`，省略 `aspect_ratio`。这三个尺寸都归到 768P 档，单价以各模型在 New API 上配置的价格为准。
 
 | 画幅 | `size` |
 |---|---|
@@ -137,7 +158,7 @@ curl --fail-with-body --silent --show-error \
 | `1792x1024`、`1920x1080` | `1920x1088` | 1080P |
 | `1024x1792`、`1080x1920` | `1088x1920` | 1080P |
 
-下表列出 H3 可用的尺寸值，实际开放的档位以服务方配置为准。
+下表列出标准版、LH 和 FL2V 的尺寸值，实际开放的档位以服务方配置为准。
 
 | 尺寸类别 | `size` 可填值 |
 |---|---|

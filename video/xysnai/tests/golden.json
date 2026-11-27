@@ -701,6 +701,203 @@
           "Range": "bytes=0-100"
         }
       }
+    },
+    {
+      "name": "MiniMax-H3-15S create",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "model": "MiniMax-H3-15S",
+          "operation": "create",
+          "body": {
+            "kind": "json",
+            "value": {
+              "model": "MiniMax-H3-15S",
+              "prompt": "cat",
+              "seconds": "12"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "MiniMax-H3-15S",
+        "action": "text_to_video",
+        "requestBody": {
+          "payload": {
+            "model": "MiniMax-H3-15S",
+            "prompt": "cat",
+            "seconds": 12
+          },
+          "formFields": null
+        }
+      }
+    },
+    {
+      "name": "MiniMax-H3-15S pricing",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "model": "MiniMax-H3-15S",
+          "upstreamModel": "MiniMax-H3-15S",
+          "baseUrl": "https://xysnai.cn",
+          "apiKey": "fixture-key",
+          "authHeader": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "action": "text_to_video",
+          "requestBody": {
+            "payload": {
+              "model": "MiniMax-H3-15S",
+              "prompt": "cat",
+              "seconds": 12
+            },
+            "formFields": null
+          }
+        }
+      ],
+      "expected": {
+        "requests": 1
+      }
+    },
+    {
+      "name": "MiniMax-H3-30S create",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "model": "MiniMax-H3-30S",
+          "operation": "create",
+          "body": {
+            "kind": "json",
+            "value": {
+              "model": "MiniMax-H3-30S",
+              "prompt": "cat"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "MiniMax-H3-30S",
+        "action": "text_to_video",
+        "requestBody": {
+          "payload": {
+            "model": "MiniMax-H3-30S",
+            "prompt": "cat",
+            "seconds": 30
+          },
+          "formFields": null
+        }
+      }
+    },
+    {
+      "name": "MiniMax-H3-30S pricing",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "model": "MiniMax-H3-30S",
+          "upstreamModel": "MiniMax-H3-30S",
+          "baseUrl": "https://xysnai.cn",
+          "apiKey": "fixture-key",
+          "authHeader": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "action": "text_to_video",
+          "requestBody": {
+            "payload": {
+              "model": "MiniMax-H3-30S",
+              "prompt": "cat",
+              "seconds": 30
+            },
+            "formFields": null
+          }
+        }
+      ],
+      "expected": {
+        "requests": 1
+      }
+    },
+    {
+      "name": "MiniMax-H3-2K-武庚纪 create",
+      "hook": "protocols",
+      "path": [
+        "openai_video",
+        "decodeRequest"
+      ],
+      "args": [
+        {
+          "model": "MiniMax-H3-2K-武庚纪",
+          "operation": "create",
+          "body": {
+            "kind": "json",
+            "value": {
+              "model": "MiniMax-H3-2K-武庚纪",
+              "prompt": "cat",
+              "seconds": 28,
+              "resolution": "2k",
+              "first_frame": "https://example.com/ref.jpg"
+            }
+          }
+        }
+      ],
+      "expected": {
+        "kind": "submit",
+        "model": "MiniMax-H3-2K-武庚纪",
+        "action": "reference_to_video",
+        "requestBody": {
+          "payload": {
+            "model": "MiniMax-H3-2K-武庚纪",
+            "prompt": "cat",
+            "seconds": 28,
+            "resolution": "2k",
+            "first_frame": "https://example.com/ref.jpg"
+          },
+          "formFields": null
+        }
+      }
+    },
+    {
+      "name": "MiniMax-H3-2K-武庚纪 pricing",
+      "hook": "extractUsage",
+      "args": [
+        {
+          "model": "MiniMax-H3-2K-武庚纪",
+          "upstreamModel": "MiniMax-H3-2K-武庚纪",
+          "baseUrl": "https://xysnai.cn",
+          "apiKey": "fixture-key",
+          "authHeader": "fixture-key",
+          "upstream": {
+            "kind": "vendor"
+          },
+          "files": [],
+          "action": "reference_to_video",
+          "requestBody": {
+            "payload": {
+              "model": "MiniMax-H3-2K-武庚纪",
+              "prompt": "cat",
+              "seconds": 28,
+              "resolution": "2k",
+              "first_frame": "https://example.com/ref.jpg"
+            },
+            "formFields": null
+          }
+        }
+      ],
+      "expected": {
+        "seconds": 28
+      }
     }
   ]
 }

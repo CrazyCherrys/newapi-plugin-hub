@@ -1,6 +1,6 @@
 /*
  * DreamStudio Video — New API Task Plugin API v1
- * Protocol snapshot: XYSNAI public video docs, 2026-11-22.
+ * MiniMax contracts checked against XYSNAI public video docs, 2026-11-27.
  * Configure a type-61 channel, Base URL https://xysnai.cn, and its API key.
  * Public model names match the upstream model names directly.
  * No prices are included. Configure each model's task usage pricing separately.
@@ -13,6 +13,9 @@ const WAN = "wan3.0-video";
 const H3 = "minimax-h3";
 const H3_FL2V = "minimax-h3-fl2v";
 const H3_LH = "minimax-h3-lh";
+const H3_15S = "MiniMax-H3-15S";
+const H3_30S = "MiniMax-H3-30S";
+const H3_2K = "MiniMax-H3-2K-武庚纪";
 const MG_2_0_720P = "mg-seedance-2.0-720p";
 const MG_2_5_480P = "mg-seedance-2.5-480p";
 const MG_2_5_4K = "mg-seedance-2.5-4k";
@@ -29,7 +32,7 @@ const SALE_NV_480P = "特价seedance-2.5-nv-480p";
 const SALE_NV_720P = "特价seedance-2.5-nv-720p-30s";
 const UPSCALE = "Video-upscale2.6";
 const UPSTREAM_MODELS = [
-  WAN, H3, H3_FL2V, H3_LH,
+  WAN, H3, H3_FL2V, H3_LH, H3_15S, H3_30S, H3_2K,
   MG_2_0_720P, MG_2_5_480P, MG_2_5_4K, MG_2_5_720P,
   OV_1080P, OV_480P, OV_720P, SD_2_0, SD_2_5,
   SALE_V2_720P, SALE_480P, SALE_NV_1080P, SALE_NV_480P, SALE_NV_720P, UPSCALE
@@ -71,6 +74,8 @@ const COMMON_USAGE = {
   input_references: { type: "number", unit: "count", description: { en: "Untyped input reference unit price", zh: "未区分类型的 input_reference 单价" } }
 };
 const SECONDS = { type: "number", unit: "second", description: { en: "Video generation unit price", zh: "视频生成单价" } };
+const H3_FIXED_USAGE = { requests: COMMON_USAGE.requests };
+const H3_2K_USAGE = { seconds: SECONDS };
 const AUDIO_MODE = { enum: ["unspecified", "on", "off"], description: { en: "Generate audio option", zh: "生成音频选项" } };
 const H3_USAGE = Object.assign({}, COMMON_USAGE, {
   seconds: SECONDS,
@@ -91,6 +96,8 @@ function family(model) {
   if (model === "Video-upscale2.6") return "upscale";
   if (model === "sd-2.0" || model === "sd-2.5") return "sd";
   if (model.indexOf("minimax-h3") === 0) return "h3";
+  if (model === H3_15S || model === H3_30S) return "h3_fixed";
+  if (model === H3_2K) return "h3_2k";
   return "seedance";
 }
 export const meta = {
@@ -98,7 +105,7 @@ export const meta = {
   key: "crazycherrys_xysnai-video",
   name: "DreamStudio Video",
   description: { en: "Video generation and upscaling via XYSNAI", zh: "通过 XYSNAI 生成视频和超分" },
-  version: "1.3.4",
+  version: "1.4.0",
   author: { name: "CrazyCherrys", url: "https://github.com/CrazyCherrys" },
   website: "https://xysnai.cn/zh/docs",
   baseUrl: "https://xysnai.cn",
@@ -111,6 +118,8 @@ export const meta = {
   usageSchema: COMMON_USAGE,
   usageProfiles: [
     { models: [H3, H3_FL2V, H3_LH], schema: H3_USAGE },
+    { models: [H3_15S, H3_30S], schema: H3_FIXED_USAGE },
+    { models: [H3_2K], schema: H3_2K_USAGE },
     { models: [WAN], schema: WAN_USAGE },
     { models: [SD_2_0, SD_2_5], schema: SD_USAGE },
     { models: [
@@ -184,6 +193,30 @@ function checkArray(req, files, key, max, min = 0) {
   if (req[key] !== undefined && count < min) throw new Error(key + " requires at least " + min + " reference when provided");
   if (count > max) throw new Error(key + " accepts at most " + max + " references");
 }
+function validateH3Variant(req, files, model) {
+  if (Array.from(req.prompt).length > 20000) throw new Error("prompt exceeds 20000 characters");
+  checkArray(req, files, "reference_images", 9);
+  checkArray(req, files, "reference_videos", 3);
+  checkArray(req, files, "reference_audios", 3);
+  if (model === H3_2K) {
+    req.seconds = inRange(req.seconds, "seconds", 5, 28, true);
+    enumValue(req.resolution, "resolution", ["2k"], false);
+    enumValue(req.aspect_ratio, "aspect_ratio", ["9:16", "16:9", "1:1"], false);
+    enumValue(req.generation_mode, "generation_mode", ["reference", "multimodal", "text", "image_video", "image_audio"], false);
+    for (const name of ["first_frame", "last_frame"]) {
+      if (req[name] !== undefined && (typeof req[name] !== "string" || !req[name].trim())) throw new Error(name + " must be a nonempty URL string");
+      if (countField(req, files, name) > 1) throw new Error(name + " must be provided once");
+    }
+  } else {
+    enumValue(req.aspect_ratio, "aspect_ratio", ["16:9"], false);
+    if (model === H3_30S) {
+      req.seconds = req.seconds === undefined ? 30 : inRange(req.seconds, "seconds", 30, 30, true);
+    } else {
+      req.seconds = number(req.seconds, "seconds");
+      if (![4, 6, 8, 12, 15].includes(req.seconds)) throw new Error("seconds must be one of 4, 6, 8, 12, 15");
+    }
+  }
+}
 function validate(req, files, model) {
   const kind = family(model);
   for (const key of BOOLEAN_FIELDS) {
@@ -193,6 +226,7 @@ function validate(req, files, model) {
     throw new Error("prompt is required for " + model);
   }
   if (req.prompt !== undefined && typeof req.prompt !== "string") throw new Error("prompt must be a string");
+  if (kind === "h3_fixed" || kind === "h3_2k") return validateH3Variant(req, files, model);
   if (kind !== "upscale") req.seconds = inRange(req.seconds, "seconds", kind === "wan" ? 2 : 4, kind === "h3" ? 15 : 30, true);
   else if (req.seconds !== undefined) throw new Error("Video-upscale2.6 does not use the seconds field");
   if (kind === "h3") {
@@ -233,7 +267,7 @@ function validate(req, files, model) {
   }
 }
 
-function readBody(ctx) {
+function readBody(ctx, model) {
   const body = ctx.body || {};
   if (body.kind === "json") {
     if (!isObject(body.value)) throw new Error("JSON object required");
@@ -242,6 +276,7 @@ function readBody(ctx) {
   if (body.kind !== "multipart") throw new Error("JSON or multipart/form-data body required");
   const fields = copy(body.fields || {});
   const req = Object.create(null);
+  const scalars = model === H3_2K ? SCALAR_FIELDS.concat(["first_frame", "last_frame", "generation_mode"]) : SCALAR_FIELDS;
   for (const originalName of Object.keys(fields)) {
     const name = fieldName(originalName);
     const values = fields[originalName];
@@ -256,7 +291,7 @@ function readBody(ctx) {
       req[name] = (req[name] || []).concat(value);
       continue;
     }
-    if (SCALAR_FIELDS.indexOf(name) >= 0 && (values.length !== 1 || own(req, name))) {
+    if (scalars.indexOf(name) >= 0 && (values.length !== 1 || own(req, name))) {
       throw new Error(name + " must be provided once, including [] aliases");
     }
     req[name] = values.length === 1 ? values[0] : values.slice();
@@ -314,13 +349,14 @@ export const protocols = {
       if (/remix/i.test(String(ctx.operation || "")) || /\/remix\/?$/.test(String(ctx.path || ""))) {
         throw new Error("Video remix is not supported");
       }
-      const parsed = readBody(ctx);
       const model = upstreamModel(ctx);
+      const parsed = readBody(ctx, model);
       if (family(model) === "h3") normalizeH3Request(parsed, model);
       validate(parsed.payload, parsed.files, model);
       parsed.payload.model = ctx.model;
       let mediaCount = parsed.files.length;
       for (const key of MEDIA_FIELDS) mediaCount += countField(parsed.payload, [], key);
+      if (model === H3_2K) mediaCount += countField(parsed.payload, [], "first_frame") + countField(parsed.payload, [], "last_frame");
       return {
         kind: "submit",
         model: ctx.model,
@@ -381,6 +417,7 @@ export function buildSubmitRequest(ctx) {
       }
     }
     if (!seen.model) parts.push({ name: "model", value: req.model });
+    if (req.model === H3_30S && !seen.seconds) parts.push({ name: "seconds", value: String(req.seconds) });
     if (h3) {
       for (const name of ["seconds", "size"]) if (!seen[name]) parts.push({ name, value: String(req[name]) });
     }
@@ -428,6 +465,8 @@ export function extractUsage(ctx) {
   const req = request(ctx);
   const files = ctx.files || [];
   const kind = family(upstreamModel(ctx));
+  if (kind === "h3_fixed") return { requests: 1 };
+  if (kind === "h3_2k") return { seconds: req.seconds };
   const facts = { requests: 1, input_images: 0, input_videos: 0, input_audios: 0, input_references: 0 };
   const imageFields = kind === "h3" ? ["images"] : ["images", "reference_images", "reference_image_urls", "first_image", "last_image"];
   for (const name of imageFields) facts.input_images += countField(req, files, name);

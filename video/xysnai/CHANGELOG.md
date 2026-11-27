@@ -1,18 +1,17 @@
 ---
 changelogVersion: 1
 plugin: 'crazycherrys_xysnai-video'
-version: '1.3.4'
+version: '1.4.0'
 locale: 'en'
 translations:
   zh-CN: CHANGELOG.zh-CN.md
 ---
 # Changelog
 
-## [1.3.4]
+## [1.4.0]
 
-### Fixed
-- Use a generic public video failure message and keep raw provider error text out of the plugin's standard response.
-- Remove provider links from the client API guide and document gateway filtering for legacy task queries, HTTP errors, and download headers.
+### Added
+- Enable MiniMax-H3-15S, MiniMax-H3-30S and MiniMax-H3-2K-武庚纪 on the existing video creation, status and content routes. The new models accept reference images, videos and audio. The 2K model also accepts first and last frames and generation modes.
 
 ### Migration
-- Upgrade the existing plugin to carry forward its channel settings and pricing expressions. Apply the Nginx configuration on the public gateway to cover host-managed responses.
+- Upgrade the existing channel and enable the new model names as needed. Set a per-video price for 15S and 30S and an output-second price for 2K. Existing model prices carry forward.

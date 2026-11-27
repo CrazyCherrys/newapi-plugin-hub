@@ -1,5 +1,6 @@
 {
   "checked_on": "2026-11-22",
+  "minimax_checked_on": "2026-11-27",
   "observation": "Public XYSNAI documentation read through the rendered website. Documentary compatibility is not paid generation verification.",
   "base_url": "https://xysnai.cn",
   "transport": {
@@ -53,6 +54,24 @@
       "public_model": "minimax-h3-lh",
       "family": "h3",
       "documentation_url": "https://xysnai.cn/zh/docs?model_id=f9033ed1-a558-4b0c-8e90-4673eac83a37"
+    },
+    {
+      "upstream_model": "MiniMax-H3-15S",
+      "public_model": "MiniMax-H3-15S",
+      "family": "h3_15s",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=449b2ba4-90dd-4f5d-adf4-d91293cbf819"
+    },
+    {
+      "upstream_model": "MiniMax-H3-30S",
+      "public_model": "MiniMax-H3-30S",
+      "family": "h3_30s",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=a92b01f2-5330-4c49-8004-c147a0e60f75"
+    },
+    {
+      "upstream_model": "MiniMax-H3-2K-武庚纪",
+      "public_model": "MiniMax-H3-2K-武庚纪",
+      "family": "h3_2k",
+      "documentation_url": "https://xysnai.cn/zh/docs?model_id=a903db6e-2704-48c9-a817-57a15d5d7eac"
     },
     {
       "upstream_model": "sd-2.0",
@@ -346,6 +365,118 @@
         "reference_videos": 1
       },
       "billing": "Documented as actual instance-occupation time charged after completion, not output video duration. Confirm completed response metering before using billing_seconds for final price."
+    },
+    "h3_15s": {
+      "required": [
+        "prompt",
+        "seconds"
+      ],
+      "seconds": {
+        "type": "integer",
+        "enum": [
+          4,
+          6,
+          8,
+          12,
+          15
+        ]
+      },
+      "fields": [
+        "model",
+        "prompt",
+        "seconds",
+        "aspect_ratio",
+        "reference_images",
+        "reference_videos",
+        "reference_audios"
+      ],
+      "aspect_ratio": [
+        "16:9"
+      ],
+      "max_prompt_length": 20000,
+      "max_media_counts": {
+        "reference_images": 9,
+        "reference_videos": 3,
+        "reference_audios": 3
+      },
+      "billing": "request_fixed"
+    },
+    "h3_30s": {
+      "required": [
+        "prompt"
+      ],
+      "seconds": {
+        "type": "integer",
+        "enum": [
+          30
+        ],
+        "default": 30
+      },
+      "fields": [
+        "model",
+        "prompt",
+        "seconds",
+        "aspect_ratio",
+        "reference_images",
+        "reference_videos",
+        "reference_audios"
+      ],
+      "aspect_ratio": [
+        "16:9"
+      ],
+      "max_prompt_length": 20000,
+      "max_media_counts": {
+        "reference_images": 9,
+        "reference_videos": 3,
+        "reference_audios": 3
+      },
+      "billing": "request_fixed"
+    },
+    "h3_2k": {
+      "required": [
+        "prompt",
+        "seconds"
+      ],
+      "seconds": {
+        "type": "integer",
+        "minimum": 5,
+        "maximum": 28
+      },
+      "fields": [
+        "model",
+        "prompt",
+        "seconds",
+        "resolution",
+        "aspect_ratio",
+        "first_frame",
+        "last_frame",
+        "reference_images",
+        "reference_videos",
+        "reference_audios",
+        "generation_mode"
+      ],
+      "aspect_ratio": [
+        "9:16",
+        "16:9",
+        "1:1"
+      ],
+      "max_prompt_length": 20000,
+      "max_media_counts": {
+        "reference_images": 9,
+        "reference_videos": 3,
+        "reference_audios": 3
+      },
+      "billing": "output_video_duration",
+      "resolution": [
+        "2k"
+      ],
+      "generation_mode": [
+        "reference",
+        "multimodal",
+        "text",
+        "image_video",
+        "image_audio"
+      ]
     }
   },
   "verification": {

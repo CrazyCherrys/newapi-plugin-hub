@@ -7,7 +7,7 @@ const source = await fs.readFile(new URL('../plugin.js', import.meta.url), 'utf8
 const plugin = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const catalog = JSON.parse(await fs.readFile(new URL('../model-catalog.json', import.meta.url), 'utf8'));
 const summary = JSON.parse(await fs.readFile(new URL('./test-summary.json', import.meta.url), 'utf8'));
-const examples = await Promise.all(['minimax', 'wan', 'sd', 'mg', 'upscale'].map(async name =>
+const examples = await Promise.all(['minimax', 'minimax-15s', 'minimax-30s', 'minimax-2k', 'wan', 'sd', 'mg', 'upscale'].map(async name =>
   JSON.parse(await fs.readFile(new URL('../examples/' + name + '.json', import.meta.url), 'utf8'))));
 let passed = 0;
 function test(name, fn) {
@@ -60,19 +60,19 @@ test('Hub catalog, published source checksum and request examples match the plug
     assert.equal(plugin.buildSubmitRequest(driver(model, example)).body.model, model);
   }
 });
-test('manifest declares 19 upstream model names, one protocol, and no legacy channel takeover', () => {
+test('manifest declares 22 upstream model names, one protocol, and no legacy channel takeover', () => {
   assert.equal(plugin.meta.key, 'crazycherrys_xysnai-video');
   assert.equal(plugin.meta.name, 'DreamStudio Video');
-  assert.equal(plugin.meta.version, '1.3.4');
+  assert.equal(plugin.meta.version, '1.4.0');
   assert.equal(plugin.meta.author.name, 'CrazyCherrys');
   assert.equal(plugin.meta.author.url, 'https://github.com/CrazyCherrys');
-  assert.equal(plugin.meta.models.length, 19);
-  assert.equal(new Set(plugin.meta.models).size, 19);
+  assert.equal(plugin.meta.models.length, 22);
+  assert.equal(new Set(plugin.meta.models).size, 22);
   assert.deepEqual(plugin.meta.protocols, ['openai_video']);
   assert.equal(plugin.meta.channelTypes, undefined);
   assert.deepEqual(plugin.meta.upstreams, ['vendor']);
   const profiled = plugin.meta.usageProfiles.flatMap(p => p.models);
-  assert.equal(new Set(profiled).size, 19);
+  assert.equal(new Set(profiled).size, 22);
   assert.deepEqual(profiled.toSorted(), plugin.meta.models.toSorted());
 });
 test('public models and pricing profiles use upstream names without a provider prefix', () => {
@@ -205,10 +205,66 @@ test('H3 honours documented optional fields and reports billable dimensions with
   assert.throws(() => decode('minimax-h3', { ...payload, aspect_ratio: 'adaptive' }), /aspect_ratio/);
   assert.throws(() => decode('minimax-h3', { ...payload, mode: 7 }), /mode must be a string/);
 });
-test('all 19 model examples build one common create route with valid profile facts', () => {
+test('MiniMax fixed-price variants enforce the documented seconds and bill one request', () => {
+  for (const [model, durations] of [['MiniMax-H3-15S', [4, 6, 8, 12, 15]], ['MiniMax-H3-30S', [30]]]) {
+    for (const seconds of durations) {
+      const req = { prompt: 'cat', seconds: String(seconds), aspect_ratio: '16:9', reference_images: ['https://example.com/i.png'] };
+      const ctx = driver(model, req);
+      assert.deepEqual(plugin.buildSubmitRequest(ctx).body, { ...req, model, seconds });
+      assert.deepEqual(plugin.extractUsage(ctx), { requests: 1 });
+    }
+    for (const props of [{ seconds: 5 }, { seconds: null }, { seconds: durations[0], aspect_ratio: '9:16' }]) {
+      assert.throws(() => driver(model, { prompt: 'cat', ...props }), /seconds|aspect_ratio/);
+    }
+  }
+  assert.throws(() => driver('MiniMax-H3-15S', { prompt: 'cat' }), /seconds/);
+  const model = 'MiniMax-H3-30S';
+  assert.equal(plugin.buildSubmitRequest(driver(model, { prompt: 'cat' })).body.seconds, 30);
+  const intent = decode(model, {}, { body: { kind: 'multipart', fields: { prompt: ['cat'] }, files: [] } });
+  const submit = plugin.buildSubmitRequest({ ...driver(model, { prompt: 'cat' }), requestBody: intent.requestBody });
+  assert.deepEqual(submit.parts.filter(part => part.name === 'seconds'), [{ name: 'seconds', value: '30' }]);
+});
+test('MiniMax 2K forwards frames and modes and bills output seconds', () => {
+  const model = 'MiniMax-H3-2K-武庚纪';
+  const req = { prompt: 'cat', resolution: '2k', aspect_ratio: '1:1', first_frame: 'https://example.com/first.jpg',
+    last_frame: 'https://example.com/last.jpg', seconds: 28 };
+  for (const generation_mode of ['reference', 'multimodal', 'text', 'image_video', 'image_audio']) {
+    const ctx = driver(model, { ...req, generation_mode });
+    assert.equal(ctx.action, 'reference_to_video');
+    assert.deepEqual(plugin.buildSubmitRequest(ctx).body, { ...req, generation_mode, model });
+    assert.deepEqual(plugin.extractUsage(ctx), { seconds: 28 });
+  }
+  for (const props of [{ seconds: undefined }, { seconds: 4 }, { seconds: 29 }, { seconds: 5.5 }, { resolution: '2K' },
+    { aspect_ratio: '3:2' }, { generation_mode: 'auto' }, { last_frame: [] }]) {
+    assert.throws(() => driver(model, { ...req, ...props }), /seconds|resolution|aspect_ratio|generation_mode|last_frame/);
+  }
+  const file = { field: 'first_frame', ref: 'first', filename: 'first.jpg' };
+  const fields = { prompt: ['cat'], seconds: ['5'], last_frame: [req.last_frame] };
+  const form = (fields, files) => decode(model, {}, { body: { kind: 'multipart', fields, files } });
+  const intent = form(fields, [file]);
+  const ctx = { ...driver(model, req), requestBody: intent.requestBody, files: [file] };
+  assert.deepEqual(plugin.buildSubmitRequest(ctx).parts.slice(-1), [{ name: 'first_frame', fileRef: 'first', filename: 'first.jpg' }]);
+  assert.deepEqual(plugin.extractUsage(ctx), { seconds: 5 });
+  assert.throws(() => form({ ...fields, first_frame: [req.first_frame] }, [file]), /provided once/);
+  assert.throws(() => form({ ...fields, 'last_frame[]': [req.last_frame] }, []), /provided once/);
+});
+test('new MiniMax variants enforce prompt and reference limits', () => {
+  for (const req of examples.filter(e => e.model.startsWith('MiniMax-H3-'))) {
+    const prompt = '🐈'.repeat(20000);
+    assert.doesNotThrow(() => driver(req.model, { ...req, prompt }));
+    assert.throws(() => driver(req.model, { ...req, prompt: prompt + 'a' }), /prompt/);
+    for (const [field, max] of [['reference_images', 9], ['reference_videos', 3], ['reference_audios', 3]]) {
+      const refs = Array(max).fill('https://example.com/ref');
+      assert.doesNotThrow(() => driver(req.model, { ...req, [field]: refs }));
+      assert.throws(() => driver(req.model, { ...req, [field]: [...refs, refs[0]] }), /at most/);
+    }
+  }
+});
+test('all 22 model examples build one common create route with valid profile facts', () => {
   for (const model of plugin.meta.models) {
     let req;
     if (model === 'wan3.0-video') req = { seconds: 5, resolution: '720P', generate_audio: false, seed: 0 };
+    else if (model.startsWith('MiniMax-H3-')) req = examples.find(e => e.model === model);
     else if (model.startsWith('minimax-h3')) req = { prompt: 'cat', seconds: 5, size: '1376x768' };
     else if (model.startsWith('sd-')) req = { prompt: 'cat', seconds: 5, resolution: '720p' };
     else if (model === 'Video-upscale2.6') req = { reference_video: 'https://example.com/in.mp4', scale: 2, enhancement_strength: 1 };

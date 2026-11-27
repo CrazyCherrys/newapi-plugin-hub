@@ -4,9 +4,9 @@
 
 ## 安装并配置渠道
 
-已有实例可刷新市场并升级到 DreamStudio Video **1.3.4**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
+已有实例可刷新市场并升级到 DreamStudio Video **1.4.0**，继续使用同一插件标识 `crazycherrys_xysnai-video`、渠道和模型。[验证记录](VALIDATION.md)
 
-1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.3.4**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.3.4/plugin.js)
+1. 首次安装时，用超级管理员账号启用任务插件功能。通过市场安装并启用 **DreamStudio Video 1.4.0**，也可下载固定版本插件后上传。[市场源](../../../README.md#添加市场源) · [下载插件](https://raw.githubusercontent.com/CrazyCherrys/newapi-plugin-hub/main/plugins/tasks/crazycherrys_xysnai-video/1.4.0/plugin.js)
 2. 新建 **Task Plugin（61）** 渠道，选择 `crazycherrys_xysnai-video`。上游 Base URL 填 `https://xysnai.cn`，API Key 填 XYSNAI 平台密钥。插件会在上游地址后追加 `/v1/videos`。
 3. 先开通 `minimax-h3`，选择调用令牌有权限访问的分组，模型映射留空。按需要再添加其他模型。[插件声明的模型目录](../model-catalog.json)
 4. 保存模型价格后，用一枚 New API 测试令牌走一遍创建、查询和下载，核对相应的扣费日志。用真实渠道提交会消耗上游额度。[用户调用步骤](API.md)
@@ -17,7 +17,19 @@ rc.51 安装时报 `MiniMax-H3` 与 `minimax-h3` 冲突时，先检查内置 Hai
 
 1.3.4 将标准视频接口里的任务失败文案统一为 `Video generation failed`。旧查询路由、提交时宿主直接返回的 HTTP 错误和下载响应头由网关处理。对外域名使用 Nginx 时，可加载配置并按指南检查现有控制台、价目表和通用任务接口的访问需求。[Nginx 使用指南](NGINX.md) · [配置文件](nginx-video-privacy.conf)
 
-## 配置 MiniMax H3 价格
+## 15S、30S 和 2K 武庚纪的价格
+
+在现有类型 61 渠道中按需添加下表模型名，确认渠道密钥可访问 XYSNAI 的 `h3-mf` 分组。各模型名称可直接转发，模型映射留空。按下文 rc.51 的表达式编辑器步骤，分别保存对应模型的价格。
+
+| 模型 | 2026-11-27 公开上游价 | 示例美元计费表达式 |
+|---|---|---|
+| `MiniMax-H3-15S` | ¥0.40/条 | `tier("base", u("requests") * 0.40 / 6.7131)` |
+| `MiniMax-H3-30S` | ¥0.50/条 | `tier("base", u("requests") * 0.50 / 6.7131)` |
+| `MiniMax-H3-2K-武庚纪` | ¥0.10/输出秒 | `tier("base", u("seconds") * 0.10 / 6.7131)` |
+
+示例沿用下文的历史换算值 6.7131，部署时可按实际结算汇率及售价调整。三个表达式均在隔离 rc.51 上以模拟上游核对过预扣和成功结算。[15S 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=449b2ba4-90dd-4f5d-adf4-d91293cbf819) · [30S 费率](https://xysnai.cn/api/model-marketplace/detail?model_id=a92b01f2-5330-4c49-8004-c147a0e60f75) · [武庚纪费率](https://xysnai.cn/api/model-marketplace/detail?model_id=a903db6e-2704-48c9-a817-57a15d5d7eac)
+
+## 配置 H3 标准版、FL2V 和 LH 价格
 
 插件自 1.3.0 起按实际转发的时长、分辨率档位和图片数计量。`1280x720` 会转为 `1376x768` 并归入 `768P`，省略时长会按 4 秒计费，URL 图片对象会按一张 `images` 计量。[客户端尺寸映射](API.md#minimax-h3-型号与参数)
 
