@@ -1,6 +1,6 @@
 # 通过 New API 调用 DreamStudio Video
 
-使用 DreamStudio Video 创建视频、查询任务和下载视频。
+使用 DreamStudio Video 创建视频、查询任务和下载视频。接入 1.4.0 新增的三个 MiniMax 型号可直接查看[能力表和请求示例](#15s30s-和-2k-武庚纪)。
 
 调用地址为 `https://api.haokun.cc`。在 Bash 终端运行下方命令，将令牌占位符替换为你有模型权限的 **New API 令牌**。可用模型及售价以服务方为准，提交视频任务会消耗额度。
 
@@ -88,16 +88,72 @@ curl --fail --silent --show-error \
 | `MiniMax-H3-30S` | 固定 30，可省略 | 固定 1184×672，`aspect_ratio` 可填 `16:9` |
 | `MiniMax-H3-2K-武庚纪` | 必填，5 至 28 的整数 | `resolution` 可填小写 `2k`，`aspect_ratio` 可选 `9:16`、`16:9`、`1:1` |
 
-三款都要求提供 `prompt`，最长 20,000 字符。可选的 `reference_images`、`reference_videos`、`reference_audios` 分别最多 9、3、3 项。JSON 用 URL 数组，上传文件用同名的 multipart 文件字段。武庚纪可用 `first_frame` 和 `last_frame` 各传一张图，`generation_mode` 可选 `reference`、`multimodal`、`text`、`image_video` 或 `image_audio`。
+#### 输入能力与字段
 
-沿用上方的网关地址和令牌，以下 Bash 命令创建一条 5 秒的 2K 任务，会消耗额度。返回的 `id` 用于上方的查询与下载步骤。另两款的最小请求体见 [15S 示例](../examples/minimax-15s.json) 和 [30S 示例](../examples/minimax-30s.json)。
+创建时填写完整的 `model` 和非空字符串 `prompt`（最多 20,000 字符）。三款都支持只用提示词生成视频；素材字段均可省略。纯文本的最小 JSON 请求体见 [15S](../examples/minimax-15s.json)、[30S](../examples/minimax-30s.json) 和 [2K 武庚纪](../examples/minimax-2k.json)。
+
+| 输入能力 | 15S | 30S | 2K 武庚纪 | JSON 字段及类型 |
+|---|---|---|---|---|
+| 单图或多图参考 | 最多 9 张 | 最多 9 张 | 最多 9 张 | `reference_images`，图片 URL 数组 |
+| 参考视频 | 最多 3 段 | 最多 3 段 | 最多 3 段 | `reference_videos`，视频 URL 数组 |
+| 参考音频 | 最多 3 段 | 最多 3 段 | 最多 3 段 | `reference_audios`，音频 URL 数组 |
+| 指定首帧 | 接口未声明 | 接口未声明 | 1 张 | `first_frame`，单个图片 URL 字符串 |
+| 指定尾帧 | 接口未声明 | 接口未声明 | 1 张 | `last_frame`，单个图片 URL 字符串 |
+
+单张参考图也要放入数组。15S 和 30S 的接口只定义参考图，首张参考图没有固定为视频第一帧的约定。参考视频字段用于给生成任务提供素材，公开接口没有约定视频剪辑或续写操作。武庚纪另有可选字符串 `generation_mode`，取值为 `reference`、`multimodal`、`text`、`image_video` 或 `image_audio`。接口未逐项说明每种模式允许的素材组合。
+
+#### 用 URL 提交参考图（15S）
+
+以下 Bash 示例沿用[页首的网关地址和令牌](#通过-new-api-调用-dreamstudio-video)，执行创建命令会消耗额度。JSON 中的素材 URL 须替换成服务方可直接读取的地址。下例生成 6 秒视频；传多张图时向同一个数组追加 URL。
 
 ```bash
 curl --fail-with-body -sS "$NEW_API_BASE_URL/v1/videos" \
   -H "Authorization: Bearer $NEW_API_TOKEN" \
   -H 'Content-Type: application/json' \
-  -d '{"model":"MiniMax-H3-2K-武庚纪","prompt":"镜头缓缓推向山顶","seconds":5,"resolution":"2k","aspect_ratio":"16:9"}'
+  --data '{
+    "model": "MiniMax-H3-15S",
+    "prompt": "保留参考图中的人物造型，镜头缓慢拉远",
+    "seconds": 6,
+    "reference_images": ["https://cdn.example.com/character.jpg"]
+  }'
 ```
+
+#### 上传本地参考视频（30S）
+
+在素材所在目录运行下例，将 `motion.mp4` 替换为自己的文件。省略 `seconds` 会生成 30 秒视频。curl 会自动设置 multipart boundary。同一类素材有多份时，重复提交同名的文件字段，每份文件占一个名额。
+
+```bash
+curl --fail-with-body -sS "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  --form-string 'model=MiniMax-H3-30S' \
+  --form-string 'prompt=参考素材中的运镜节奏，生成海岸风景视频' \
+  --form 'reference_videos=@./motion.mp4;type=video/mp4'
+```
+
+同一接口也接受音频参考。上传本地音频可使用 `--form 'reference_audios=@./rhythm.mp3;type=audio/mpeg'`；用 JSON 提交时写成 `"reference_audios": ["https://cdn.example.com/rhythm.mp3"]`。
+
+#### 用 URL 指定首尾帧（2K 武庚纪）
+
+下例生成 8 秒竖屏视频。首帧和尾帧各用独立字段，传 URL 时各填一个字符串，上传本地图片时分别使用同名文件字段。纯文生视频可省略这两个字段。
+
+```bash
+curl --fail-with-body -sS "$NEW_API_BASE_URL/v1/videos" \
+  -H "Authorization: Bearer $NEW_API_TOKEN" \
+  -H 'Content-Type: application/json' \
+  --data '{
+    "model": "MiniMax-H3-2K-武庚纪",
+    "prompt": "镜头从山脚缓慢上升，最后停在云海之上",
+    "seconds": 8,
+    "resolution": "2k",
+    "aspect_ratio": "9:16",
+    "first_frame": "https://cdn.example.com/first.jpg",
+    "last_frame": "https://cdn.example.com/last.jpg"
+  }'
+```
+
+三款任务都用创建响应中的 `id` [查询状态](#查询任务)。`queued` 和 `in_progress` 继续轮询，`completed` 后[下载 MP4](#下载视频)，`failed` 时停止并读取 `error.message`。创建请求超时先查任务记录，以免重复生成和扣费。
+
+**验证范围**　上述能力和数量上限来自公开接口定义。DreamStudio Video 1.4.0 已在 New API v1.0.0-rc.51 上使用模拟上游验证三款的创建、查询和下载。三款的真实素材上传和付费生成效果尚未联测。[验证记录](VALIDATION.md)
 
 ### 标准版、LH 与 FL2V
 
@@ -285,5 +341,5 @@ curl --fail-with-body --silent --show-error \
 
 - **返回 401 或 403**。检查请求是否带上 New API 的 Bearer 令牌，以及令牌是否有该模型或任务的访问权限。
 - **找不到模型或没有可用渠道**。核对模型名及大小写，向服务方确认令牌已开通此模型。
-- **提示参数错误**。先对照对应模型的最小示例检查请求体。H3 用 `size: "1376x768"`，Wan 示例用 `resolution: "720P"`。
+- **提示参数错误**。先对照对应模型的最小示例检查请求体。H3 标准版的示例使用 `size: "1376x768"`；15S 和 30S 固定尺寸，武庚纪用 `resolution: "2k"`，Wan 示例用 `resolution: "720P"`。
 - **提交超时或任务仍在排队**。先在任务记录里确认是否已经创建，避免再次提交产生重复任务。
